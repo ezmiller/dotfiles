@@ -1,6 +1,7 @@
 (defconst ezfm-org-layer-packages
   '(org-roam
     org-roam-bibtex
+    helm-bibtex
     deft
     org-ql))
 
@@ -18,6 +19,29 @@
     (bind-key "C-c d" 'deft)
     :config (setq deft-directory "~/org/notes"
                   deft-extensions '("md" "org"))))
+
+(defun ezfm-org-layer/init-helm-bibtex ()
+  :init
+  (progn
+    (setq bibtex-completion-notes-path "~/org/notes/"
+          bibtex-completion-bibliography "~/ethan-zotero-library.bib"
+          bibtex-completion-pdf-field "file"
+          bibtex-completion-notes-template-multiple-files
+          (concat
+           "#+TITLE: ${title}\n"
+           "#+ROAM_KEY: cite:${=key=}\n"
+           "* TODO Notes\n"
+           ":PROPERTIES:\n"
+           ":Custom_ID: ${=key=}\n"
+           ":NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
+           ":AUTHOR: ${author-abbrev}\n"
+           ":JOURNAL: ${journaltitle}\n"
+           ":DATE: ${date}\n"
+           ":YEAR: ${year}\n"
+           ":DOI: ${doi}\n"
+           ":URL: ${url}\n"
+           ":END:\n\n")
+          )))
 
 (defun ezfm-org-layer/init-org-roam-bibtex ()
   (use-package org-roam-bibtex
