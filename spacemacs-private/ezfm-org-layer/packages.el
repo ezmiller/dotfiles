@@ -3,7 +3,8 @@
     org-roam-bibtex
     helm-bibtex
     deft
-    org-ql))
+    org-ql
+    org-ref))
 
 (defun ezfm-org-layer/init-org-ql ()
   (quelpa
@@ -24,7 +25,7 @@
   :init
   (progn
     (setq bibtex-completion-notes-path "~/org/notes/"
-          bibtex-completion-bibliography "~/ethan-zotero-library.bib"
+          bibtex-completion-bibliography "~/org/sources/zotero-library.bib"
           bibtex-completion-pdf-field "file"
           bibtex-completion-notes-template-multiple-files
           (concat
@@ -47,6 +48,31 @@
   (use-package org-roam-bibtex
     :after org-roam
     :hook (org-roam-mode . org-roam-bibtex-mode)))
+
+(defun ezfm-org-layer/init-org-ref ()
+  (use-package org-ref-acronym-color
+    :config
+    (setq org-ref-completion-library 'org-ref-ivy-cite
+          org-ref-get-pdf-filename-function 'org-ref-get-pdf-filename-helm-bibtex
+          org-ref-default-bibliography (list "~/org/sources/zotero-library.bib")
+          org-ref-bibliography-notes "~/org/sources/bibliography-notes.org"
+          org-ref-notes-directory "~/org/notes"
+          org-rf-notes-function 'orb-edit-notes
+          org-ref-note-title-format
+          (concat
+           "* TODO %y - %t\n"
+           ":PROPERTIES:\n"
+           ":Custom_ID: %k\n"
+           ":NOTER_DOCUMENT: %F\n"
+           ":ROAM_KEY: cite:%k\n"
+           ":AUTHOR: %9a\n"
+           ":JOURNAL: %j\n"
+           ":YEAR: %y\n"
+           ":VOLUME: %v\n"
+           ":PAGES: %p\n"
+           ":DOI: %D\n"
+           ":URL: %U\n"
+           ":END:\n\n"))))
 
 (defun ezfm-org-layer/init-org-roam ()
   (use-package org-roam
