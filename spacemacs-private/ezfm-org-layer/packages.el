@@ -47,7 +47,22 @@
 (defun ezfm-org-layer/init-org-roam-bibtex ()
   (use-package org-roam-bibtex
     :after org-roam
-    :hook (org-roam-mode . org-roam-bibtex-mode)))
+    :hook (org-roam-mode . org-roam-bibtex-mode)
+    :config
+    (setq orb-slug-source 'title)
+    (setq org-roam-bibtex-preformat-keywords
+          '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
+    (setq orb-templates
+          '(("r" "ref" plain (function org-roam-capture--get-point)
+             ""
+             :file-name "${slug}_%<%Y%m%d%H%M%S>"
+             :head "#+TITLE: ${=key=}: ${title}\n#+ROAM_KEY: ${ref}
+
+- tags ::
+- keywords :: ${keywords}
+
+\n* ${title}\n  :PROPERTIES:\n  :Custom_ID: ${=key=}\n  :URL: ${url}\n  :AUTHOR: ${author-or-editor}\n  :END:\n\n"
+             :unnarrowed t)))))
 
 (defun ezfm-org-layer/init-org-ref ()
   (use-package org-ref-acronym-color
