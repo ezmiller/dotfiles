@@ -44,19 +44,24 @@
            ":END:\n\n")
           )))
 
+(defun parse-last-name (citekey)
+  (let* ((entry (bibtex-completion-get-entry citekey))
+         (author-or-editor-abbrev (bibtex-completion-apa-get-value "author-or-editor-abbrev" entry)))
+    (downcase (first (split-string author-or-editor-abbrev ",")))))
+
 (defun ezfm-org-layer/init-org-roam-bibtex ()
   (use-package org-roam-bibtex
     :after org-roam
     :hook (org-roam-mode . org-roam-bibtex-mode)
     :config
     (setq orb-slug-source 'title)
-    (setq org-roam-bibtex-preformat-keywords
-          '("=key=" "title" "url" "file" "author-or-editor" "keywords"))
+    (setq orb-preformat-keywords
+          '("=key=" "title" "url" "file" "author-or-editor" "keywords" ))
     (setq orb-templates
           '(("r" "ref" plain (function org-roam-capture--get-point)
              ""
-             :file-name "${slug}_%<%Y%m%d%H%M%S>"
-             :head "#+TITLE: ${=key=}: ${title}\n#+ROAM_KEY: ${ref}
+             :file-name "%(parse-last-name \"${=key=}\")_${slug}_%<%Y%m%d%H%M%S>"
+             :head "#+TITLE: ${author-or-editor}: ${title}\n#+ROAM_KEY: ${ref}
 
 - tags ::
 - keywords :: ${keywords}
