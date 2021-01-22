@@ -8,7 +8,7 @@
     (define-key clojure-mode-map (kbd "C-c n i b") 'notespace/init-with-browser)
     (define-key clojure-mode-map (kbd "C-c n i i") 'notespace/init)
     (define-key clojure-mode-map (kbd "C-c n s") 'notespace/render-static-html)
-    (define-key clojure-mode-map (kbd "C-c n c") 'notespace/eval-and-realize-notes-from-change))))
+    (define-key clojure-mode-map (kbd "C-c n c") 'notespace/eval-and-realize-notes-from-change)))
 
 ;; suggested spacemacs key bindings:
 (spacemacs/set-leader-keys-for-major-mode 'clojure-mode
@@ -20,4 +20,3 @@
   "n i i" 'notespace/init
   "n s" 'notespace/render-static-html
   "n c" 'notespace/eval-and-realize-notes-from-change)
-
