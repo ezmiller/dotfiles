@@ -24,16 +24,14 @@
   (package-install 'use-package))
 (require 'use-package)
 
-;; Make it easier to restart
-(use-package restart-emacs
-  :defer t)
-
 ;; Path management
 (use-package exec-path-from-shell
   :ensure t
   :config
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize)))
+
+(use-package restart-emacs)
 
 ;; Vim mode
 (use-package evil
@@ -95,18 +93,23 @@
 (use-package general
   :ensure t
   :config
+  ;; (general-create-definer my-leader-def
+  ;;   :prefix "SPC")
   (general-define-key
     :states '(normal visual insert emacs)
     :prefix "SPC"
     :non-normal-prefix "C-SPC"
-    "TAB" 'toggle-buffers))
-
+    "TAB" 'toggle-buffers
+    "p" 'projectile-command-map
+    "qR" 'restart-emacs)
+)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages '(writeroom-mode use-package exec-path-from-shell evil)))
+ '(package-selected-packages
+   '(restart-emacs writeroom-mode use-package exec-path-from-shell evil)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
