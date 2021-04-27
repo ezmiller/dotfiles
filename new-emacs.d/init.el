@@ -23,6 +23,25 @@
   (package-refresh-contents)
   (package-install 'use-package))
 (require 'use-package)
+(setq use-package-always-ensure t) ;; use `:ensure nil' to avoid
+
+;; Functions
+(defun toggle-buffers ()
+  (interactive)
+  (switch-to-buffer nil))
+
+;; Keybindings
+(use-package general
+ :init
+  (general-override-mode 1)
+  :config
+  (general-create-definer dominant-def
+    :states '(normal visual insert motion emacs)
+    :prefix "SPC"
+    :non-normal-prefix "C-SPC"
+    :prefix-map 'dominant-prefix-map)
+  (dominant-def
+    "TAB" 'toggle-buffers))
 
 ;; Path management
 (use-package exec-path-from-shell
@@ -31,14 +50,23 @@
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize)))
 
-(use-package restart-emacs)
+(use-package restart-emacs
+  :config
+  (general-def "C-c R" 'restart-emacs))
 
 ;; Vim mode
 (use-package evil
-  :ensure t
+  :init
+  (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
+  (setq evil-want-keybinding nil)
   :config
   (evil-mode 1)
   (setq-default evil-escape-delay 0.2))
+(use-package evil-collection
+  :after evil
+  :config
+  (evil-collection-init 'magit))
+(use-package evil-nerd-commenter)
 
 ;; Minimal UI
 (scroll-bar-mode -2)
@@ -48,68 +76,53 @@
 
 ;; Themes
 (use-package doom-themes
-  :ensure t
   :config
   (load-theme 'doom-molokai t))
 
 ;; Which Key
 (use-package which-key
-  :ensure t
   :init
   (setq which-key-separator " ")
   (setq which-key-prefix-prefix "+")
   :config
   (which-key-mode))
 
-;; Code commenting
-(use-package evil-nerd-commenter :ensure t)
 
 ;; Package manager
 (use-package projectile
   :diminish projectile-mode
   :config
   (progn
-    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+    (general-def "C-c p" 'projectile-command-map)
     (projectile-mode +1)
     (setq projectile-completion-system 'auto)
     (setq projectile-enable-caching t)
     (setq projectile-indexing-method 'alien)
     (add-to-list 'projectile-globally-ignored-files "node-modules")))
 
-;; Selectrum +
+;; Selectrum, etc
 (use-package selectrum
-  :ensure t
   :config
   (selectrum-mode +1))
-;; TODO Think about enabling selectrum-prescient
-;; TODO Think about enabling consult: https://github.com/minad/consult
+(use-package prescient :config (prescient-persist-mode +1))
+(use-package selectrum-prescient :init (selectrum-prescient-mode +1) :after selectrum)
 
-;; Functions
-(defun toggle-buffers ()
-  (interactive)
-  (switch-to-buffer nil))
+(use-package consult
+  :after projectile)
 
-;; Keybindings
-(use-package general
-  :ensure t
+;; Git
+(use-package magit
+  :defer t
   :config
-  ;; (general-create-definer my-leader-def
-  ;;   :prefix "SPC")
-  (general-define-key
-    :states '(normal visual insert emacs)
-    :prefix "SPC"
-    :non-normal-prefix "C-SPC"
-    "TAB" 'toggle-buffers
-    "p" 'projectile-command-map
-    "qR" 'restart-emacs)
-)
+  (dominant-def "gs" 'magit-status))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(restart-emacs writeroom-mode use-package exec-path-from-shell evil)))
+   '(consult restart-emacs writeroom-mode use-package exec-path-from-shell evil)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
