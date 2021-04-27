@@ -115,6 +115,13 @@
   :config
   (dominant-def "gs" 'magit-status))
 
+
+;; Clojure
+(use-package clojure-mode
+  :defer t)
+(use-package cider
+  :defer t)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
