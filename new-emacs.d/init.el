@@ -12,19 +12,6 @@
 (global-auto-revert-mode t)
 (electric-pair-mode 1)
 
-;; Package management
-(require 'package)
-(setq package-enable-at-startup nil)
-(setq package-archives '(("org"       . "http://orgmode.org/elpa/")
-			 ("gnu"       . "http://elpa.gnu.org/packages/")
-			 ("melpa"     . "https://melpa.org/packages/")))
-(package-initialize)
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-(require 'use-package)
-(setq use-package-always-ensure t) ;; use `:ensure nil' to avoid
-
 ;; Functions
 (defun toggle-buffers ()
   (interactive)
@@ -35,6 +22,55 @@
 (tool-bar-mode   -1)
 (tooltip-mode    -1)
 (menu-bar-mode   -1)
+
+;; Package management
+(require 'package)
+(setq package-enable-at-startup nil)
+(setq package-archives '(("org"       . "http://orgmode.org/elpa/")
+			 ("gnu"       . "http://elpa.gnu.org/packages/")
+			 ("melpa"     . "https://melpa.org/packages/")))
+(package-initialize)
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(require 'use-package)
+
+;; ensure everything is installed, use `:ensure nil` to override
+(setq use-package-always-ensure t)
+
+;; Vim mode & Keybindings
+(use-package general
+  :config
+  (general-create-definer dominant-def
+    :states '(normal visual insert motion emacs)
+    :prefix "SPC"
+    :non-normal-prefix "C-SPC"
+    :prefix-map 'dominant-prefix-map))
+
+(with-eval-after-load 'evil
+  (dominant-def
+    "TAB" 'toggle-buffers))
+
+(use-package evil
+  :init
+  (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
+  (setq evil-want-keybinding nil)
+  :config
+  (evil-mode 1)
+  (setq-default evil-escape-delay 0.2))
+
+(use-package evil-collection
+  :after evil
+  :config
+  (setq evil-collection-mode-list nil)
+  (evil-collection-init 'magit))
+
+(use-package evil-nerd-commenter
+  :config
+  (general-define-key
+   "M-;" 'evilnc-comment-or-uncomment-lines))
 
 ;; Themes
 (use-package doom-themes
@@ -49,19 +85,6 @@
   :config
   (which-key-mode))
 
-;; Keybindings
-(use-package general
- :init
-  (general-override-mode 1)
-  :config
-  (general-create-definer dominant-def
-    :states '(normal visual insert motion emacs)
-    :prefix "SPC"
-    :non-normal-prefix "C-SPC"
-    :prefix-map 'dominant-prefix-map)
-  (dominant-def
-    "TAB" 'toggle-buffers))
-
 ;; Path management
 (use-package exec-path-from-shell
   :ensure t
@@ -73,21 +96,6 @@
   :config
   (general-def "C-c R" 'restart-emacs))
 
-;; Vim mode
-(use-package evil
-  :init
-  (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
-  (setq evil-want-keybinding nil)
-  :config
-  (evil-mode 1)
-  (setq-default evil-escape-delay 0.2))
-(use-package evil-collection
-  :after evil
-  :config
-  (evil-collection-init 'magit))
-(use-package evil-nerd-commenter)
-
-;; Package manager
 (use-package projectile
   :diminish projectile-mode
   :config
@@ -111,9 +119,11 @@
 
 ;; Git
 (use-package magit
-  :defer t
   :config
-  (dominant-def "gs" 'magit-status))
+  (dominant-def "gs" 'magit-status)
+  ;; (with-eval-after-load 'evil
+  ;;   (dominant-def "gs" 'magit-status))
+  )
 
 
 ;; Clojure
