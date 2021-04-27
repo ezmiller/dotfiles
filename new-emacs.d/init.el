@@ -30,6 +30,25 @@
   (interactive)
   (switch-to-buffer nil))
 
+;; Minimal UI
+(scroll-bar-mode -2)
+(tool-bar-mode   -1)
+(tooltip-mode    -1)
+(menu-bar-mode   -1)
+
+;; Themes
+(use-package doom-themes
+  :config
+  (load-theme 'doom-molokai t))
+
+;; Which Key
+(use-package which-key
+  :init
+  (setq which-key-separator " ")
+  (setq which-key-prefix-prefix "+")
+  :config
+  (which-key-mode))
+
 ;; Keybindings
 (use-package general
  :init
@@ -67,26 +86,6 @@
   :config
   (evil-collection-init 'magit))
 (use-package evil-nerd-commenter)
-
-;; Minimal UI
-(scroll-bar-mode -2)
-(tool-bar-mode   -1)
-(tooltip-mode    -1)
-(menu-bar-mode   -1)
-
-;; Themes
-(use-package doom-themes
-  :config
-  (load-theme 'doom-molokai t))
-
-;; Which Key
-(use-package which-key
-  :init
-  (setq which-key-separator " ")
-  (setq which-key-prefix-prefix "+")
-  :config
-  (which-key-mode))
-
 
 ;; Package manager
 (use-package projectile
