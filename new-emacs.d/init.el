@@ -23,6 +23,10 @@
 (tooltip-mode    -1)
 (menu-bar-mode   -1)
 
+;; Font
+(add-to-list 'default-frame-alist '(font . "Office Code Pro-16"))
+(set-face-attribute 'default t :font "Office Code Pro-16")
+
 ;; Package management
 (require 'package)
 (setq package-enable-at-startup nil)
@@ -40,22 +44,24 @@
 ;; ensure everything is installed, use `:ensure nil` to override
 (setq use-package-always-ensure t)
 
-;; Vim mode & Keybindings
+;; Initialize general for key bindings
 (use-package general
   :config
-  (general-create-definer dominant-def
+  (general-create-definer spc-key-definer
     :states '(normal visual insert motion emacs)
     :prefix "SPC"
     :non-normal-prefix "C-SPC"
     :prefix-map 'dominant-prefix-map))
 
+;; Global keybindings
 (with-eval-after-load 'evil
-  (dominant-def
+  (spc-key-definer
     "TAB" 'toggle-buffers))
 
 (use-package evil
   :init
-  (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
+  ;; These needs to be set when using evil-collection
+  (setq evil-want-integration t)
   (setq evil-want-keybinding nil)
   :config
   (evil-mode 1)
@@ -64,7 +70,7 @@
 (use-package evil-collection
   :after evil
   :config
-  (setq evil-collection-mode-list nil)
+  (setq evil-collection-mode-list nil) ;; disable all evil bindings as default
   (evil-collection-init 'magit))
 
 (use-package evil-nerd-commenter
@@ -72,10 +78,11 @@
   (general-define-key
    "M-;" 'evilnc-comment-or-uncomment-lines))
 
-;; Themes
 (use-package doom-themes
   :config
-  (load-theme 'doom-molokai t))
+  ;; (load-theme 'doom-molokai t)
+  (load-theme 'doom-snazzy t)
+  )
 
 ;; Which Key
 (use-package which-key
@@ -113,30 +120,25 @@
   (selectrum-mode +1))
 (use-package prescient :config (prescient-persist-mode +1))
 (use-package selectrum-prescient :init (selectrum-prescient-mode +1) :after selectrum)
-
-(use-package consult
-  :after projectile)
+(use-package consult :after projectile)
 
 ;; Git
 (use-package magit
   :config
-  (dominant-def "gs" 'magit-status)
-  ;; (with-eval-after-load 'evil
-  ;;   (dominant-def "gs" 'magit-status))
-  )
+  (spc-key-definer "gs" 'magit-status))
 
 
 ;; Clojure
-(use-package clojure-mode
-  :defer t)
-(use-package cider
-  :defer t)
+(use-package clojure-mode :defer t)
+(use-package cider :defer t)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   '("7b3d184d2955990e4df1162aeff6bfb4e1c3e822368f0359e15e2974235d9fa8" default))
  '(package-selected-packages
    '(consult restart-emacs writeroom-mode use-package exec-path-from-shell evil)))
 (custom-set-faces
@@ -144,4 +146,4 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(default ((t (:inherit nil :extend nil :stipple nil :background "#1c1e1f" :foreground "#d6d6d4" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 110 :width normal :foundry "nil" :family "Source Code Proc")))))
