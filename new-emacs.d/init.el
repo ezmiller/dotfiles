@@ -118,7 +118,9 @@
     (setq projectile-completion-system 'auto)
     (setq projectile-enable-caching t)
     (setq projectile-indexing-method 'alien)
-    (add-to-list 'projectile-globally-ignored-files "node-modules")))
+    (add-to-list 'projectile-globally-ignored-files "node-modules")
+    (autoload 'projectile-project-root "projectile")
+    (setq consult-project-root-function #'projectile-project-root)))
 
 ;; Selectrum, etc
 (use-package selectrum
