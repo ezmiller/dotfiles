@@ -35,7 +35,7 @@
 (tooltip-mode    -1)
 (menu-bar-mode   -1)
 
-;; Font
+;; Font - font needs to be installed in the Mac Font Book
 (add-to-list 'default-frame-alist '(font . "Fira Code-16"))
 (set-face-attribute 'default t :font "Fira Code-16")
 
