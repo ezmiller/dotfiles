@@ -20,6 +20,12 @@
   (interactive)
   (switch-to-buffer nil))
 
+(defun cider-test-run-focused-test ()
+  "Run test around point."
+  (interactive)
+  (cider-load-buffer)
+  (cider-test-run-test))
+
 ;; Minimal UI
 (scroll-bar-mode -2)
 (tool-bar-mode   -1)
