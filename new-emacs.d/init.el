@@ -86,8 +86,8 @@
 
 (use-package doom-themes
   :config
-  ;; (load-theme 'doom-molokai t)
-  (load-theme 'doom-snazzy t)
+  (load-theme 'doom-molokai t)
+  ;; (load-theme 'doom-snazzy t)
   )
 
 ;; Which Key
