@@ -12,6 +12,9 @@
 (global-auto-revert-mode t)
 (electric-pair-mode 1)
 
+(if (fboundp 'mac-auto-operator-composition-mode)
+    (mac-auto-operator-composition-mode))
+
 ;; Functions
 (defun toggle-buffers ()
   (interactive)
@@ -24,8 +27,9 @@
 (menu-bar-mode   -1)
 
 ;; Font
-(add-to-list 'default-frame-alist '(font . "Office Code Pro-16"))
-(set-face-attribute 'default t :font "Office Code Pro-16")
+(add-to-list 'default-frame-alist '(font . "Fira Code-16"))
+(set-face-attribute 'default t :font "Fira Code-16")
+
 
 ;; Package management
 (require 'package)
