@@ -71,7 +71,8 @@
   (spc-key-definer
     "TAB" 'toggle-buffers
     "pp"  'projectile-switch-project
-    "pf"  'consult-find))
+    "pf"  'consult-find
+    "bb"  'consult-buffer))
 
 (use-package evil
   :init
