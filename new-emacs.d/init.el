@@ -128,6 +128,10 @@
     (autoload 'projectile-project-root "projectile")
     (setq consult-project-root-function #'projectile-project-root)))
 
+(use-package dashboard
+  :config
+  (dashboard-setup-startup-hook))
+
 ;; Selectrum, etc
 (use-package selectrum
   :config
