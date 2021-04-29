@@ -1,3 +1,6 @@
+;; Some resources
+;; - https://jamiecollinson.com/blog/my-emacs-config/
+
 (setq delete-old-versions -1)
 (setq inhibit-startup-screen t)
 (setq ring-bell-function 'ignore)
@@ -106,7 +109,6 @@
 
 ;; Path management
 (use-package exec-path-from-shell
-  :ensure t
   :config
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize)))
@@ -158,19 +160,16 @@
 ;; Clojure
 (use-package clojure-mode :defer t)
 (use-package cider :defer t)
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("7b3d184d2955990e4df1162aeff6bfb4e1c3e822368f0359e15e2974235d9fa8" default))
  '(package-selected-packages
-   '(consult restart-emacs writeroom-mode use-package exec-path-from-shell evil)))
+   '(dashboard writeroom-mode which-key use-package selectrum-prescient restart-emacs projectile magit general exec-path-from-shell evil-nerd-commenter evil-lisp-state evil-collection doom-themes consult cider)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :extend nil :stipple nil :background "#1c1e1f" :foreground "#d6d6d4" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 110 :width normal :foundry "nil" :family "Source Code Proc")))))
+ )
