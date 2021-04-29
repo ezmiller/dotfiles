@@ -169,6 +169,7 @@
   (general-define-key
    :states 'normal
    :prefix "SPC k"
+   "y"  'sp-copy-sexp
    "dx" 'sp-kill-sexp
    "s" 'sp-forward-slurp-sexp
    "b" 'sp-forward-barf-sexp))
