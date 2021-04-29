@@ -60,7 +60,9 @@
 ;; Global keybindings
 (with-eval-after-load 'evil
   (spc-key-definer
-    "TAB" 'toggle-buffers))
+    "TAB" 'toggle-buffers
+    "pp"  'projectile-switch-project
+    "pf"  'consult-find))
 
 (use-package evil
   :init
