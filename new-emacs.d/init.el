@@ -141,6 +141,15 @@
   :config
   (spc-key-definer "gs" 'magit-status))
 
+(use-package smartparens
+  :config
+  (general-define-key
+   :states 'normal
+   :prefix "SPC k"
+   "dx" 'sp-kill-sexp
+   "s" 'sp-forward-slurp-sexp
+   "b" 'sp-forward-barf-sexp))
+
 
 ;; Clojure
 (use-package clojure-mode :defer t)
