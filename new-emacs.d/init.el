@@ -78,6 +78,11 @@
 ;; Allow C-u/d for page up/down
 (setq evil-want-C-u-scroll t)
 (setq evil-want-C-d-scroll t)
+
+;; Set this to match clojure indent style
+;; May need to be set per mode at some point?
+(setq evil-shift-width 2)
+
 (use-package evil
   :init
   ;; These needs to be set when using evil-collection
