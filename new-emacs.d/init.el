@@ -75,6 +75,9 @@
     "bb"  'consult-buffer
     "rr"  'consult-recent-file))
 
+;; Allow C-u/d for page up/down
+(setq evil-want-C-u-scroll t)
+(setq evil-want-C-d-scroll t)
 (use-package evil
   :init
   ;; These needs to be set when using evil-collection
