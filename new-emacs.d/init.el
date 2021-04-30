@@ -139,6 +139,15 @@
   :config
   (dashboard-setup-startup-hook))
 
+(use-package all-the-icons)
+(use-package doom-modeline
+  :requires all-the-icons
+  :init
+  (doom-modeline-mode 1)
+  :config
+  (progn
+    (setq doom-modeline-height 15)))
+
 ;; Selectrum, etc
 (use-package selectrum
   :config
