@@ -23,6 +23,18 @@
   (interactive)
   (switch-to-buffer nil))
 
+(defun my/evil-shift-right ()
+  (interactive)
+  (evil-shift-right evil-visual-beginning evil-visual-end)
+  (evil-normal-state)
+  (evil-visual-restore))
+
+(defun my/evil-shift-left ()
+  (interactive)
+  (evil-shift-left evil-visual-beginning evil-visual-end)
+  (evil-normal-state)
+  (evil-visual-restore))
+
 (defun my/cider-test-run-focused-test ()
   "Run test around point."
   (interactive)
@@ -90,7 +102,12 @@
   (setq evil-want-keybinding nil)
   :config
   (evil-mode 1)
-  (setq-default evil-escape-delay 0.2))
+  (setq-default evil-escape-delay 0.2)
+  (general-define-key
+   :states 'visual
+   ">" 'my/evil-shift-right
+   "<" 'my/evil-shift-left)
+  )
 
 (use-package evil-collection
   :after evil
