@@ -113,7 +113,7 @@
   :after evil
   :config
   (setq evil-collection-mode-list nil) ;; disable all evil bindings as default
-  (evil-collection-init 'magit))
+  (evil-collection-init '(magit dired)))
 
 (use-package evil-nerd-commenter
   :config
