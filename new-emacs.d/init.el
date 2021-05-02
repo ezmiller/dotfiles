@@ -168,7 +168,9 @@
   (doom-modeline-mode 1)
   :config
   (progn
-    (setq doom-modeline-height 15)))
+    (setq doom-modeline-height 15)
+    (setq column-number-mode t
+	  line-number-mode t)))
 
 ;; Selectrum, etc
 (use-package selectrum
