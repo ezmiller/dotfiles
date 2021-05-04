@@ -15,6 +15,11 @@
 (global-auto-revert-mode t)
 (electric-pair-mode 1)
 
+;; ensures that emacs window is focused when
+;; switching desktops
+;; See: https://emacs.stackexchange.com/questions/28121/osx-switching-to-virtual-desktop-doesnt-focus-emacs
+(menu-bar-mode 1) 
+
 (if (fboundp 'mac-auto-operator-composition-mode)
     (mac-auto-operator-composition-mode))
 
