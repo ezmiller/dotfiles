@@ -15,11 +15,6 @@
 (global-auto-revert-mode t)
 (electric-pair-mode 1)
 
-;; ensures that emacs window is focused when
-;; switching desktops
-;; See: https://emacs.stackexchange.com/questions/28121/osx-switching-to-virtual-desktop-doesnt-focus-emacs
-(menu-bar-mode 1) 
-
 (if (fboundp 'mac-auto-operator-composition-mode)
     (mac-auto-operator-composition-mode))
 
@@ -262,6 +257,11 @@
 ;; Sets the column width to 80 columns and enables line breaking, ie. auto-fill.
 (add-hook 'org-mode-hook '(lambda () (setq fill-column 80)))
 (add-hook 'org-mode-hook 'auto-fill-mode)
+
+;; ensures that emacs window is focused when
+;; switching desktops
+;; See: https://emacs.stackexchange.com/questions/28121/osx-switching-to-virtual-desktop-doesnt-focus-emacs
+(menu-bar-mode t) 
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
