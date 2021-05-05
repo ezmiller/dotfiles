@@ -85,7 +85,8 @@
     "pp"  'projectile-switch-project
     "pf"  'consult-find
     "bb"  'consult-buffer
-    "rr"  'consult-recent-file))
+    "rr"  'consult-recent-file
+    "u"   'univeral-argument))
 
 ;; Allow C-u/d for page up/down
 (setq evil-want-C-u-scroll t)
