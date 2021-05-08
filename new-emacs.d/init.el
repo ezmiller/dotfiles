@@ -15,6 +15,7 @@
 (global-auto-revert-mode t)
 (electric-pair-mode 1)
 
+;; Enables ligatures in the emacs macport
 (if (fboundp 'mac-auto-operator-composition-mode)
     (mac-auto-operator-composition-mode))
 
