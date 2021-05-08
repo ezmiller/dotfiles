@@ -87,7 +87,7 @@
     "pf"  'consult-find
     "bb"  'consult-buffer
     "rr"  'consult-recent-file
-    "u"   'univeral-argument))
+    "u"   'universal-argument))
 
 ;; Allow C-u/d for page up/down
 (setq evil-want-C-u-scroll t)
