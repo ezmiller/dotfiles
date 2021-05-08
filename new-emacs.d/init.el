@@ -267,6 +267,15 @@
 (add-hook 'org-mode-hook '(lambda () (setq fill-column 80)))
 (add-hook 'org-mode-hook 'auto-fill-mode)
 
+
+;; YAML
+(use-package yaml-mode
+    :mode (("\\.\\(yml\\|yaml\\)\\'" . yaml-mode)
+           ("Procfile\\'" . yaml-mode))
+    :config (add-hook 'yaml-mode-hook
+                      #'(lambda ()
+                         (define-key yaml-mode-map "\C-m" 'newline-and-indent))))
+
 ;; ensures that emacs window is focused when
 ;; switching desktops
 ;; See: https://emacs.stackexchange.com/questions/28121/osx-switching-to-virtual-desktop-doesnt-focus-emacs
