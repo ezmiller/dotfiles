@@ -267,6 +267,13 @@
 ;; Sets the column width to 80 columns and enables line breaking, ie. auto-fill.
 (add-hook 'org-mode-hook '(lambda () (setq fill-column 80)))
 (add-hook 'org-mode-hook 'auto-fill-mode)
+(add-hook 'org-mode-hook 'org-indent-mode)
+(use-package org-bullets
+  :init
+  (add-hook 'org-mode-hook 'org-bullets-mode)
+  :config
+  (setq org-bullets-bullet-list '("\u200b")) ;; No bullets
+  )
 
 
 ;; YAML
