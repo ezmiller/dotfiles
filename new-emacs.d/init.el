@@ -162,6 +162,14 @@
   :config
   (dashboard-setup-startup-hook))
 
+
+(use-package ace-window
+  :init
+  (ace-window-display-mode 1)
+  :config
+  (general-define-key
+   "M-o" 'ace-window))
+
 (use-package all-the-icons)
 (use-package doom-modeline
   :requires all-the-icons
