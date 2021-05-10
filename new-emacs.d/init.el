@@ -1,4 +1,4 @@
-;;; Initial notes:
+;;; Initial notes
 
   ;; Some resources
   ;; - https://jamiecollinson.com/blog/my-emacs-config/
@@ -8,7 +8,7 @@
   ;;   - Use `C-c @ C-a` to show all
   ;;   - Other options for org-outline-minor-mode: `C-c @`
 
-;;; Initial setup:
+;;; Initial setup
 
   ;; Setup outline-minor-mode for emacs-lisp, useful for this file
   ;; See: https://emacs.stackexchange.com/questions/3143/can-i-use-org-mode-to-structure-my-emacs-or-other-el-configuration-file
@@ -17,7 +17,7 @@
 	      (make-local-variable 'outline-regexp)
 	      (setq outline-regexp "^;;; ")
 	      (make-local-variable 'outline-heading-end-regexp)
-	      (setq outline-heading-end-regexp ":\n")
+	      ;; (setq outline-heading-end-regexp ":\n")
 	      (outline-minor-mode 1)))
 
   (setq delete-old-versions -1)
@@ -44,19 +44,19 @@
   (menu-bar-mode   -1)
 
 
-;;; Font:
+;;; Font
   ;;- font needs to be installed in the Mac Font Book
   (add-to-list 'default-frame-alist '(font . "Fira Code-16"))
   (set-face-attribute 'default t :font "Fira Code-16")
 
-;;; Theme using `doom-themes`:
+;;; Theme using `doom-themes`
   (use-package doom-themes
     :config
     (load-theme 'doom-molokai t)
     ;; (load-theme 'doom-snazzy t)
     )
 
-;;; Global Functions:
+;;; Global Functions
   (defun my/toggle-buffers ()
     (interactive)
     (switch-to-buffer nil))
@@ -79,7 +79,7 @@
     (cider-load-buffer)
     (cider-test-run-test))
 
-;;; Package management:
+;;; Package management
   (require 'package)
   (setq package-enable-at-startup nil)
   (setq package-archives '(("org"       . "http://orgmode.org/elpa/")
@@ -96,7 +96,7 @@
   ;; ensure everything is installed, use `:ensure nil` to override
   (setq use-package-always-ensure t)
 
-;;; Initialize `general` for keybindings:
+;;; Initialize `general` for keybindings
   (use-package general
     :config
     (general-create-definer spc-key-definer
@@ -105,7 +105,7 @@
       :non-normal-prefix "C-SPC"
       :prefix-map 'dominant-prefix-map))
 
-;;; Global keybindings:
+;;; Global keybindings
   (with-eval-after-load 'evil
     (spc-key-definer
       "TAB" 'my/toggle-buffers
@@ -115,7 +115,7 @@
       "rr"  'consult-recent-file
       "u"   'universal-argument))
 
-;;; Initialize Evil:
+;;; Initialize Evil
   ;; Allow C-u/d for page up/down
   (setq evil-want-C-u-scroll t)
   (setq evil-want-C-d-scroll t)
@@ -149,7 +149,7 @@
     (general-define-key
     "M-;" 'evilnc-comment-or-uncomment-lines))
 
-;;; Initialize `which-key` for dynamic key binding menus:
+;;; Initialize `which-key` for dynamic key binding menus
   (use-package which-key
     :init
     (setq which-key-separator " ")
@@ -157,18 +157,18 @@
     :config
     (which-key-mode))
 
-;;; Path management:
+;;; Path management
   (use-package exec-path-from-shell
     :config
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize)))
 
-;;; Restart-emacs package:
+;;; Restart-emacs package
   (use-package restart-emacs
     :config
     (general-def "C-c R" 'restart-emacs))
 
-;;; Projectile project management:
+;;; Projectile project management
   (use-package projectile
     :diminish projectile-mode
     :config
@@ -182,12 +182,12 @@
       (autoload 'projectile-project-root "projectile")
       (setq consult-project-root-function #'projectile-project-root)))
 
-;;; Dashboard on boot:
+;;; Dashboard on boot
   (use-package dashboard
     :config
     (dashboard-setup-startup-hook))
 
-;;; Window management with `ace-window`:
+;;; Window management with `ace-window`
   (use-package ace-window
     :init
     (ace-window-display-mode 1)
@@ -195,7 +195,7 @@
     (general-define-key
     "M-o" 'ace-window))
 
-;;; Doom-modeline for status bar:
+;;; Doom-modeline for status bar
   (use-package all-the-icons)
   (use-package doom-modeline
     :requires all-the-icons
@@ -207,7 +207,7 @@
       (setq column-number-mode t
 	    line-number-mode t)))
 
-;;; Selectrum, etc.:
+;;; Selectrum, etc.
   (use-package selectrum
     :config
     (selectrum-mode +1))
@@ -231,12 +231,12 @@
     ;; (setq marginalia-annotators '(marginalia-annotators-heavy marginalia-annotators-light nil))
   )
 
-;;; Version management:
+;;; Version management
   (use-package magit
     :config
     (spc-key-definer "gs" 'magit-status))
 
-;;; Structural editing with smartparens:
+;;; Structural editing with smartparens
   ;; Structural editing - For keybinding reference: https://github.com/syl20bnr/evil-lisp-state
   (use-package smartparens
     :config
@@ -288,21 +288,21 @@
       (add-hook 'cider-repl-mode-hook #'company-mode)
       (add-hook 'cider-mode-hook #'company-mode)))
 
-;;; Org-mode configuation:
+;;; Org-mode configuation
+  (setq org-directory "~/org")
+
   ;; Sets the column width to 80 columns and enables line breaking, ie. auto-fill.
   (add-hook 'org-mode-hook '(lambda () (setq fill-column 80)))
   (add-hook 'org-mode-hook 'auto-fill-mode)
 
+  ;; Indent contents along with tree/bullet depth
   (add-hook 'org-mode-hook 'org-indent-mode)
-  (use-package org-bullets
+
+  (use-package org-superstar
     :init
-    (add-hook 'org-mode-hook 'org-bullets-mode)
-    :config
-    (setq org-bullets-bullet-list '("\u200b")) ;; No bullets
-    )
+    (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
 
-
-;; YAML support:
+;;; YAML support
   (use-package yaml-mode
       :mode (("\\.\\(yml\\|yaml\\)\\'" . yaml-mode)
 	    ("Procfile\\'" . yaml-mode))
@@ -310,11 +310,11 @@
 			#'(lambda ()
 			  (define-key yaml-mode-map "\C-m" 'newline-and-indent))))
 
-;;; Ensure that emacs window is focused when switching desktops:
+;;; Ensure that emacs window is focused when switching desktops
   ;; See: https://emacs.stackexchange.com/questions/28121/osx-switching-to-virtual-desktop-doesnt-focus-emacs
   (menu-bar-mode t) 
 
-;;; Custom-set-variables - do not edit (autogenerated):
+;;; Custom-set-variables - do not edit (autogenerated)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -322,7 +322,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(org-bullets ace-window dashboard writeroom-mode which-key use-package selectrum-prescient restart-emacs projectile magit general exec-path-from-shell evil-nerd-commenter evil-lisp-state evil-collection doom-themes consult cider)))
+   '(add-node-modules-path web-mode typescript-mode org-superstar org-bullets ace-window dashboard writeroom-mode which-key use-package selectrum-prescient restart-emacs projectile magit general exec-path-from-shell evil-nerd-commenter evil-lisp-state evil-collection doom-themes consult cider)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
