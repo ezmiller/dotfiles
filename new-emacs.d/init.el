@@ -274,7 +274,24 @@
     ")" 'my-lisp/insert-sexp-after
     "(" 'my-lisp/insert-sexp-before))
 
-;;; Clojure configuration:
+;;; Javascript
+  (setq js-indent-level 2)
+  
+  ;; (use-package js2-mode
+  ;;   :defer t
+  ;;   :mode (("\\.m?js\\'"  . js2-mode)))
+  (use-package add-node-modules-path
+    :defer t
+    :hook (((js2-mode rjsx-mode) . add-node-modules-path)))
+
+  ;; rjsx-mode extends js2-mode, so it provides js2-mode plus functionality for jsx
+  (use-package rjsx-mode
+    :defer t
+    :mode ("\\.jsx?\\'" "\\.tsx?\\'")
+    :config
+    (setq js2-mode-show-parse-errors nil
+	  js2-mode-show-strict-warnings nil))
+;;; Clojure Configuration
   (show-paren-mode 1)
   (use-package clojure-mode :defer t)
   (use-package cider :defer t)
