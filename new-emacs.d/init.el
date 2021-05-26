@@ -117,7 +117,7 @@
     (spc-key-definer
       "TAB" 'my/toggle-buffers
       "pp"  'projectile-switch-project
-      "pf"  'consult-find
+      "pf"  'my/consult-find-fd
       "bb"  'consult-buffer
       "rr"  'consult-recent-file
       "u"   'universal-argument))
@@ -309,6 +309,13 @@
     (selectrum-mode +1))
   (use-package prescient :config (prescient-persist-mode +1))
   (use-package selectrum-prescient :init (selectrum-prescient-mode +1) :after selectrum)
+
+  ;; alternate to consult-find that uses fd which respects .gitignore
+  (defun my/consult-find-fd (&optional dir initial)
+    (interactive "P")
+    (let ((consult-find-command "fd --color=never --full-path ARG OPTS"))
+      (consult-find dir initial)))
+
   (use-package consult :after projectile)
 
   ;; Richer annotations using the Marginalia package
