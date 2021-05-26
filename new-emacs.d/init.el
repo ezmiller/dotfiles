@@ -408,6 +408,11 @@
     :config
     (setq js2-mode-show-parse-errors nil
 	  js2-mode-show-strict-warnings nil))
+
+  (use-package prettier-js
+    :defer t
+    :diminish prettier-js-mode
+    :hook (((js2-mode rjsx-mode) . prettier-js-mode)))
 ;;; Clojure Configuration
   (show-paren-mode 1)
   (use-package clojure-mode :defer t)
