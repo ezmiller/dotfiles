@@ -49,13 +49,6 @@
   (add-to-list 'default-frame-alist '(font . "Fira Code-16"))
   (set-face-attribute 'default t :font "Fira Code-16")
 
-;;; Theme using `doom-themes`
-  (use-package doom-themes
-    :config
-    (load-theme 'doom-molokai t)
-    ;; (load-theme 'doom-snazzy t)
-    )
-
 ;;; Global Functions
   (defun my/toggle-buffers ()
     (interactive)
