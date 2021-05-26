@@ -377,6 +377,20 @@
     ")" 'my-lisp/insert-sexp-after
     "(" 'my-lisp/insert-sexp-before))
 
+;;; Code completion
+  (use-package lsp-mode
+    :defer t
+    :diminish lsp-mode
+    :commands lsp
+    :config
+    (setq lsp-auto-configure t
+	  lsp-auto-guess-root t
+	  lsp-diagnostic-package :none))
+  (use-package company
+    :defer t
+    :init
+    (add-hook 'after-init-hook 'global-company-mode))
+
 ;;; Javascript
   (setq js-indent-level 2)
   
