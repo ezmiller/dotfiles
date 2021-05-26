@@ -79,6 +79,13 @@
     (cider-load-buffer)
     (cider-test-run-test))
 
+;;; Theme using `doom-themes`
+  (use-package doom-themes
+    :config
+    (load-theme 'doom-molokai t)
+    ;; (load-theme 'doom-snazzy t)
+    )
+
 ;;; Package management
   (require 'package)
   (setq package-enable-at-startup nil)
