@@ -433,6 +433,29 @@
     :init
     (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
 
+(use-package org-journal
+  :config
+  (setq org-journal-dir "~/org/journal/")
+  (setq org-journal-file-type 'weekly)
+  (setq org-journal-file-format "%Y-%m-%d.org")
+  (setq org-journal-time-prefix "** ")
+  (setq org-journal-date-format "%A, %B %d %Y")
+  (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"STARTED\"")
+  (setq org-journal-find-file #'find-file-other-window)
+  (defun org-journal-date-format-func (time)
+    "Custom function to insert journal date header,
+    and some custom text on a newly created journal file."
+    (when (= (buffer-size) 0)
+      (insert
+      (pcase org-journal-file-type
+	(`daily "#+TITLE: Daily Journal\n\n")
+	(`weekly (concat"#+TITLE: Weekly Journal " (format-time-string "(Wk #%V)" time) "\n\n"))
+	(`monthly "#+TITLE: Monthly Journal\n\n")
+	(`yearly "#+TITLE: Yearly Journal\n\n"))))
+    (concat org-journal-date-prefix (format-time-string "%A, %x" time)))
+  (setq org-journal-date-format 'org-journal-date-format-func)
+  (setq org-agenda-file-regexp "\\`\\([^.].*\\.org\\|[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\.org\\(\\.gpg\\)?\\)\\'"))
+
 (use-package org-roam
   :hook
   (after-init . org-roam-mode)
