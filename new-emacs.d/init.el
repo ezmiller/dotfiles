@@ -433,6 +433,29 @@
     :init
     (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
 
+(use-package org-roam
+  :hook
+  (after-init . org-roam-mode)
+  :custom
+  (org-roam-directory "~/org/notes")
+  :init
+  (progn
+    ;; Define fn to fetch list of org-roam files (using with org-ql)
+    (defun org-roam-files ()
+      (org-ql-search-directories-files :recurse "~/org/notes"))
+
+    ;; (spacemacs/declare-prefix "ar" "org-roam")
+    (spc-key-definer
+      "arl" 'org-roam
+      "arf" 'org-roam-find-file))
+  :config
+  (setq org-roam-capture-templates
+	'(("d" "default" plain (function org-roam--capture-get-point)
+	    "%?"
+	    :file-name "${slug}_%<%Y%m%d%H%M%S>"
+	    :head "#+TITLE: ${title}\n#+ROAM_TAGS:  "
+	    :unnarrowed t))))
+
 ;;; YAML support
   (use-package yaml-mode
       :mode (("\\.\\(yml\\|yaml\\)\\'" . yaml-mode)
