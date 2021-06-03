@@ -110,7 +110,7 @@
       "TAB" 'my/toggle-buffers
       "pp"  'projectile-switch-project
       "pf"  'my/consult-find-fd
-      "/"   'consult-grep
+      "/"   'consult-ripgrep
       "bb"  'consult-buffer
       "rr"  'consult-recent-file
       "u"   'universal-argument))
