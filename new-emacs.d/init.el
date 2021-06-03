@@ -421,18 +421,18 @@
       (add-hook 'cider-mode-hook #'company-mode)))
 
 ;;; Org-mode configuation
-  (setq org-directory "~/org")
+(setq org-directory "~/org")
 
-  ;; Sets the column width to 80 columns and enables line breaking, ie. auto-fill.
-  (add-hook 'org-mode-hook '(lambda () (setq fill-column 80)))
-  (add-hook 'org-mode-hook 'auto-fill-mode)
+;; Sets the column width to 80 columns and enables line breaking, ie. auto-fill.
+(add-hook 'org-mode-hook '(lambda () (setq fill-column 80)))
+(add-hook 'org-mode-hook 'auto-fill-mode)
 
-  ;; Indent contents along with tree/bullet depth
-  (add-hook 'org-mode-hook 'org-indent-mode)
+;; Indent contents along with tree/bullet depth
+(add-hook 'org-mode-hook 'org-indent-mode)
 
-  (use-package org-superstar
-    :init
-    (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
+(use-package org-superstar
+  :init
+  (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1))))
 
 (use-package org-journal
   :config
