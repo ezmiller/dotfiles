@@ -480,6 +480,16 @@
 	    :head "#+TITLE: ${title}\n#+ROAM_TAGS:  "
 	    :unnarrowed t))))
 
+(use-package org-ref
+  :config
+  (setq org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f"))
+  (setq org-ref-default-bibliography (list "~/org/sources/zotero-library.bib")
+	org-ref-bibliography-notes "~/org/sources/bibliography-notes.org"))
+
+(use-package pandoc-mode
+  :init
+  (add-hook 'pandoc-mode-hook 'pandoc-load-default-settings))
+
 ;;; YAML support
   (use-package yaml-mode
       :mode (("\\.\\(yml\\|yaml\\)\\'" . yaml-mode)
@@ -561,7 +571,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs outshine company-go add-node-modules-path web-mode typescript-mode org-superstar org-bullets ace-window dashboard writeroom-mode which-key use-package selectrum-prescient restart-emacs projectile magit general exec-path-from-shell evil-nerd-commenter evil-lisp-state evil-collection doom-themes consult cider)))
+   '(org-ref treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs outshine company-go add-node-modules-path web-mode typescript-mode org-superstar org-bullets ace-window dashboard writeroom-mode which-key use-package selectrum-prescient restart-emacs projectile magit general exec-path-from-shell evil-nerd-commenter evil-lisp-state evil-collection doom-themes consult cider)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
