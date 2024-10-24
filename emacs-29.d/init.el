@@ -856,24 +856,24 @@ same directory as the org-buffer and insert a link to this file."
             :repo "sbougerel/logseq-org-roam"
             :files ("*.el")))
 
-;; (use-package consult-org-roam
-;;   :after org-roam
-;;   :init
-;;   (require 'consult-org-roam)
-;;   (consult-org-roam-mode 1) ;; activate minor mode
-;;   :custom
-;;   (consult-org-roam-grep-func #'consult-ripgrep)
-;;   :config
-;;   (consult-customize
-;;    consult-org-roam-forward-links
-;;    :preview-key (kbd "M-.")
-;;    )
-;;   :bind
-;;   ("C-c n e" . consult-org-roam-file-find)
-;;   ("C-c n b" . consult-org-roam-backlinks)
-;;   ("C-c n B" . consult-org-roam-backlinks-recursive)
-;;   ("C-c n l" . consult-org-roam-forward-links)
-;;   ("C-c n r" . consult-org-roam-search))
+(use-package consult-org-roam
+  :after org-roam
+  :init
+  (require 'consult-org-roam)
+  (consult-org-roam-mode 1) ;; activate minor mode
+  :custom
+  (consult-org-roam-grep-func #'consult-ripgrep)
+  :config
+  (consult-customize
+   consult-org-roam-forward-links
+   :preview-key (kbd "M-.")
+   )
+  :bind
+  ("C-c n e" . consult-org-roam-file-find)
+  ("C-c n b" . consult-org-roam-backlinks)
+  ("C-c n B" . consult-org-roam-backlinks-recursive)
+  ("C-c n l" . consult-org-roam-forward-links)
+  ("C-c n r" . consult-org-roam-search))
 
 (use-package org-contrib
   :config

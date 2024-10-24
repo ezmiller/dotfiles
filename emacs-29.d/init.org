@@ -1043,26 +1043,26 @@ The setup below relies on the following configuration settings in logseq's .edn:
               :files ("*.el")))
 #+end_src
 
-*** consult-org-roam
+*** Org-roam integration with consult
 #+begin_src emacs-lisp
-  ;; (use-package consult-org-roam
-  ;;   :after org-roam
-  ;;   :init
-  ;;   (require 'consult-org-roam)
-  ;;   (consult-org-roam-mode 1) ;; activate minor mode
-  ;;   :custom
-  ;;   (consult-org-roam-grep-func #'consult-ripgrep)
-  ;;   :config
-  ;;   (consult-customize
-  ;;    consult-org-roam-forward-links
-  ;;    :preview-key (kbd "M-.")
-  ;;    )
-  ;;   :bind
-  ;;   ("C-c n e" . consult-org-roam-file-find)
-  ;;   ("C-c n b" . consult-org-roam-backlinks)
-  ;;   ("C-c n B" . consult-org-roam-backlinks-recursive)
-  ;;   ("C-c n l" . consult-org-roam-forward-links)
-  ;;   ("C-c n r" . consult-org-roam-search))
+  (use-package consult-org-roam
+    :after org-roam
+    :init
+    (require 'consult-org-roam)
+    (consult-org-roam-mode 1) ;; activate minor mode
+    :custom
+    (consult-org-roam-grep-func #'consult-ripgrep)
+    :config
+    (consult-customize
+     consult-org-roam-forward-links
+     :preview-key (kbd "M-.")
+     )
+    :bind
+    ("C-c n e" . consult-org-roam-file-find)
+    ("C-c n b" . consult-org-roam-backlinks)
+    ("C-c n B" . consult-org-roam-backlinks-recursive)
+    ("C-c n l" . consult-org-roam-forward-links)
+    ("C-c n r" . consult-org-roam-search))
 #+end_src
 
 ** Org  Contrib Additions
