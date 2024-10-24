@@ -35,6 +35,7 @@
  ("golden-ratio.el" . "375c9f287dfad68829582c1e0a67d0c18119dab9")
  ("goto-chg" . "72f556524b88e9d30dc7fc5b0dc32078c166fda7")
  ("gptel" . "2b9398a7b3bb2a66f52a8d0b1fdc3f311b2c1a3d")
+ ("graphql-mode" . "c3baca92809e6f6c8dd2596a413b277f3b0160ea")
  ("ht.el" . "1c49aad1c820c86f7ee35bf9fff8429502f60fef")
  ("hydra" . "317e1de33086637579a7aeb60f77ed0405bf359b")
  ("jest-test-mode" . "a397507d8bb41e4aa6b97994f1d7512e78d3dee3")
