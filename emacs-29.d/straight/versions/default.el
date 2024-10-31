@@ -53,7 +53,7 @@
  ("mixed-pitch" . "519e05f74825abf04b7d2e0e38ec040d013a125a")
  ("nerd-icons.el" . "c3d641d8e14bd11b5f98372da34ee5313636e363")
  ("nongnu-elpa" . "beef43a61776ff28e16e2f47de045c73a693b3ac")
- ("org" . "ab730145ba67596151f60cdc30a7963520832d7d")
+ ("org" . "0d8737b037a1a53efcd0d30cfaed8c3faaccafd8")
  ("org-contrib" . "0e65be83e4b41c17a5b9096c9055c1601b26a23d")
  ("org-journal" . "17b34ce8df9649a73b715c13698220bde1628668")
  ("org-roam" . "2a630476b3d49d7106f582e7f62b515c62430714")
