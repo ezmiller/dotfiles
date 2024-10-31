@@ -958,8 +958,10 @@ We'll use scss-mode for both CSS and SCSS files.
 ** Org Journal
 #+begin_src emacs-lisp
   (use-package org-journal
+    :after (org-roam)
     :config
-    (setq org-journal-dir "~/org/techwork/journals/")
+    ;; set org-journal-dir by concatting org-roam-directory with "journals"
+    (setq org-journal-dir (concat org-roam-directory "journals/"))
     (setq org-journal-file-type 'daily)
     (setq org-journal-file-format "%Y-%m-%d.org")
     (setq org-journal-time-prefix "* ")
@@ -1017,6 +1019,10 @@ The setup below relies on the following configuration settings in logseq's .edn:
      ("C-c n c" . org-roam-capture)
      ("C-c n t" . org-roam-dailies-find-today))
     :init
+    ;; my setup now is that i'm using multiple notes folders
+    ;; the org-roam-directory and other org-roam settings are
+    ;; set locally by .dir-locals.el files. But we'll start here
+    ;; with a "default" on load setting for org-roam-directory.
     (setq org-roam-directory "~/org/techwork/")
     (setq org-roam-dailies-directory "journals/")
     :config
