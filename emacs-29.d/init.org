@@ -28,7 +28,6 @@
   (setq sentence-end-double-space nil)
   (setq default-fill-column 80)
   (setq initial-scratch-message "")
-  (setq-default mode-line-format nil)
   (setq goto-address-mode t) ;; clickable links
   (electric-pair-mode 1)
 
@@ -201,8 +200,7 @@
   ;; Enable the www ligature in every possible major mode
   (global-ligature-mode 't))
 #+end_src
-
-** Theming
+** Modeline
 #+begin_src emacs-lisp
   ;; Doom-modeline for status bar
   (use-package nerd-icons)
@@ -215,13 +213,11 @@
       ;;(setq doom-modeline-height 15)
       (setq column-number-mode t
             line-number-mode t)))
+#+end_src
+** Theming
+Using modus theme that is integrated into emacs.
 
-
-  ;; disabling this because I'm experimenting with modus-vivendi
-  ;; (use-package doom-themes)
-
-  ;; modus-vivendi
-  ;; customization options: https://protesilaos.com/emacs/modus-themes#h:bf1c82f2-46c7-4eb2-ad00-dd11fdd8b53f
+#+begin_src emacs-lisp
   (require-theme 'modus-themes)
   (setq modus-themes-disable-other-themes t
         modus-themes-mode-line '(accented borderless)
