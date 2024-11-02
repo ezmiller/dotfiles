@@ -130,10 +130,9 @@ same directory as the org-buffer and insert a link to this file."
 ;; Font needs to be installed in the Mac Font Book
 
 (when (display-graphic-p)
-  (set-face-attribute 'default nil :family "M Plus 1 Code" :height 160)
-  (add-to-list 'default-frame-alist '(font . "M Plus 1 Code"))
-  (set-face-attribute 'variable-pitch nil :family "Concourse T3" :height 1.1)
-  (set-face-attribute 'fixed-pitch nil :family "Sarasa Term Slab J" :height 150))
+  (set-face-attribute 'default nil :family "M Plus 1 Code" :height 170)
+  (set-face-attribute 'variable-pitch nil :family "Concourse T3" :height 1.2)
+  (set-face-attribute 'fixed-pitch nil :family "Sarasa Term Slab J" :height 170))
 
 (use-package modus-themes
   :custom
@@ -699,33 +698,11 @@ same directory as the org-buffer and insert a link to this file."
 
 (with-eval-after-load 'modus-themes
   (setq modus-themes-scale-headings t)
-  (setq modus-themes-headings '((1 . (rainbow overline background 1.4))
-				(2 . (rainbow background 1.3))
-				(3 . (rainbow bold 1.2))
-				(4 . (semilight 1.1))))
+  (setq modus-themes-headings '((1 . (rainbow overline background 1.3))
+				(2 . (rainbow background 1.2))
+				(3 . (rainbow bold 1.1))
+				(4 . (semilight 1.0))))
   (modus-themes-load-theme 'modus-vivendi-tinted))
-
-(use-package org-modern
-  :hook
-  (org-mode . org-modern-mode)
-  :custom
-  (org-modern-table nil)
-  (org-modern-keyword nil)
-  (org-modern-timestamp nil)
-  (org-modern-priority nil)
-  (org-modern-checkbox nil)
-  (org-modern-tag nil)
-  (org-modern-block-name nil)
-  (org-modern-keyword nil)
-  (org-modern-footnote nil)
-  (org-modern-internal-target nil)
-  (org-modern-radio-target nil)
-  (org-modern-statistics nil))
-
-(use-package mixed-pitch
-  :hook
-  ;; If you want it in all text modes:
-  (text-mode . mixed-pitch-mode))
 
 ;; Setup status tags
 (setq org-todo-keywords
