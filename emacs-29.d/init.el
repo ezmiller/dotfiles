@@ -40,31 +40,31 @@
 
 (setenv "GITHUB_PKG_AUTH_TOKEN" secret/github-pkg-auth-token)
 
-(setq inhibit-startup-message t)
-(setq use-short-answers t)
-
+;; Minimal UI
 (scroll-bar-mode -1) ;; Disable visible scrollbar
 (tool-bar-mode -1) ;; Disable the toolbar 
 (tooltip-mode -1) ;; Disable tool tips
+
+;; Ensure that emacs window is focused when switching desktops
+;; See: https://emacs.stackexchange.com/questions/28121/osx-switching-to-virtual-desktop-doesnt-focus-emacs
 (menu-bar-mode -1) ;; Disable menus
 
-(set-fringe-mode 10)
-
-(set-face-attribute 'default nil :font "Fira Code Retina" :height 130)
-
-(load-theme 'tango-dark)
+;; Make links clickable in comments
+(goto-address-mode 1)
 
 (setq user-full-name "Ethan Miller")
 (setq xterm-extra-capabilities nil)
 (setq delete-old-versions -1)
-(setq inhibit-startup-screen t)
 (setq ring-bell-function 'ignore)
 (setq coding-system-for-read 'utf-8)
 (setq coding-system-for-write 'utf-8)
 (setq sentence-end-double-space nil)
 (setq default-fill-column 80)
-(setq initial-scratch-message "")
-(setq goto-address-mode t) ;; clickable links
+(setq inhibit-startup-message t)
+(setq inhibit-startup-screen t)
+(setq use-short-answers t)
+
+;; Enables minor mode that adds matching delimiters
 (electric-pair-mode 1)
 
 ;; line numbers
@@ -82,26 +82,6 @@
   (setq global-auto-revert-non-file-buffers t)
   (setq auto-revert-verbose nil)
   (global-auto-revert-mode +1))
-
-;; Minimal UI
-(scroll-bar-mode -2)
-(tool-bar-mode   -1)
-(tooltip-mode    -1)
-
-;; Line spacing
-(setq line-spacing 0.1)
-
-;; Ensure that emacs window is focused when switching desktops
-;; See: https://emacs.stackexchange.com/questions/28121/osx-switching-to-virtual-desktop-doesnt-focus-emacs
-(menu-bar-mode -1) 
-
-;; Make links clickable in comments
-(goto-address-mode 1)
-
-;; Prevent scratch window from opening on startup
-(add-hook 'emacs-startup-hook (lambda ()
-                                (when (get-buffer-window "*scratch*")
-                                    (delete-windows-on "*scratch*"))))
 
 (defun my/toggle-buffers ()
   (interactive)
@@ -172,30 +152,45 @@ same directory as the org-buffer and insert a link to this file."
   ;; Enable the www ligature in every possible major mode
   (global-ligature-mode 't))
 
-(use-package nerd-icons)
-(use-package doom-modeline
-  :after (nerd-icons)
-  :init
-  (doom-modeline-mode 1)
+(use-package modus-themes
+  :custom
+  (modus-themes-disable-other-themes t)
+  (modus-themes-mode-line '(accented borderless))
+  ;;(modus-themes-headings '((t regular)))
+  (modus-themes-italic-constructs nil)
+  (modus-themes-bold-constructs nil)
+  (modus-themes-mixed-fonts t)
+  (modus-themes-paren-match '(bold intense))
   :config
-  (progn
-    ;;(setq doom-modeline-height 15)
-    (setq column-number-mode t
-          line-number-mode t)))
-
-(require-theme 'modus-themes)
-(setq modus-themes-disable-other-themes t
-      modus-themes-mode-line '(accented borderless)
-      modus-themes-mixed-fonts t
-      modus-themes-region '(accented bg-only)
-      modus-themes-italic-constructs t
-      modus-themes-bold-constructs t
-      modus-themes-paren-match '(bold intense))
-(load-theme 'modus-vivendi t)
+  (modus-themes-load-theme 'modus-vivendi-tinted))
 
 (use-package spacious-padding
+  :custom
+  (spacious-padding-subtle-mode-line t)
   :init
   (spacious-padding-mode 1))
+
+;; (use-package nerd-icons)
+;; (use-package doom-modeline
+;;   :after (nerd-icons)
+;;   :init
+;;   (doom-modeline-mode 1)
+;;   :config
+;;   (progn
+;;     ;;(setq doom-modeline-height 15)
+;;     (setq column-number-mode t
+;;           line-number-mode t)))
+(use-package minions
+  :custom
+  (minions-mode-line-delimiters '("" . ""))
+  (minions-mode-line-lighter "|")
+  ;; Other modes related to information displayed on mode-line
+  (column-number-mode +1)
+  (display-time-mode +1)
+  (display-time-default-load-average nil)
+  (display-time-format "%Y-%m-%d %H:%M")
+  :init
+  (minions-mode 1))
 
 ;;; Initialize `general` for keybindings
 (use-package general
@@ -706,73 +701,44 @@ same directory as the org-buffer and insert a link to this file."
 
 (setq org-directory "~/org")
 (setq org-log-into-drawer t)
-(setq org-export-backends
-      '(md html odt latex))
-
-;; Shortcut to org dir files
-(defun my/my-org-finder ()
-  (interactive)
-  (ido-find-file-in-dir org-directory))
-
-;; Sets the column width to 80 columns and enables line breaking, ie. auto-fill.
-(add-hook 'org-mode-hook #'(lambda () (setq fill-column 80)))
-(add-hook 'org-mode-hook 'auto-fill-mode)
-
-(defun my/org-mode-setup ()
-  (org-indent-mode)
-  (variable-pitch-mode 1)
-  (auto-fill-mode 0)
-  (visual-line-mode 1)
-  (setq evil-auto-indent nil)
-  (setq org-list-indent-offset 2))
+(setq org-export-backends '(md html odt latex))
 
 (use-package org
-  :hook (org-mode . my/org-mode-setup)
+  :custom
+  (org-auto-align-tags nil)
+  (org-tags-column 0)
+  (org-catch-invisible-edits 'show-and-error)
+  (org-special-ctrl-a/e t)
+  (org-insert-heading-respect-content t)
+  ;; Org styling, hide markup etc.
+  (org-hide-emphasis-markers t)
+  (org-pretty-entities t)
   :config
-  (dolist (face '((org-document-title . 1.4)
-  		  (org-level-1 . 1.3)
-  		  (org-level-2 . 1.2)
-  		  (org-level-3 . 1.1)
-  		  (org-level-4 . 1.1)
-  		  (org-level-5 . 1.2)
-  		  (org-level-6 . 1.2)
-  		  (org-level-7 . 1.2)
-  		  (org-level-8 . 1.2)))
-    (set-face-attribute (car face) nil
-			 :font "Roboto Slab"
-			 :weight 'normal
-			 :height (cdr face)
-			 ))
+  ;; Ellipsis styling
+  (setq org-ellipsis "…")
+  (set-face-attribute 'org-ellipsis nil :inherit 'default :box nil))
 
-  ;; replace ellipsis for closed entries
-  (set-display-table-slot standard-display-table
-  			'selective-display (string-to-vector "..."))
+(use-package org-modern
+  :hook
+  (org-mode . org-modern-mode)
+  :custom
+  (org-modern-table nil)
+  (org-modern-keyword nil)
+  (org-modern-timestamp nil)
+  (org-modern-priority nil)
+  (org-modern-checkbox nil)
+  (org-modern-tag nil)
+  (org-modern-block-name nil)
+  (org-modern-keyword nil)
+  (org-modern-footnote nil)
+  (org-modern-internal-target nil)
+  (org-modern-radio-target nil)
+  (org-modern-statistics nil))
 
-  (setq org-ellipsis " ▾"
-  	org-hide-emphasis-markers t ;; hides the special markup symbols arond text
-  	org-startup-indented t
-  	org-startup-folded 'overview ;; will fold most items
-  	org-src-fontify-natively t
-          org-edit-src-content-indentation 2
-  	org-fontify-quote-and-verse-blocks t
-  	org-fontify-whole-heading-line t))
-
-;; helps with org-mode tables that get messed up sometimes
 (use-package mixed-pitch
   :hook
   ;; If you want it in all text modes:
   (text-mode . mixed-pitch-mode))
-
-;; this is a nice replacement of org-bullets
-(use-package org-superstar
-  :after (org)
-  :init
-  (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
-  :config
-  (setq org-superstar-remove-leading-stars t
-        org-superstar-headline-bullets-list '("◉" "○" "●" "○" "●" "○" "●")
-	;; org-superstar-headline-bullets-list '(" ")
-	))
 
 ;; Setup status tags
 (setq org-todo-keywords
