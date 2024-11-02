@@ -969,7 +969,7 @@ The theme must be reloaded after setting the values.
   	 (`weekly (concat"#+TITLE: Weekly Journal " (format-time-string "(Wk #%V)" time) "\n\n"))
   	 (`monthly "#+TITLE: Monthly Journal\n\n")
   	 (`yearly "#+TITLE: Yearly Journal\n\n"))))
-      (concat org-journal-date-prefix (format-time-string "%x" time)))
+      (concat (format-time-string "%x" time)))
     (setq org-journal-date-format 'org-journal-date-format-func)
     (setq org-agenda-file-regexp "\\`\\([^.].*\\.org\\|[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\.org\\(\\.gpg\\)?\\)\\'")
 

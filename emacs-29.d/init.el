@@ -143,7 +143,6 @@ same directory as the org-buffer and insert a link to this file."
   (modus-themes-paren-match '(bold intense))
   (modus-themes-use-slanted-constructs t)
   (modus-themes-mixed-fonts t)
-  (modus-themes-variable-pitch-ui t)
   :config
   (modus-themes-load-theme 'modus-vivendi-tinted))
 
@@ -744,7 +743,7 @@ same directory as the org-buffer and insert a link to this file."
 	 (`weekly (concat"#+TITLE: Weekly Journal " (format-time-string "(Wk #%V)" time) "\n\n"))
 	 (`monthly "#+TITLE: Monthly Journal\n\n")
 	 (`yearly "#+TITLE: Yearly Journal\n\n"))))
-    (concat org-journal-date-prefix (format-time-string "%x" time)))
+    (concat (format-time-string "%x" time)))
   (setq org-journal-date-format 'org-journal-date-format-func)
   (setq org-agenda-file-regexp "\\`\\([^.].*\\.org\\|[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\.org\\(\\.gpg\\)?\\)\\'")
 
@@ -820,44 +819,3 @@ same directory as the org-buffer and insert a link to this file."
 (use-package gptel
   :config
   (setq gptel-api-key secret/openai-api-key))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(org-fold-catch-invisible-edits 'error nil nil "Customized with use-package org")
- '(safe-local-variable-values
-   '((eval let
-	   ((current-dir
-	     (expand-file-name
-	      (locate-dominating-file default-directory ".dir-locals.el"))))
-	   (setq org-roam-directory current-dir)
-	   (setq org-roam-db-location
-		 (concat current-dir "org-roam.db"))
-	   (setq org-journal-dir
-		 (concat current-dir "journals/"))
-	   (org-roam-db-autosync-mode)))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(fringe ((t :background "#0d0e1c")))
- '(header-line ((t :box (:line-width 4 :color "#1d2235" :style nil))))
- '(header-line-highlight ((t :box (:color "#ffffff"))))
- '(keycast-key ((t)))
- '(line-number ((t :background "#0d0e1c")))
- '(mode-line ((t :background "#0d0e1c" :overline "#ffffff" :box (:line-width 6 :color "#0d0e1c" :style nil))))
- '(mode-line-active ((t :background "#0d0e1c" :overline "#ffffff" :box (:line-width 6 :color "#0d0e1c" :style nil))))
- '(mode-line-highlight ((t :box (:color "#ffffff"))))
- '(mode-line-inactive ((t :background "#0d0e1c" :overline "#969696" :box (:line-width 6 :color "#0d0e1c" :style nil))))
- '(tab-bar-tab ((t :box (:line-width 4 :color "#0d0e1c" :style nil))))
- '(tab-bar-tab-inactive ((t :box (:line-width 4 :color "#4a4f6a" :style nil))))
- '(tab-line-tab ((t)))
- '(tab-line-tab-active ((t)))
- '(tab-line-tab-current ((t)))
- '(tab-line-tab-inactive ((t)))
- '(vertical-border ((t :background "#0d0e1c" :foreground "#0d0e1c")))
- '(window-divider ((t (:background "#0d0e1c" :foreground "#0d0e1c"))))
- '(window-divider-first-pixel ((t (:background "#0d0e1c" :foreground "#0d0e1c"))))
- '(window-divider-last-pixel ((t (:background "#0d0e1c" :foreground "#0d0e1c")))))
