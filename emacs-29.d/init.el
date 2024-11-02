@@ -127,36 +127,18 @@ same directory as the org-buffer and insert a link to this file."
   (if (file-exists-p filename)
       (insert (concat "[[file:" filename "]]"))))
 
-;; Font needs to be installed in the Mac Font Book or
-;; Fira Code fonts installed with brew:
-;;   https://github.com/tonsky/FiraCode/wiki/Installing.
-(add-to-list 'default-frame-alist '(font . "Fira Code-16"))
-(set-face-attribute 'default t :font "Fira Code-16")
+;; Font needs to be installed in the Mac Font Book
 
-(use-package ligature
-  :config
-  (ligature-set-ligatures 't '("www"))
-
-  ;; Enable ligatures in programming modes                                                           
-  (ligature-set-ligatures 'prog-mode '("www" "**" "***" "**/" "*>" "*/" "\\\\" "\\\\\\" "{-" "::"
-                                      ":::" ":=" "!!" "!=" "!==" "-}" "----" "-->" "->" "->>"
-                                      "-<" "-<<" "-~" "#{" "#[" "##" "###" "####" "#(" "#?" "#_"
-                                      "#_(" ".-" ".=" ".." "..<" "..." "?=" "??" ";;" "/*" "/**"
-                                      "/=" "/==" "/>" "//" "///" "&&" "||" "||=" "|=" "|>" "^=" "$>"
-                                      "++" "+++" "+>" "=:=" "==" "===" "==>" "=>" "=>>" "<="
-                                      "=<<" "=/=" ">-" ">=" ">=>" ">>" ">>-" ">>=" ">>>" "<*"
-                                      "<*>" "<|" "<|>" "<$" "<$>" "<!--" "<-" "<--" "<->" "<+"
-                                      "<+>" "<=" "<==" "<=>" "<=<" "<>" "<<" "<<-" "<<=" "<<<"
-                                      "<~" "<~~" "</" "</>" "~@" "~-" "~>" "~~" "~~>" "%%"))
-
-  ;; Enable the www ligature in every possible major mode
-  (global-ligature-mode 't))
+(when (display-graphic-p)
+  (set-face-attribute 'default nil :family "M Plus 1 Code" :height 160)
+  (add-to-list 'default-frame-alist '(font . "M Plus 1 Code"))
+  (set-face-attribute 'variable-pitch nil :family "Concourse T3" :height 1.1)
+  (set-face-attribute 'fixed-pitch nil :family "Sarasa Term Slab J" :height 150))
 
 (use-package modus-themes
   :custom
   (modus-themes-disable-other-themes t)
   (modus-themes-mode-line '(accented borderless))
-  ;;(modus-themes-headings '((t regular)))
   (modus-themes-italic-constructs nil)
   (modus-themes-bold-constructs nil)
   (modus-themes-mixed-fonts t)
@@ -705,18 +687,21 @@ same directory as the org-buffer and insert a link to this file."
 
 (use-package org
   :custom
-  (org-auto-align-tags nil)
-  (org-tags-column 0)
-  (org-catch-invisible-edits 'show-and-error)
-  (org-special-ctrl-a/e t)
-  (org-insert-heading-respect-content t)
+  (org-startup-indented t)
   ;; Org styling, hide markup etc.
-  (org-hide-emphasis-markers t)
   (org-pretty-entities t)
   :config
   ;; Ellipsis styling
   (setq org-ellipsis "…")
   (set-face-attribute 'org-ellipsis nil :inherit 'default :box nil))
+
+(with-eval-after-load 'modus-themes
+  (setq modus-themes-scale-headings t)
+  (setq modus-themes-headings '((1 . (rainbow overline background 1.4))
+				(2 . (rainbow background 1.3))
+				(3 . (rainbow bold 1.2))
+				(4 . (semilight 1.1))))
+  (modus-themes-load-theme 'modus-vivendi-tinted))
 
 (use-package org-modern
   :hook
