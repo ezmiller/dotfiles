@@ -6,6 +6,7 @@
 
 #+begin_src emacs-lisp
   (setq inhibit-startup-message t)
+  (setq use-short-answers t)
 
   (scroll-bar-mode -1) ;; Disable visible scrollbar
   (tool-bar-mode -1) ;; Disable the toolbar 
@@ -202,7 +203,6 @@
 #+end_src
 ** Modeline
 #+begin_src emacs-lisp
-  ;; Doom-modeline for status bar
   (use-package nerd-icons)
   (use-package doom-modeline
     :after (nerd-icons)
