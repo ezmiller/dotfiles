@@ -2,6 +2,66 @@
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el
 #+STARTUP: overview
 
+* Early Setup
+** Package Manager Setup
+
+#+begin_src emacs-lisp
+;; Bootstrap  the 'straight' package manager
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 6))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+;; Now use-package that can work with straight
+(straight-use-package 'use-package)
+
+(eval-after-load 'use-package
+  (setq
+   ;; use-package should use straight unless otherwise specified
+   straight-use-package-by-default t
+   ;; ensure everything is installed, use `:ensure nil` to override
+   use-package-always-ensure t))
+#+end_src
+
+** Path managment
+#+begin_src emacs-lisp
+(use-package exec-path-from-shell
+  :config
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
+#+end_src
+** Load secrets
+#+begin_src emacs-lisp
+;;; Secrets Setup
+(setq epg-pinentry-mode 'loopback) ;; this line I think allows prompt for passphrase in minibuffer
+(require 'epa-file)
+(setq auth-source-debug t)
+(load-library "~/secrets.el.gpg")
+#+end_src
+
+** Silence verbose errors
+This silences errors that are generated as a result of native compilation that
+aren't relevant for the user here. See [[https://github.com/protesilaos/dotfiles/blob/master/emacs/.emacs.d/prot-emacs.org#43-the-initel-tweaks-to-make-native-compilation-silent][explanation from protesilaos]].
+
+#+begin_src emacs-lisp
+  ;; Make native compilation silent and prune its cache.
+  (when (native-comp-available-p)
+    (setq native-comp-async-report-warnings-errors 'silent) ; Emacs 28 with native compilation
+    (setq native-compile-prune-cache t)) ; Emacs 29
+#+end_src
+
+** Set environment variables 
+#+begin_src emacs-lisp
+(setenv "GITHUB_PKG_AUTH_TOKEN" secret/github-pkg-auth-token)
+#+end_src
 * Basic UI Configuration
 
 #+begin_src emacs-lisp
@@ -69,56 +129,7 @@
                                       (delete-windows-on "*scratch*"))))
   #+end_src
 
-* Package Manager Setup
-
-#+begin_src emacs-lisp
-;; Bootstrap  the 'straight' package manager
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
-
-;; Now use-package that can work with straight
-(straight-use-package 'use-package)
-
-(eval-after-load 'use-package
-  (setq
-   ;; use-package should use straight unless otherwise specified
-   straight-use-package-by-default t
-   ;; ensure everything is installed, use `:ensure nil` to override
-   use-package-always-ensure t))
-#+end_src
-
-* Setup environment
-** Path managment
-#+begin_src emacs-lisp
-(use-package exec-path-from-shell
-  :config
-  (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize)))
-#+end_src
-** Load secrets
-#+begin_src emacs-lisp
-;;; Secrets Setup
-(setq epg-pinentry-mode 'loopback) ;; this line I think allows prompt for passphrase in minibuffer
-(require 'epa-file)
-(setq auth-source-debug t)
-(load-library "~/secrets.el.gpg")
-#+end_src
-
-** Set environment variables 
-#+begin_src emacs-lisp
-(setenv "GITHUB_PKG_AUTH_TOKEN" secret/github-pkg-auth-token)
-#+end_src
-** Global Custom Functions
+* Global Custom Functions
 *** Toggle Buffers 
 #+begin_src emacs-lisp
   (defun my/toggle-buffers ()
@@ -172,7 +183,6 @@
     (if (file-exists-p filename)
         (insert (concat "[[file:" filename "]]"))))
 #+end_src
-
 * Advanced UI Setup
 ** Fonts Setup
 #+begin_src emacs-lisp
@@ -214,7 +224,7 @@
       (setq column-number-mode t
             line-number-mode t)))
 #+end_src
-** Theming
+** Theme
 Using modus theme that is integrated into emacs.
 
 #+begin_src emacs-lisp
@@ -227,6 +237,13 @@ Using modus theme that is integrated into emacs.
         modus-themes-bold-constructs t
         modus-themes-paren-match '(bold intense))
   (load-theme 'modus-vivendi t)
+#+end_src
+
+Also spacious padding
+#+begin_src emacs-lisp
+  (use-package spacious-padding
+    :init
+    (spacious-padding-mode 1))
 #+end_src
 
 ** Keybindings
@@ -858,9 +875,6 @@ We'll use scss-mode for both CSS and SCSS files.
     (interactive)
     (ido-find-file-in-dir org-directory))
 
-  ;; ignore journal files in recent files
-  ;; (setq recentf-exclude '("/org/journal"))
-
   ;; Sets the column width to 80 columns and enables line breaking, ie. auto-fill.
   (add-hook 'org-mode-hook #'(lambda () (setq fill-column 80)))
   (add-hook 'org-mode-hook 'auto-fill-mode)
@@ -910,9 +924,6 @@ We'll use scss-mode for both CSS and SCSS files.
     ;; If you want it in all text modes:
     (text-mode . mixed-pitch-mode))
 #+end_src
-
-#+RESULTS:
-| mixed-pitch-mode | text-mode-hook-identify |
 
 ** Bullets
 #+begin_src emacs-lisp
