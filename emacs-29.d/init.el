@@ -687,9 +687,11 @@ same directory as the org-buffer and insert a link to this file."
 
 (use-package org
   :custom
-  (org-startup-indented t)
-  ;; Org styling, hide markup etc.
-  (org-pretty-entities t)
+  (org-startup-indented t) ;; enables indent mode
+  (org-catch-invisible-edits 'error) ;; errors if trying to add character to invisible region
+  (org-tags-column 0) ;; tags immediately after header text
+  (org-auto-align-tags nil) ;; do not align tags between header
+  (org-pretty-entities t) ;; use UTF-8 characters
   :config
   ;; Ellipsis styling
   (setq org-ellipsis "…")
