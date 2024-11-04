@@ -705,6 +705,13 @@ same directory as the org-buffer and insert a link to this file."
 				(4 . (semilight 1.0))))
   (modus-themes-load-theme 'modus-vivendi-tinted))
 
+(use-package olivetti
+  :hook
+  (org-mode . olivetti-mode)
+  :custom
+  (olivetti-body-width 0.75)
+(olivetti-style 'fancy))
+
 ;; Setup status tags
 (setq org-todo-keywords
       '((sequence "NEXT(n)" "TODO(t)" "STARTED(s)" "REVIEW(r)" "|" "BLOCKED(b!)" "DONE(d!)" "CANCELED(c!)")))
@@ -819,3 +826,22 @@ same directory as the org-buffer and insert a link to this file."
 (use-package gptel
   :config
   (setq gptel-api-key secret/openai-api-key))
+
+;; This registers an autoloaded command for pdf-view-mode, defers
+;; loading of pdf-tools, and runs pdf-view-mode if the beginning of a
+;; buffer matches the string "%PDF".
+(use-package pdf-tools
+  :load-path "site-lisp/pdf-tools/lisp"
+  :magic ("%PDF" . pdf-view-mode)
+  :config
+  (pdf-tools-install :no-query))
+
+(use-package denote
+  :custom
+  (denote-directory "~/Documents/notes")
+  :config
+  (defun my/denote-rename-file-date ()
+    (declare (interactive-only t))
+    (interactive)
+    (let ((denote-prompts (denote-add-prompts '(date))))
+      (call-interactively #'denote-rename-file))))

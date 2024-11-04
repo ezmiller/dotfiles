@@ -923,6 +923,17 @@ The theme must be reloaded after setting the values.
     (org-modern-radio-target nil)
     (org-modern-statistics nil))
 #+end_src
+
+** Olivetti writing mode
+#+begin_src emacs-lisp
+  (use-package olivetti
+    :hook
+    (org-mode . olivetti-mode)
+    :custom
+    (olivetti-body-width 0.75)
+  (olivetti-style 'fancy))
+#+end_src
+
 ** Todo Setup
 #+begin_src emacs-lisp
   ;; Setup status tags
@@ -1076,4 +1087,27 @@ The setup below relies on the following configuration settings in logseq's .edn:
   (use-package gptel
     :config
     (setq gptel-api-key secret/openai-api-key))
+#+end_src
+** PDF Tools
+#+begin_src emacs-lisp
+  ;; This registers an autoloaded command for pdf-view-mode, defers
+  ;; loading of pdf-tools, and runs pdf-view-mode if the beginning of a
+  ;; buffer matches the string "%PDF".
+  (use-package pdf-tools
+    :load-path "site-lisp/pdf-tools/lisp"
+    :magic ("%PDF" . pdf-view-mode)
+    :config
+    (pdf-tools-install :no-query))
+#+end_src
+** Denote
+#+begin_src emacs-lisp
+  (use-package denote
+    :custom
+    (denote-directory "~/Documents/notes")
+    :config
+    (defun my/denote-rename-file-date ()
+      (declare (interactive-only t))
+      (interactive)
+      (let ((denote-prompts (denote-add-prompts '(date))))
+        (call-interactively #'denote-rename-file))))
 #+end_src
