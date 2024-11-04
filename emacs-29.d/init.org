@@ -1,3 +1,4 @@
+
 #+TITLE: Emacs Config
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el
 #+STARTUP: overview
@@ -40,11 +41,14 @@
 #+end_src
 ** Load secrets
 #+begin_src emacs-lisp
-;;; Secrets Setup
-(setq epg-pinentry-mode 'loopback) ;; this line I think allows prompt for passphrase in minibuffer
-(require 'epa-file)
-(setq auth-source-debug t)
-(load-library "~/secrets.el.gpg")
+  ;;; Secrets Setup - skip if no ~/secrets.el.gpg file instead warn
+  (if (file-exists-p "~/secrets.el.gpg")
+      (progn
+        (setq epg-pinentry-mode 'loopback) ;; this line I think allows prompt for passphrase in minibuffer
+        (require 'epa-file)
+        (setq auth-source-debug t)
+        (load-library "~/secrets.el.gpg"))
+    (warn "No ~/secrets.el.gpg file found, skipping secrets setup"))
 #+end_src
 
 ** Silence verbose errors
@@ -60,7 +64,8 @@ aren't relevant for the user here. See [[https://github.com/protesilaos/dotfiles
 
 ** Set environment variables 
 #+begin_src emacs-lisp
-(setenv "GITHUB_PKG_AUTH_TOKEN" secret/github-pkg-auth-token)
+(if (boundp 'secret/github-pkg-auth-token)
+  (setenv "GITHUB_PKG_AUTH_TOKEN" secret/github-pkg-auth-token))
 #+end_src
 * Basic UI Configuration
 

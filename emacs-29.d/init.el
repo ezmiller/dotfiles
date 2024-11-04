@@ -27,18 +27,22 @@
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize)))
 
-;;; Secrets Setup
-(setq epg-pinentry-mode 'loopback) ;; this line I think allows prompt for passphrase in minibuffer
-(require 'epa-file)
-(setq auth-source-debug t)
-(load-library "~/secrets.el.gpg")
+;;; Secrets Setup - skip if no ~/secrets.el.gpg file instead warn
+(if (file-exists-p "~/secrets.el.gpg")
+    (progn
+      (setq epg-pinentry-mode 'loopback) ;; this line I think allows prompt for passphrase in minibuffer
+      (require 'epa-file)
+      (setq auth-source-debug t)
+      (load-library "~/secrets.el.gpg"))
+  (warn "No ~/secrets.el.gpg file found, skipping secrets setup"))
 
 ;; Make native compilation silent and prune its cache.
 (when (native-comp-available-p)
   (setq native-comp-async-report-warnings-errors 'silent) ; Emacs 28 with native compilation
   (setq native-compile-prune-cache t)) ; Emacs 29
 
-(setenv "GITHUB_PKG_AUTH_TOKEN" secret/github-pkg-auth-token)
+(if (boundp 'secret/github-pkg-auth-token)
+  (setenv "GITHUB_PKG_AUTH_TOKEN" secret/github-pkg-auth-token))
 
 ;; Minimal UI
 (scroll-bar-mode -1) ;; Disable visible scrollbar
@@ -70,9 +74,9 @@
 ;; line numbers
 (global-display-line-numbers-mode t)
 (dolist (mode '(org-mode-hook
-		  term-mode-hook
-		  eshell-mode-hook
-		  treemacs-mode-hook))
+  		term-mode-hook
+  		eshell-mode-hook
+  		treemacs-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
 (use-package autorevert
@@ -489,7 +493,7 @@ same directory as the org-buffer and insert a link to this file."
       (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
       (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
       (clojure "https://github.com/sogaiu/tree-sitter-clojure" "master" "src")
-	  (yaml "https://github.com/ikatyang/tree-sitter-yaml" "master" "src")
+    (yaml "https://github.com/ikatyang/tree-sitter-yaml" "master" "src")
       (json "https://github.com/tree-sitter/tree-sitter-json" "master" "src")))
   (setq major-mode-remap-alist
     '((js2-mode . js-ts-mode)
@@ -591,9 +595,9 @@ same directory as the org-buffer and insert a link to this file."
   :mode ("\\.jsx?\\'" "\\.tsx?\\'" "\\.m?js\\'")
   :hook (((js2-mode
            rjsx-mode
-	   js-ts-mode
-	   typescript-ts-mode
-	   tsx-ts-mode
+  	 js-ts-mode
+  	 typescript-ts-mode
+  	 tsx-ts-mode
            ) . lsp-deferred)) ;; enable lsp-mode
   :config
   (setq lsp-auto-guess-root t)
@@ -700,9 +704,9 @@ same directory as the org-buffer and insert a link to this file."
 (with-eval-after-load 'modus-themes
   (setq modus-themes-scale-headings t)
   (setq modus-themes-headings '((1 . (rainbow overline background 1.3))
-				(2 . (rainbow background 1.2))
-				(3 . (rainbow bold 1.1))
-				(4 . (semilight 1.0))))
+  			      (2 . (rainbow background 1.2))
+  			      (3 . (rainbow bold 1.1))
+  			      (4 . (semilight 1.0))))
   (modus-themes-load-theme 'modus-vivendi-tinted))
 
 (use-package olivetti
@@ -718,11 +722,11 @@ same directory as the org-buffer and insert a link to this file."
 
 (setq org-todo-keyword-faces
       '(("TODO" . (:foreground "#ff39a3" :weight bold))
-	("STARTED" . "#E35DBF")
-	("REVIEW" . "lightblue")
-	("BLOCKED" . "pink")
-	("CANCELED" . (:foreground "white" :background "#4d4d4d" :weight bold))
-	("DONE" . "#008080")))
+      ("STARTED" . "#E35DBF")
+      ("REVIEW" . "lightblue")
+      ("BLOCKED" . "pink")
+      ("CANCELED" . (:foreground "white" :background "#4d4d4d" :weight bold))
+      ("DONE" . "#008080")))
 
 (require 'org-tempo)
 (with-eval-after-load 'org-tempo
@@ -746,10 +750,10 @@ same directory as the org-buffer and insert a link to this file."
     (when (= (buffer-size) 0)
       (insert
        (pcase org-journal-file-type
-	 (`daily (concat (format-time-string "#+TITLE: %Y-%m-%d") "\n\n"))
-	 (`weekly (concat"#+TITLE: Weekly Journal " (format-time-string "(Wk #%V)" time) "\n\n"))
-	 (`monthly "#+TITLE: Monthly Journal\n\n")
-	 (`yearly "#+TITLE: Yearly Journal\n\n"))))
+       (`daily (concat (format-time-string "#+TITLE: %Y-%m-%d") "\n\n"))
+       (`weekly (concat"#+TITLE: Weekly Journal " (format-time-string "(Wk #%V)" time) "\n\n"))
+       (`monthly "#+TITLE: Monthly Journal\n\n")
+       (`yearly "#+TITLE: Yearly Journal\n\n"))))
     (concat (format-time-string "%x" time)))
   (setq org-journal-date-format 'org-journal-date-format-func)
   (setq org-agenda-file-regexp "\\`\\([^.].*\\.org\\|[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\.org\\(\\.gpg\\)?\\)\\'")
