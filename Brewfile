@@ -8,6 +8,7 @@ brew "jpeg"
 brew "giflib"
 brew "librsvg"
 brew "pixman"
+brew "curl"
 
 # Prettier alternative to cat
 brew "bat"
@@ -47,6 +48,7 @@ brew "rust"
 brew "python"
 brew "python-setuptools"
 brew "java"
+brew "openjdk"
 brew "npm"
 brew "yarn"
 
@@ -65,4 +67,7 @@ cask 'emacs-app'
 #brew "emacs-plus@29", args: ["with-native-comp"]
 
 # Docker - often needed
-cask "docker"
+# cask "docker"
+
+# OrbStack - an alternative to Docker Desktop
+cask "orbstack"
