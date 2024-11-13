@@ -1,0 +1,11 @@
+# .pythonrc
+
+# I got this from ChatGPT asking for a simple example. May need work.
+
+# Default import statements
+import os
+import sys
+
+# Configuration settings
+sys.ps1 = '>>> '
+sys.ps2 = '... '
