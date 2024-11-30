@@ -1122,6 +1122,27 @@ The setup below relies on the following configuration settings in logseq's .edn:
     (ox-extras-activate '(ignore-headlines)))
 #+end_src
 
+** Org Capture Templates
+*** Wines
+This will capture a wine note and put it in the ~/org/wines.org file.
+
+#+begin_src emacs-lisp
+  (setq org-capture-templates
+    `(("w" "Wine Tasting Note" entry (file "~/org/wines.org")
+       ,(concat "* %^{Wine}\n"
+                ":PROPERTIES:\n"
+                ":AddedOn: %u\n"
+                ":TastedOn: %^{TastedOn (as yyyy-mm-dd)}\n"
+                ":Vintage: %^{Vintage}\n"
+                ":Varietal: %^{Varietal}\n"
+                ":Region: %^{Region}\n"
+  	      ":SubRegion: %^{SubRegion}\n"
+                ":Country: %^{Country}\n"
+                ":Rating: %^{Rating}\n"
+                ":END:\n\n%^{Tasting Note}\n%i\n"
+                ))))
+#+end_src
+
 * Other stuff
 ** Gptel (Chat GPT)
 #+begin_src emacs-lisp
