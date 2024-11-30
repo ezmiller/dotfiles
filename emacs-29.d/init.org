@@ -1147,9 +1147,11 @@ This will capture a wine note and put it in the ~/org/wines.org file.
 ** Gptel (Chat GPT)
 #+begin_src emacs-lisp
   (use-package gptel
-    :config
-    (setq gptel-api-key secret/openai-api-key))
+    :custom
+    (gptel-default-mode 'org-mode)
+    (gptel-api-key secret/openai-api-key))
 #+end_src
+
 ** PDF Tools
 #+begin_src emacs-lisp
   ;; This registers an autoloaded command for pdf-view-mode, defers
