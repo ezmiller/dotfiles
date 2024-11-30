@@ -898,12 +898,18 @@ We'll use scss-mode for both CSS and SCSS files.
   (setq org-export-backends '(md html odt latex))
 
   (use-package org
+    :bind
+    ("C-c c" . org-capture)
+
     :custom
     (org-startup-indented t) ;; enables indent mode
     (org-catch-invisible-edits 'error) ;; errors if trying to add character to invisible region
     (org-tags-column 0) ;; tags immediately after header text
     (org-auto-align-tags nil) ;; do not align tags between header
     (org-pretty-entities t) ;; use UTF-8 characters
+    ;; Don't interpret underscores as TEX syntax.
+    (org-use-sub-superscripts nil)
+
     :config
     ;; Ellipsis styling
     (setq org-ellipsis "…")
