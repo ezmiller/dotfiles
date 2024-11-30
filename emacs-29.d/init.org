@@ -920,6 +920,8 @@ The theme must be reloaded after setting the values.
 
 ** COMMENT Org-modern
 #+begin_src emacs-lisp 
+  (setq org-modern-star '("◉" "○" "◈" "◇" "*"))
+
   (use-package org-modern
     :hook
     (org-mode . org-modern-mode)
@@ -935,7 +937,9 @@ The theme must be reloaded after setting the values.
     (org-modern-footnote nil)
     (org-modern-internal-target nil)
     (org-modern-radio-target nil)
-    (org-modern-statistics nil))
+    (org-modern-statistics nil)
+    (org-modern-block-name nil)
+    (org-modern-list t))
 #+end_src
 
 ** Olivetti writing mode
