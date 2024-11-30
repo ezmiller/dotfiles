@@ -97,14 +97,6 @@ aren't relevant for the user here. See [[https://github.com/protesilaos/dotfiles
   ;; Enables minor mode that adds matching delimiters
   (electric-pair-mode 1)
 
-  ;; line numbers
-  (global-display-line-numbers-mode t)
-  (dolist (mode '(org-mode-hook
-  		  term-mode-hook
-  		  eshell-mode-hook
-  		  treemacs-mode-hook))
-    (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
   (use-package autorevert
     :config
     (setq auto-revert-interval 2)
