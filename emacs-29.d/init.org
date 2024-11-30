@@ -890,7 +890,16 @@ We'll use scss-mode for both CSS and SCSS files.
     :config
     ;; Ellipsis styling
     (setq org-ellipsis "…")
-    (set-face-attribute 'org-ellipsis nil :inherit 'default :box nil))
+    (set-face-attribute 'org-ellipsis nil :inherit 'default :box nil)
+
+    (defun my/org-open-jira-issue ()
+      (interactive)
+      (save-excursion
+        (beginning-of-line)
+        (when (re-search-forward "EPD-[0-9]+" (line-end-position) t)
+  	(let ((issue (match-string 0)))
+  	  (browse-url (format "https://primary.atlassian.net/browse/%s" issue)))))
+      nil))
 #+end_src
 
 ** Use modus-theme to do some styling
