@@ -227,16 +227,6 @@ Also spacious padding
 
 ** Modeline
 #+begin_src emacs-lisp
-      ;; (use-package nerd-icons)
-      ;; (use-package doom-modeline
-      ;;   :after (nerd-icons)
-      ;;   :init
-      ;;   (doom-modeline-mode 1)
-      ;;   :config
-      ;;   (progn
-      ;;     ;;(setq doom-modeline-height 15)
-      ;;     (setq column-number-mode t
-      ;;           line-number-mode t)))
       (use-package minions
         :custom
         (minions-mode-line-delimiters '("" . ""))
