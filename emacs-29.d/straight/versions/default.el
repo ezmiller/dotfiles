@@ -35,7 +35,7 @@
  ("gnu-elpa-mirror" . "b612d60157ce0e17d4698900871e8e6be249d66c")
  ("golden-ratio.el" . "375c9f287dfad68829582c1e0a67d0c18119dab9")
  ("goto-chg" . "72f556524b88e9d30dc7fc5b0dc32078c166fda7")
- ("gptel" . "2b9398a7b3bb2a66f52a8d0b1fdc3f311b2c1a3d")
+ ("gptel" . "4b505e72e9ad0cdbf800457996a4b85c6cb68519")
  ("graphql-mode" . "c3baca92809e6f6c8dd2596a413b277f3b0160ea")
  ("ht.el" . "1c49aad1c820c86f7ee35bf9fff8429502f60fef")
  ("hydra" . "317e1de33086637579a7aeb60f77ed0405bf359b")
