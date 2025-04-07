@@ -130,6 +130,9 @@ same directory as the org-buffer and insert a link to this file."
   (set-face-attribute 'variable-pitch nil :family "Concourse T3" :height 1.2)
   (set-face-attribute 'fixed-pitch nil :family "Sarasa Term Slab J" :height 170))
 
+(setq display-line-numbers 'visual)
+(setq display-line-numbers-type 'relative)
+
 (use-package modus-themes
   :custom
   (modus-themes-disable-other-themes t)
@@ -148,16 +151,6 @@ same directory as the org-buffer and insert a link to this file."
   :init
   (spacious-padding-mode 1))
 
-;; (use-package nerd-icons)
-;; (use-package doom-modeline
-;;   :after (nerd-icons)
-;;   :init
-;;   (doom-modeline-mode 1)
-;;   :config
-;;   (progn
-;;     ;;(setq doom-modeline-height 15)
-;;     (setq column-number-mode t
-;;           line-number-mode t)))
 (use-package minions
   :custom
   (minions-mode-line-delimiters '("" . ""))
@@ -510,7 +503,7 @@ same directory as the org-buffer and insert a link to this file."
         lsp-restart t ;; b/c server dies
         ;; lsp-ui-sideline-enable t
         ;; lsp-ui-sideline-show-hover t
-        lsp-ui-sideline-show-code-actions t
+        ;; lsp-ui-sideline-show-code-actions t
         ;; lsp-ui-sideline-show-diagnostics t
         lsp-eslint-enable t
         ))
@@ -545,35 +538,16 @@ same directory as the org-buffer and insert a link to this file."
   (setq flycheck-check-syntax-automatically '(save mode-enabled newline))
   (setq flycheck-display-errors-delay 0.1))
 
-;; dependencies of copilot
-(use-package dash)
-(use-package s)
-(use-package editorconfig)
-(use-package f)
-(use-package yasnippet)
-
-(use-package copilot
-  :straight (:host github :repo "copilot-emacs/copilot.el" :files ("*.el"))
-  :requires (dash s editorconfig f yasnippet)
-  :hook (prog-mode . copilot-mode)
+(use-package aidermacs
+  :bind (("C-c a" . aidermacs-transient-menu))
   :config
-  (general-define-key
-   :states '(insert)
-   :keymaps 'copilot-mode-map
-   "M-y" #'copilot-accept-completion-by-line
-   "M-Y" #'copilot-accept-completion
-   "M-J" #'copilot-next-completion
-   "M-K" #'copilot-previous-completion
-   "M->" #'copilot-next-completion
-   "M-<" #'copilot-previous-completion)
-   ;; setup indentation - hopefully better way to do this soon
-   (add-to-list 'copilot-indentation-alist '(prog-mode 2))
-   (add-to-list 'copilot-indentation-alist '(org-mode 2))
-   (add-to-list 'copilot-indentation-alist '(text-mode 2))
-   (add-to-list 'copilot-indentation-alist '(closure-mode 2))
-   (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode 2))
-   (add-to-list 'copilot-indentation-alist '(js2-mode 2))
-   (add-to-list 'copilot-indentation-alist '(rjsx-mode 2)))
+  ; Set API_KEY in .bashrc, that will automatically picked up by aider or in elisp
+  ;; (setenv "ANTHROPIC_API_KEY" "sk-...")
+  (setenv "OPENAI_API_KEY" secret/openai-api-key)
+  :custom
+  ; See the Configuration section below
+  (aidermacs-use-architect-mode f)
+  (aidermacs-default-model "openai"))
 
 (setq js-indent-level 2)
 
@@ -600,6 +574,9 @@ same directory as the org-buffer and insert a link to this file."
   (define-key rjsx-mode-map "<" nil)
   (define-key rjsx-mode-map (kbd "C-d") nil)
   (define-key rjsx-mode-map ">" nil)
+
+  ;; setup hook to enable line numbers mode
+  (add-hook 'rjsx-mode-hook 'display-line-numbers-mode)
   )
 
 (use-package prettier-js
@@ -741,40 +718,35 @@ same directory as the org-buffer and insert a link to this file."
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp")))
 
 (use-package org-journal
+  :defer t
   :after (org-roam)
-  :config
-  ;; set org-journal-dir by concatting org-roam-directory with "journals"
-  (setq org-journal-dir (concat org-roam-directory "journals/"))
-  (setq org-journal-file-type 'daily)
-  (setq org-journal-file-format "%Y-%m-%d.org")
-  (setq org-journal-time-prefix "* ")
-  (setq org-journal-date-format "%B %d %Y")
-  (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"STARTED\"|TODO=\"REVIEW\"|TODO=\"BLOCKED\"")
-  (setq org-journal-find-file #'find-file-other-window)
-  (defun org-journal-date-format-func (time)
-    "Custom function to insert journal date header,
-    and some custom text on a newly created journal file."
-    (when (= (buffer-size) 0)
-      (insert
-       (pcase org-journal-file-type
-	 (`daily (concat (format-time-string "#+TITLE: %Y-%m-%d") "\n\n"))
-	 (`weekly (concat"#+TITLE: Weekly Journal " (format-time-string "(Wk #%V)" time) "\n\n"))
-	 (`monthly "#+TITLE: Monthly Journal\n\n")
-	 (`yearly "#+TITLE: Yearly Journal\n\n"))))
-    (concat (format-time-string "%x" time)))
-  (setq org-journal-date-format 'org-journal-date-format-func)
-  (setq org-agenda-file-regexp "\\`\\([^.].*\\.org\\|[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\.org\\(\\.gpg\\)?\\)\\'")
-
-  ;; keybindings
+  :init
   (general-define-key
-   :prefix "C-c"
-   "C-j" nil ;; override default C-j binding for org-journal
-   "C-j o" 'org-journal-open-current-journal-file
-   "C-j n" 'org-journal-new-entry
-   "C-j d" 'org-journal-new-date-entry))
+      :prefix "C-c"
+      "C-j" nil ;; override default C-j binding for org-journal
+      "C-j o" 'org-journal-open-current-journal-file
+      "C-j n" 'org-journal-new-entry
+      "C-j d" 'org-journal-new-date-entry)
+    :config
+    ;; set org-journal-dir by concatting org-roam-directory with "journals"
+    (setq org-journal-dir (concat org-roam-directory "journals/"))
+    (setq org-agenda-file-regexp "\\`\\([^.].*\\.org\\|[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\.org\\(\\.gpg\\)?\\)\\'")
+    (setq org-journal-file-type 'daily)
+    (setq org-journal-file-format "%Y-%m-%d.org")
+    (setq org-journal-date-format "%B %d %Y")
+    (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"STARTED\"|TODO=\"REVIEW\"|TODO=\"BLOCKED\"")
+    (setq org-journal-find-file #'find-file-other-window)
+    (defun org-journal-file-header-func (time)
+      "Custom function to create journal header."
+      (concat
+      (pcase org-journal-file-type
+	(`daily (format-time-string "#+TITLE: %Y-%m-%d\n#+STARTUP: folded")))))
+    (setq org-journal-file-header 'org-journal-file-header-func)
+    ;;(setq org-journal-after-header-create-hook #'org-id-get-create)
+    )
 
 (use-package emacsql)
-(use-package emacsql-sqlite)
+;; (use-package emacsql-sqlite)
 
 (use-package org-roam
   :bind
@@ -835,19 +807,33 @@ same directory as the org-buffer and insert a link to this file."
   (ox-extras-activate '(ignore-headlines)))
 
 (setq org-capture-templates
+  ;; Wine Template
   `(("w" "Wine Tasting Note" entry (file "~/org/wines.org")
-     ,(concat "* %^{Wine}\n"
-              ":PROPERTIES:\n"
-              ":AddedOn: %u\n"
-              ":TastedOn: %^{TastedOn (as yyyy-mm-dd)}\n"
-              ":Vintage: %^{Vintage}\n"
-              ":Varietal: %^{Varietal}\n"
-              ":Region: %^{Region}\n"
-	      ":SubRegion: %^{SubRegion}\n"
-              ":Country: %^{Country}\n"
-              ":Rating: %^{Rating}\n"
-              ":END:\n\n%^{Tasting Note}\n%i\n"
-              ))))
+      ,(concat "* %^{Wine}\n"
+	      ":PROPERTIES:\n"
+	      ":AddedOn: %u\n"
+	      ":TastedOn: %^{TastedOn (as yyyy-mm-dd)}\n"
+	      ":Vintage: %^{Vintage}\n"
+	      ":Varietal: %^{Varietal}\n"
+	      ":Region: %^{Region}\n"
+	    ":SubRegion: %^{SubRegion}\n"
+	      ":Country: %^{Country}\n"
+	      ":Rating: %^{Rating}\n"
+	      ":END:\n\n%^{Tasting Note}\n%i\n"
+	      ))
+      ("c" "Coffee Tasting Note" entry (file "~/org/coffee.org")
+	  ,(concat "* %^{Coffee}\n"
+		    ":PROPERTIES:\n"
+		    ":TastedOn: %^{Date Tasted (as yyyy-mm-dd)}\n"
+		    ":Variety: %^{Variety}\n"
+		    ":Country: %^{Country}\n"
+		    ":Region: %^{Region}\n"
+		    ":Process: %^{Washed/Natural...}\n"
+		    ":Roaster: %^{Roaster}\n"
+		    ":FlavorNotes: %^{Flavor Notes}\n"
+		    ":Rating: %^{Rating}\n"
+		    ":END:\n\n%^{Tasting Note}\n%i\n"
+		    ))))
 
 (use-package gptel
   :custom
@@ -865,10 +851,51 @@ same directory as the org-buffer and insert a link to this file."
 
 (use-package denote
   :custom
-  (denote-directory "~/Documents/notes")
+  (denote-directory "~/Documents/2024")
   :config
   (defun my/denote-rename-file-date ()
     (declare (interactive-only t))
     (interactive)
     (let ((denote-prompts (denote-add-prompts '(date))))
       (call-interactively #'denote-rename-file))))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(org-fold-catch-invisible-edits 'error nil nil "Customized with use-package org")
+ '(safe-local-variable-values
+   '((eval let
+	   ((current-dir
+	     (expand-file-name
+	      (locate-dominating-file default-directory ".dir-locals.el"))))
+	   (setq org-roam-directory current-dir)
+	   (setq org-roam-db-location
+		 (concat current-dir "org-roam.db"))
+	   (setq org-journal-dir
+		 (concat current-dir "journals/"))
+	   (org-roam-db-autosync-mode)))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(fringe ((t :background "#0d0e1c")))
+ '(header-line ((t :box (:line-width 4 :color "#1d2235" :style nil))))
+ '(header-line-highlight ((t :box (:color "#ffffff"))))
+ '(keycast-key ((t)))
+ '(line-number ((t :background "#0d0e1c")))
+ '(mode-line ((t :background "#0d0e1c" :overline "#ffffff" :box (:line-width 6 :color "#0d0e1c" :style nil))))
+ '(mode-line-active ((t :background "#0d0e1c" :overline "#ffffff" :box (:line-width 6 :color "#0d0e1c" :style nil))))
+ '(mode-line-highlight ((t :box (:color "#ffffff"))))
+ '(mode-line-inactive ((t :background "#0d0e1c" :overline "#969696" :box (:line-width 6 :color "#0d0e1c" :style nil))))
+ '(tab-bar-tab ((t :box (:line-width 4 :color "#0d0e1c" :style nil))))
+ '(tab-bar-tab-inactive ((t :box (:line-width 4 :color "#4a4f6a" :style nil))))
+ '(tab-line-tab ((t)))
+ '(tab-line-tab-active ((t)))
+ '(tab-line-tab-current ((t)))
+ '(tab-line-tab-inactive ((t)))
+ '(vertical-border ((t :background "#0d0e1c" :foreground "#0d0e1c")))
+ '(window-divider ((t (:background "#0d0e1c" :foreground "#0d0e1c"))))
+ '(window-divider-first-pixel ((t (:background "#0d0e1c" :foreground "#0d0e1c"))))
+ '(window-divider-last-pixel ((t (:background "#0d0e1c" :foreground "#0d0e1c")))))
