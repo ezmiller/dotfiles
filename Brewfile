@@ -9,6 +9,7 @@ brew "giflib"
 brew "librsvg"
 brew "pixman"
 brew "curl"
+brew "cmake"
 
 # Prettier alternative to cat
 brew "bat"
