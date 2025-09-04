@@ -771,6 +771,18 @@ A useful guide for setup here: https://robert.kra.hn/posts/2023-02-22-copilot-em
     (aidermacs-backend 'vterm)
     (aidermacs-show-diff-after-change nil))
 #+end_src
+
+** ECA (by Erica Dallo)
+#+begin_src emacs-lisp
+  (use-package eca
+    :straight (eca
+  	     :type git
+  	     :host github
+  	     :repo "editor-code-assistant/eca-emacs"
+  	     :files ("*.el"))
+    :config
+    (setenv "OPENAI_API_KEY" secret/openai-api-key)
+    )
 #+end_src
 
 ** COMMENT Emacs Application Framework
