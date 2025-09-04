@@ -665,7 +665,23 @@ Helps surrounding text with symbols, e.g. quotes.
           ))
 
   (use-package lsp-ui
-    :commands lsp-ui-mode)
+    :commands lsp-ui-mode
+    :config
+    (setq lsp-ui-doc-enable t
+          lsp-ui-doc-max-width 100
+          lsp-ui-doc-max-height 30
+          lsp-ui-doc-use-childframe t
+          lsp-ui-doc-position 'bottom
+          lsp-ui-sideline-show-diagnostics t
+          lsp-ui-sideline-diagnostic-max-lines 8
+          lsp-ui-sideline-diagnostic-max-line-length 100
+
+          ;; Additional visual enhancements
+          lsp-ui-sideline-show-hover t           ; Show hover info in sideline
+          lsp-ui-sideline-show-code-actions nil  ; Show lightbulb for code actions
+          lsp-ui-sideline-update-mode 'line      ; Update sideline when cursor moves
+          lsp-ui-sideline-delay 0.2              ; Slight delay before showing
+  	    ))
 #+end_src
 
 ** Completion in buffer
