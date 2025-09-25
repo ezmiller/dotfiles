@@ -1,0 +1,8 @@
+# Ignore straight.el ephemeral state
+emacs-29.d/straight/modified/
+emacs-29.d/straight/build/
+emacs-29.d/straight/repos/
+emacs-29.d/straight/build-cache.el
+
+# Ignore machine-specific project list
+emacs-29.d/projects
