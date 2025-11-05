@@ -1,7 +1,6 @@
 (("Emacs-wgrep" . "208b9d01cfffa71037527e3a324684b3ce45ddc4")
  ("ace-window" . "77115afc1b0b9f633084cf7479c767988106c196")
  ("add-node-modules-path" . "841e93dfed50448da66c89a977c9182bb18796a1")
- ("aidermacs" . "13b5a58b30e45c26a0678a43f55a221df56aad08")
  ("annalist.el" . "e1ef5dad75fa502d761f70d9ddf1aeb1c423f41d")
  ("avy" . "be612110cb116a38b8603df367942e2bb3d9bdbe")
  ("bind-key" . "aa22c8c3c740c2f306509b9c37d9511cfa41b612")
