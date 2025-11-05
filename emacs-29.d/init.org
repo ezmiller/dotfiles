@@ -1239,15 +1239,37 @@ The setup below relies on the following configuration settings in logseq's .edn:
   		    ))))
 #+end_src
 * vTerm (Terminal)
+** vTerm 
+This only works if libvterm is installed, e.g. with Brew
 #+begin_src emacs-lisp
-  ;; This only works if libvterm is installed, e.g. with Brew
   (use-package vterm
     :hook (vterm-mode . goto-address-mode)
+    :custom
+    (vterm-kill-buffer-on-exit t)
+    (vterm-max-scrollback 10000)
     :config
     (setq evil-emacs-state-cursor nil) ;; Disable evil mode in vterm
     (setq vterm-mouse-mode t) ;; mouse mode
     (add-hook 'vterm-mode-hook (lambda () (evil-emacs-state))))
 #+end_src
+** vterm-toggle
+This package helps with intelligent movement between buffer and
+related terminal.
+#+begin_src emacs-lisp
+  (use-package vterm-toggle
+    :after vterm
+    :bind
+    (("s-t" . vterm-toggle)
+     ("s-T" . vterm-toggle-cd)
+     ;;(s-C-t #'my/vterm-toggle-tmux ;; this is for a tmux integration that isn't added yet
+     )
+    :custom
+    (vterm-toggle-scope 'project)
+    (vterm-toggle-project-root t)
+    (vterm-toggle-fullscreen-p nil)
+    )
+#+end_src
+
 * Other stuff
 ** Gptel (Chat GPT)
 #+begin_src emacs-lisp
