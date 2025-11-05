@@ -326,7 +326,10 @@ same directory as the org-buffer and insert a link to this file."
   :init
   (golden-ratio-mode 1)
   :config
-  (add-to-list 'golden-ratio-extra-commands 'ace-window))
+  (add-to-list 'golden-ratio-extra-commands 'ace-window)
+  ;; Exclude vterm buffers from automatic resizing
+  (add-to-list 'golden-ratio-exclude-modes 'vterm-mode)
+  (add-to-list 'golden-ratio-exclude-modes 'vterm-copy-mode))
 
 (use-package origami
   :config
@@ -861,13 +864,37 @@ same directory as the org-buffer and insert a link to this file."
 		    ":END:\n\n%^{Tasting Note}\n%i\n"
 		    ))))
 
-;; This only works if libvterm is installed, e.g. with Brew
 (use-package vterm
   :hook (vterm-mode . goto-address-mode)
+  :custom
+  (vterm-toggle-fullscreen-p nil)
+  (vterm-kill-buffer-on-exit t)
+  (vterm-max-scrollback 10000)
+  (vterm-mouse-mode t)
   :config
-  (setq evil-emacs-state-cursor nil) ;; Disable evil mode in vterm
-  (setq vterm-mouse-mode t) ;; mouse mode
-  (add-hook 'vterm-mode-hook (lambda () (evil-emacs-state))))
+  ;; Disable evil mode in vterm
+  (setq evil-emacs-state-cursor nil) 
+  (add-hook 'vterm-mode-hook
+	    (lambda () (evil-emacs-state))))
+
+(use-package vterm-toggle
+  :commands (vterm-toggle vterm-toggle-cd)
+  :bind
+  (("s-t" . vterm-toggle)
+   ("s-T" . vterm-toggle-cd))
+  :custom
+  (vterm-toggle-scope 'project)
+  (vterm-toggle-project-root t)
+  (vterm-toggle-fullscreen-p nil)
+  :config
+  ;; Show vterm in a 30% tall bottom side window
+  (add-to-list 'display-buffer-alist
+               '((lambda (buf _)
+                   (with-current-buffer buf
+                     (derived-mode-p 'vterm-mode)))
+                 (display-buffer-in-side-window)
+                 (side . bottom)
+                 (window-height . 0.3))))
 
 (use-package gptel
   :custom
@@ -892,44 +919,3 @@ same directory as the org-buffer and insert a link to this file."
     (interactive)
     (let ((denote-prompts (denote-add-prompts '(date))))
       (call-interactively #'denote-rename-file))))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(org-fold-catch-invisible-edits 'error nil nil "Customized with use-package org")
- '(safe-local-variable-values
-   '((eval let
-	   ((current-dir
-	     (expand-file-name
-	      (locate-dominating-file default-directory
-				      ".dir-locals.el"))))
-	   (setq org-roam-directory current-dir)
-	   (setq org-roam-db-location
-		 (concat current-dir "org-roam.db"))
-	   (setq org-journal-dir (concat current-dir "journals/"))
-	   (org-roam-db-autosync-mode)))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(fringe ((t :background "#0d0e1c")))
- '(header-line ((t :box (:line-width 4 :color "#1d2235" :style nil))))
- '(header-line-highlight ((t :box (:color "#ffffff"))))
- '(keycast-key ((t)))
- '(line-number ((t :background "#0d0e1c")))
- '(mode-line ((t :background "#0d0e1c" :overline "#ffffff" :box (:line-width 6 :color "#0d0e1c" :style nil))))
- '(mode-line-active ((t :background "#0d0e1c" :overline "#ffffff" :box (:line-width 6 :color "#0d0e1c" :style nil))))
- '(mode-line-highlight ((t :box (:color "#ffffff"))))
- '(mode-line-inactive ((t :background "#0d0e1c" :overline "#969696" :box (:line-width 6 :color "#0d0e1c" :style nil))))
- '(tab-bar-tab ((t :box (:line-width 4 :color "#0d0e1c" :style nil))))
- '(tab-bar-tab-inactive ((t :box (:line-width 4 :color "#4a4f6a" :style nil))))
- '(tab-line-tab ((t)))
- '(tab-line-tab-active ((t)))
- '(tab-line-tab-current ((t)))
- '(tab-line-tab-inactive ((t)))
- '(vertical-border ((t :background "#0d0e1c" :foreground "#0d0e1c")))
- '(window-divider ((t (:background "#0d0e1c" :foreground "#0d0e1c"))))
- '(window-divider-first-pixel ((t (:background "#0d0e1c" :foreground "#0d0e1c"))))
- '(window-divider-last-pixel ((t (:background "#0d0e1c" :foreground "#0d0e1c")))))

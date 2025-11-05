@@ -425,10 +425,13 @@ Enables easy toggle and other things that I've not yet used.
   (use-package golden-ratio
     :after ace-window
     :init
+    ;; Exclude vterm buffers and enable mode (simple setup)
+    (setq golden-ratio-exclude-modes '(vterm-mode vterm-copy-mode))
     (golden-ratio-mode 1)
     :config
     (add-to-list 'golden-ratio-extra-commands 'ace-window))
 #+end_src
+
 ** Origami Mode
 #+begin_src emacs-lisp
   (use-package origami
@@ -1245,29 +1248,39 @@ This only works if libvterm is installed, e.g. with Brew
   (use-package vterm
     :hook (vterm-mode . goto-address-mode)
     :custom
+    (vterm-toggle-fullscreen-p nil)
     (vterm-kill-buffer-on-exit t)
     (vterm-max-scrollback 10000)
+    (vterm-mouse-mode t)
     :config
-    (setq evil-emacs-state-cursor nil) ;; Disable evil mode in vterm
-    (setq vterm-mouse-mode t) ;; mouse mode
-    (add-hook 'vterm-mode-hook (lambda () (evil-emacs-state))))
+    ;; Disable evil mode in vterm
+    (setq evil-emacs-state-cursor nil)
+    (add-hook 'vterm-mode-hook
+            (lambda () (evil-emacs-state))))
 #+end_src
+
 ** vterm-toggle
 This package helps with intelligent movement between buffer and
 related terminal.
 #+begin_src emacs-lisp
   (use-package vterm-toggle
-    :after vterm
+    :commands (vterm-toggle vterm-toggle-cd)
     :bind
     (("s-t" . vterm-toggle)
-     ("s-T" . vterm-toggle-cd)
-     ;;(s-C-t #'my/vterm-toggle-tmux ;; this is for a tmux integration that isn't added yet
-     )
+     ("s-T" . vterm-toggle-cd))
     :custom
     (vterm-toggle-scope 'project)
     (vterm-toggle-project-root t)
     (vterm-toggle-fullscreen-p nil)
-    )
+    :config
+    ;; Show vterm in a 30% tall bottom side window
+    (add-to-list 'display-buffer-alist
+                 '((lambda (buf _)
+                     (with-current-buffer buf
+                       (derived-mode-p 'vterm-mode)))
+                   (display-buffer-in-side-window)
+                   (side . bottom)
+                   (window-height . 0.3))))
 #+end_src
 
 * Other stuff
