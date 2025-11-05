@@ -324,12 +324,11 @@ same directory as the org-buffer and insert a link to this file."
 (use-package golden-ratio
   :after ace-window
   :init
+  ;; Exclude vterm buffers and enable mode (simple setup)
+  (setq golden-ratio-exclude-modes '(vterm-mode vterm-copy-mode))
   (golden-ratio-mode 1)
   :config
-  (add-to-list 'golden-ratio-extra-commands 'ace-window)
-  ;; Exclude vterm buffers from automatic resizing
-  (add-to-list 'golden-ratio-exclude-modes 'vterm-mode)
-  (add-to-list 'golden-ratio-exclude-modes 'vterm-copy-mode))
+  (add-to-list 'golden-ratio-extra-commands 'ace-window))
 
 (use-package origami
   :config
@@ -873,9 +872,9 @@ same directory as the org-buffer and insert a link to this file."
   (vterm-mouse-mode t)
   :config
   ;; Disable evil mode in vterm
-  (setq evil-emacs-state-cursor nil) 
+  (setq evil-emacs-state-cursor nil)
   (add-hook 'vterm-mode-hook
-	    (lambda () (evil-emacs-state))))
+          (lambda () (evil-emacs-state))))
 
 (use-package vterm-toggle
   :commands (vterm-toggle vterm-toggle-cd)
