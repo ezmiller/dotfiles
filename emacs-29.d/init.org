@@ -78,8 +78,9 @@ aren't relevant for the user here. See [[https://github.com/protesilaos/dotfiles
   ;; See: https://emacs.stackexchange.com/questions/28121/osx-switching-to-virtual-desktop-doesnt-focus-emacs
   (menu-bar-mode -1) ;; Disable menus
 
-  ;; Make links clickable in comments
-  (goto-address-mode 1)
+  ;;;; Make links clickable in comments and code
+  (add-hook 'prog-mode-hook #'goto-address-prog-mode)
+  (add-hook 'text-mode-hook #'goto-address-mode) 
 
   (setq user-full-name "Ethan Miller")
   (setq xterm-extra-capabilities nil)
@@ -92,6 +93,9 @@ aren't relevant for the user here. See [[https://github.com/protesilaos/dotfiles
   (setq inhibit-startup-message t)
   (setq inhibit-startup-screen t)
   (setq use-short-answers t)
+
+  (setq show-paren-delay 0.5)
+  (show-paren-mode 1)
 
   ;; Enables minor mode that adds matching delimiters
   (electric-pair-mode 1)
@@ -431,11 +435,21 @@ Enables easy toggle and other things that I've not yet used.
     :config
     (add-hook 'js-to-mode 'origami-mode))
 #+end_src
-** Flycheck Config (Syntax checking framework)
+** Flycheck for errors
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :hook ((prog-mode . flycheck-mode))
+    :config
+    (setq flycheck-indication-mode 'left-margin)
+    (setq flycheck-highlighting-mode 'lines)
+    (setq flycheck-check-syntax-automatically '(save mode-enabled newline))
+    (setq flycheck-display-errors-delay 0.1))
+#+end_src
+
 #+begin_src emacs-lisp
   (use-package quick-peek)
   (use-package flycheck-inline
-    :after flycheck
+    :after (flycheck quick-peek)
     :hook (flycheck-mode-hook . flycheck-inline-mode)
     :config
     (setq flycheck-inline-clear-delay 3)
@@ -720,16 +734,6 @@ Helps surrounding text with symbols, e.g. quotes.
      company-dabbrev-downcase t    ;; don't downcase completions
      ))
 #+end_src
-** Flycheck for errors
-#+begin_src emacs-lisp
-  (use-package flycheck
-    :hook ((prog-mode . flycheck-mode))
-    :config
-    (setq flycheck-indication-mode 'left-margin)
-    (setq flycheck-highlighting-mode 'lines)
-    (setq flycheck-check-syntax-automatically '(save mode-enabled newline))
-    (setq flycheck-display-errors-delay 0.1))
-#+end_src
 ** COMMENT Copilot
 A useful guide for setup here: https://robert.kra.hn/posts/2023-02-22-copilot-emacs-setup/
 
@@ -766,27 +770,6 @@ A useful guide for setup here: https://robert.kra.hn/posts/2023-02-22-copilot-em
      (add-to-list 'copilot-indentation-alist '(js2-mode 2))
      (add-to-list 'copilot-indentation-alist '(rjsx-mode 2)))
 #+end_src
-** Aider for Emacs
-#+begin_src emacs-lisp
-  (use-package f)
-
-  (use-package aidermacs
-    :bind (("C-c a" . aider-transient-menu))
-    :config
-    ; Set API_KEY in .bashrc, that will automatically picked up by aider or in elisp
-    ;; (setenv "ANTHROPIC_API_KEY" "sk-...")
-    (setenv "OPENAI_API_KEY" secret/openai-api-key)
-    :custom
-    ; See the Configuration section below
-    ;; (aidermacs-use-architect-mode nil)
-    (aidermacs-default-model
-     "openrouter/anthropic/claude-sonnet-4"
-     ;;"openai/gpt-4o"
-     )
-    (aidermacs-backend 'vterm)
-    (aidermacs-show-diff-after-change nil))
-#+end_src
-
 ** ECA (by Erica Dallo)
 #+begin_src emacs-lisp
   (use-package eca
@@ -849,7 +832,7 @@ Then we install each app seprately.
     :config
     (setq lsp-auto-guess-root t)
     ;; (setq lsp-diagnostic-package :none)
-    (setq lsp-idle-delay 0.5)
+    (setq lsp-idle-delay 1.0)
     (setq js2-mode-show-parse-errors nil
           js2-mode-show-strict-warnings nil)
     (define-key rjsx-mode-map "<" nil)
@@ -871,6 +854,10 @@ Then we install each app seprately.
     :hook (typescript-mode js-mode typescript-tsx-mode))
 
 #+end_src
+
+#+RESULTS:
+| jest-test-mode |
+
 *** Graphql-mode
 #+begin_src emacs-lisp
 (use-package graphql-mode)
@@ -878,8 +865,6 @@ Then we install each app seprately.
 ** Clojure
 *** Basic setup
 #+begin_src emacs-lisp
-    (show-paren-mode 1)
-
     (use-package clojure-mode
       :defer t)
 
@@ -989,6 +974,46 @@ We'll use scss-mode for both CSS and SCSS files.
   	  (browse-url (format "https://primary.atlassian.net/browse/%s" issue)))))
       nil))
 #+end_src
+** COMMENT Latex export
+#+begin_src emacs-lisp
+  (use-package ox-latex
+    :straight nil  ;; ox-latex is part of org
+    :after org
+    :config
+    ;; Configure LaTeX export classes
+    (add-to-list 'org-latex-classes
+                 '("article"
+                   "\\documentclass{article}"
+                   ("\\section{%s}" . "\\section*{%s}")
+                   ("\\subsection{%s}" . "\\subsection*{%s}")
+                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                   ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    
+    ;; Set default packages
+    (setq org-latex-default-packages-alist
+          '(("AUTO" "inputenc" t ("pdflatex"))
+            ("T1" "fontenc" t ("pdflatex"))
+            ("" "graphicx" t)
+            ("" "longtable" nil)
+            ("" "wrapfig" nil)
+            ("" "rotating" nil)
+            ("normalem" "ulem" t)
+            ("" "amsmath" t)
+            ("" "textcomp" t)
+            ("" "amssymb" t)
+            ("" "capt-of" nil)
+            ("" "hyperref" nil)))
+    
+    ;; Configure PDF processing command
+    (setq org-latex-pdf-process
+          '("pdflatex -interaction nonstopmode -output-directory %o %f"
+            "pdflatex -interaction nonstopmode -output-directory %o %f"
+            "pdflatex -interaction nonstopmode -output-directory %o %f")))
+#+end_src
+
+#+RESULTS:
+: t
 
 ** Use modus-theme to do some styling
 Modus-themes can help style org mode and I'm using that feature here.
@@ -1213,7 +1238,16 @@ The setup below relies on the following configuration settings in logseq's .edn:
   		    ":END:\n\n%^{Tasting Note}\n%i\n"
   		    ))))
 #+end_src
-
+* vTerm (Terminal)
+#+begin_src emacs-lisp
+  ;; This only works if libvterm is installed, e.g. with Brew
+  (use-package vterm
+    :hook (vterm-mode . goto-address-mode)
+    :config
+    (setq evil-emacs-state-cursor nil) ;; Disable evil mode in vterm
+    (setq vterm-mouse-mode t) ;; mouse mode
+    (add-hook 'vterm-mode-hook (lambda () (evil-emacs-state))))
+#+end_src
 * Other stuff
 ** Gptel (Chat GPT)
 #+begin_src emacs-lisp

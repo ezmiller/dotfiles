@@ -53,8 +53,9 @@
 ;; See: https://emacs.stackexchange.com/questions/28121/osx-switching-to-virtual-desktop-doesnt-focus-emacs
 (menu-bar-mode -1) ;; Disable menus
 
-;; Make links clickable in comments
-(goto-address-mode 1)
+;;;; Make links clickable in comments and code
+(add-hook 'prog-mode-hook #'goto-address-prog-mode)
+(add-hook 'text-mode-hook #'goto-address-mode) 
 
 (setq user-full-name "Ethan Miller")
 (setq xterm-extra-capabilities nil)
@@ -67,6 +68,9 @@
 (setq inhibit-startup-message t)
 (setq inhibit-startup-screen t)
 (setq use-short-answers t)
+
+(setq show-paren-delay 0.5)
+(show-paren-mode 1)
 
 ;; Enables minor mode that adds matching delimiters
 (electric-pair-mode 1)
@@ -328,6 +332,30 @@ same directory as the org-buffer and insert a link to this file."
   :config
   (add-hook 'js-to-mode 'origami-mode))
 
+(use-package flycheck
+  :hook ((prog-mode . flycheck-mode))
+  :config
+  (setq flycheck-indication-mode 'left-margin)
+  (setq flycheck-highlighting-mode 'lines)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled newline))
+  (setq flycheck-display-errors-delay 0.1))
+
+(use-package quick-peek)
+(use-package flycheck-inline
+  :after (flycheck quick-peek)
+  :hook (flycheck-mode-hook . flycheck-inline-mode)
+  :config
+  (setq flycheck-inline-clear-delay 3)
+  (setq flycheck-inline-display-function
+	(lambda (msg pos err)
+	  (let* ((ov (quick-peek-overlay-ensure-at pos))
+		(contents (quick-peek-overlay-contents ov)))
+	    (setf (quick-peek-overlay-contents ov)
+		  (concat contents (when contents "\n") msg))
+	    (quick-peek-update ov)))
+	flycheck-inline-clear-function #'quick-peek-hide)
+  )
+
 (use-package projectile
   :diminish projectile-mode
   :config
@@ -498,18 +526,27 @@ same directory as the org-buffer and insert a link to this file."
   :config
   (setq lsp-auto-configure t
         lsp-auto-guess-root t
-        ;; lsp-diagnostic-package :none
         lsp-log-io t ;; speed
         lsp-restart t ;; b/c server dies
-        ;; lsp-ui-sideline-enable t
-        ;; lsp-ui-sideline-show-hover t
-        ;; lsp-ui-sideline-show-code-actions t
-        ;; lsp-ui-sideline-show-diagnostics t
         lsp-eslint-enable t
+	lsp-diagnostics-provider :flycheck
         ))
 
 (use-package lsp-ui
-  :commands lsp-ui-mode)
+  :commands lsp-ui-mode
+  :config
+  (setq lsp-ui-doc-enable t
+        lsp-ui-doc-max-width 100
+        lsp-ui-doc-max-height 30
+        lsp-ui-doc-use-childframe t
+        lsp-ui-doc-position 'bottom
+        
+        ;; Turn off sideline diagnostics
+	lsp-ui-sideline-enable nil
+	lsp-ui-sideline-show-diagnostics nil
+	lsp-ui-sideline-show-hover t
+	lsp-ui-sideline-show-code-actions nil
+        ))
 
 (defun my/setup-lsp-company ()
   (setq-local company-backends
@@ -530,24 +567,15 @@ same directory as the org-buffer and insert a link to this file."
    company-dabbrev-downcase t    ;; don't downcase completions
    ))
 
-(use-package flycheck
-  :hook ((prog-mode . flycheck-mode))
+(use-package eca
+  :straight (eca
+	     :type git
+	     :host github
+	     :repo "editor-code-assistant/eca-emacs"
+	     :files ("*.el"))
   :config
-  (setq flycheck-indication-mode 'left-margin)
-  (setq flycheck-highlighting-mode 'lines)
-  (setq flycheck-check-syntax-automatically '(save mode-enabled newline))
-  (setq flycheck-display-errors-delay 0.1))
-
-(use-package aidermacs
-  :bind (("C-c a" . aidermacs-transient-menu))
-  :config
-  ; Set API_KEY in .bashrc, that will automatically picked up by aider or in elisp
-  ;; (setenv "ANTHROPIC_API_KEY" "sk-...")
   (setenv "OPENAI_API_KEY" secret/openai-api-key)
-  :custom
-  ; See the Configuration section below
-  (aidermacs-use-architect-mode f)
-  (aidermacs-default-model "openai"))
+  )
 
 (setq js-indent-level 2)
 
@@ -568,7 +596,7 @@ same directory as the org-buffer and insert a link to this file."
   :config
   (setq lsp-auto-guess-root t)
   ;; (setq lsp-diagnostic-package :none)
-  (setq lsp-idle-delay 0.5)
+  (setq lsp-idle-delay 1.0)
   (setq js2-mode-show-parse-errors nil
         js2-mode-show-strict-warnings nil)
   (define-key rjsx-mode-map "<" nil)
@@ -590,8 +618,6 @@ same directory as the org-buffer and insert a link to this file."
   :hook (typescript-mode js-mode typescript-tsx-mode))
 
 (use-package graphql-mode)
-
-(show-paren-mode 1)
 
 (use-package clojure-mode
   :defer t)
@@ -835,6 +861,14 @@ same directory as the org-buffer and insert a link to this file."
 		    ":END:\n\n%^{Tasting Note}\n%i\n"
 		    ))))
 
+;; This only works if libvterm is installed, e.g. with Brew
+(use-package vterm
+  :hook (vterm-mode . goto-address-mode)
+  :config
+  (setq evil-emacs-state-cursor nil) ;; Disable evil mode in vterm
+  (setq vterm-mouse-mode t) ;; mouse mode
+  (add-hook 'vterm-mode-hook (lambda () (evil-emacs-state))))
+
 (use-package gptel
   :custom
   (gptel-default-mode 'org-mode)
@@ -858,44 +892,3 @@ same directory as the org-buffer and insert a link to this file."
     (interactive)
     (let ((denote-prompts (denote-add-prompts '(date))))
       (call-interactively #'denote-rename-file))))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(org-fold-catch-invisible-edits 'error nil nil "Customized with use-package org")
- '(safe-local-variable-values
-   '((eval let
-	   ((current-dir
-	     (expand-file-name
-	      (locate-dominating-file default-directory ".dir-locals.el"))))
-	   (setq org-roam-directory current-dir)
-	   (setq org-roam-db-location
-		 (concat current-dir "org-roam.db"))
-	   (setq org-journal-dir
-		 (concat current-dir "journals/"))
-	   (org-roam-db-autosync-mode)))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(fringe ((t :background "#0d0e1c")))
- '(header-line ((t :box (:line-width 4 :color "#1d2235" :style nil))))
- '(header-line-highlight ((t :box (:color "#ffffff"))))
- '(keycast-key ((t)))
- '(line-number ((t :background "#0d0e1c")))
- '(mode-line ((t :background "#0d0e1c" :overline "#ffffff" :box (:line-width 6 :color "#0d0e1c" :style nil))))
- '(mode-line-active ((t :background "#0d0e1c" :overline "#ffffff" :box (:line-width 6 :color "#0d0e1c" :style nil))))
- '(mode-line-highlight ((t :box (:color "#ffffff"))))
- '(mode-line-inactive ((t :background "#0d0e1c" :overline "#969696" :box (:line-width 6 :color "#0d0e1c" :style nil))))
- '(tab-bar-tab ((t :box (:line-width 4 :color "#0d0e1c" :style nil))))
- '(tab-bar-tab-inactive ((t :box (:line-width 4 :color "#4a4f6a" :style nil))))
- '(tab-line-tab ((t)))
- '(tab-line-tab-active ((t)))
- '(tab-line-tab-current ((t)))
- '(tab-line-tab-inactive ((t)))
- '(vertical-border ((t :background "#0d0e1c" :foreground "#0d0e1c")))
- '(window-divider ((t (:background "#0d0e1c" :foreground "#0d0e1c"))))
- '(window-divider-first-pixel ((t (:background "#0d0e1c" :foreground "#0d0e1c"))))
- '(window-divider-last-pixel ((t (:background "#0d0e1c" :foreground "#0d0e1c")))))
