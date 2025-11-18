@@ -622,7 +622,8 @@ same directory as the org-buffer and insert a link to this file."
 (use-package graphql-mode)
 
 (use-package clojure-mode
-  :defer t)
+  :defer t
+  :hook ((clojure-mode . lsp-deferred))) 
 
 (use-package clojure-ts-mode
   :defer t)
@@ -876,10 +877,35 @@ same directory as the org-buffer and insert a link to this file."
   (add-hook 'vterm-mode-hook
           (lambda () (evil-emacs-state))))
 
+(defun my/vterm-jack-in ()
+    "Toggle vterm and jack into a tmux session named after the project folder.
+Only sends the tmux command once per vterm buffer to avoid nesting warnings."
+    (interactive)
+    (require 'project) (require 'vterm)
+    (let* ((root (or (when-let ((p (project-current)))
+  		     (project-root p))
+  		   default-directory))
+           (session (file-name-nondirectory (directory-file-name root)))
+           (cmd (format "tmux new-session -As %s -c %s"
+                        (shell-quote-argument session)
+                        (shell-quote-argument (expand-file-name root)))))
+      (if (fboundp 'vterm-toggle) (vterm-toggle) (vterm))
+      ;; Only send the tmux attach command if we haven't already done so
+      (when (derived-mode-p 'vterm-mode)
+        (unless (and (boundp 'my/vterm-tmux-attached-p)
+                     my/vterm-tmux-attached-p)
+          (vterm-send-string cmd)
+          (vterm-send-return)
+          (setq-local my/vterm-tmux-attached-p t)
+          (setq-local my/vterm-tmux-session session)
+          (setq-local my/vterm-project-root root)))))
+
 (use-package vterm-toggle
   :commands (vterm-toggle vterm-toggle-cd)
   :bind
-  (("s-t" . vterm-toggle)
+  (
+   ;; ("s-t" . vterm-toggle)
+   ("s-t" . my/vterm-jack-in) ;; for termux
    ("s-T" . vterm-toggle-cd))
   :custom
   (vterm-toggle-scope 'project)

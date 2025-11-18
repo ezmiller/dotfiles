@@ -868,28 +868,30 @@ Then we install each app seprately.
 ** Clojure
 *** Basic setup
 #+begin_src emacs-lisp
-    (use-package clojure-mode
-      :defer t)
+  (use-package clojure-mode
+    :defer t
+    :hook ((clojure-mode . lsp-deferred))) 
 
-    (use-package clojure-ts-mode
-      :defer t)
+  (use-package clojure-ts-mode
+    :defer t)
 
-    (use-package cider
-      :defer t
-      :config
-      (setq cider-repl-pop-to-buffer-on-connect nil))
+  (use-package cider
+    :defer t
+    :config
+    (setq cider-repl-pop-to-buffer-on-connect nil))
 
-    (use-package rainbow-delimiters
-      :defer t
-      :init
-      (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+  (use-package rainbow-delimiters
+    :defer t
+    :init
+    (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 
-    (use-package company
-      :config
-      (progn
-        (add-hook 'cider-repl-mode-hook #'company-mode)
-        (add-hook 'cider-mode-hook #'company-mode)))
+  (use-package company
+    :config
+    (progn
+      (add-hook 'cider-repl-mode-hook #'company-mode)
+      (add-hook 'cider-mode-hook #'company-mode)))
 #+end_src
+
 *** Clay (literate notebooks)
 #+begin_src emacs-lisp
 (use-package clay
@@ -1259,28 +1261,57 @@ This only works if libvterm is installed, e.g. with Brew
             (lambda () (evil-emacs-state))))
 #+end_src
 
+** Custom vTerm jack-in
+We use this function below in the vterm-toggle configuration block when we set the key bindings, but it can also just be called by itself. 
+#+begin_src emacs-lisp
+    (defun my/vterm-jack-in ()
+      "Toggle vterm and jack into a tmux session named after the project folder.
+  Only sends the tmux command once per vterm buffer to avoid nesting warnings."
+      (interactive)
+      (require 'project) (require 'vterm)
+      (let* ((root (or (when-let ((p (project-current)))
+    		     (project-root p))
+    		   default-directory))
+             (session (file-name-nondirectory (directory-file-name root)))
+             (cmd (format "tmux new-session -As %s -c %s"
+                          (shell-quote-argument session)
+                          (shell-quote-argument (expand-file-name root)))))
+        (if (fboundp 'vterm-toggle) (vterm-toggle) (vterm))
+        ;; Only send the tmux attach command if we haven't already done so
+        (when (derived-mode-p 'vterm-mode)
+          (unless (and (boundp 'my/vterm-tmux-attached-p)
+                       my/vterm-tmux-attached-p)
+            (vterm-send-string cmd)
+            (vterm-send-return)
+            (setq-local my/vterm-tmux-attached-p t)
+            (setq-local my/vterm-tmux-session session)
+            (setq-local my/vterm-project-root root)))))
+#+end_src
+
 ** vterm-toggle
 This package helps with intelligent movement between buffer and
 related terminal.
 #+begin_src emacs-lisp
-  (use-package vterm-toggle
-    :commands (vterm-toggle vterm-toggle-cd)
-    :bind
-    (("s-t" . vterm-toggle)
-     ("s-T" . vterm-toggle-cd))
-    :custom
-    (vterm-toggle-scope 'project)
-    (vterm-toggle-project-root t)
-    (vterm-toggle-fullscreen-p nil)
-    :config
-    ;; Show vterm in a 30% tall bottom side window
-    (add-to-list 'display-buffer-alist
-                 '((lambda (buf _)
-                     (with-current-buffer buf
-                       (derived-mode-p 'vterm-mode)))
-                   (display-buffer-in-side-window)
-                   (side . bottom)
-                   (window-height . 0.3))))
+    (use-package vterm-toggle
+      :commands (vterm-toggle vterm-toggle-cd)
+      :bind
+      (
+       ;; ("s-t" . vterm-toggle)
+       ("s-t" . my/vterm-jack-in) ;; for termux
+       ("s-T" . vterm-toggle-cd))
+      :custom
+      (vterm-toggle-scope 'project)
+      (vterm-toggle-project-root t)
+      (vterm-toggle-fullscreen-p nil)
+      :config
+      ;; Show vterm in a 30% tall bottom side window
+      (add-to-list 'display-buffer-alist
+                   '((lambda (buf _)
+                       (with-current-buffer buf
+                         (derived-mode-p 'vterm-mode)))
+                     (display-buffer-in-side-window)
+                     (side . bottom)
+                     (window-height . 0.3))))
 #+end_src
 
 * Other stuff
