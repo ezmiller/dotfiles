@@ -699,6 +699,8 @@ same directory as the org-buffer and insert a link to this file."
   (org-pretty-entities t) ;; use UTF-8 characters
   ;; Don't interpret underscores as TEX syntax.
   (org-use-sub-superscripts nil)
+  (org-attach-id-dir (expand-file-name "assets" org-roam-directory))
+  (org-link-file-path-type 'relative)
 
   :config
   ;; Ellipsis styling
@@ -863,6 +865,11 @@ same directory as the org-buffer and insert a link to this file."
 		    ":Rating: %^{Rating}\n"
 		    ":END:\n\n%^{Tasting Note}\n%i\n"
 		    ))))
+
+(use-package org-download
+  :custom
+  (org-download-method 'attach)
+  (org-download-link-format "[[file:%s]]"))
 
 (use-package vterm
   :hook (vterm-mode . goto-address-mode)

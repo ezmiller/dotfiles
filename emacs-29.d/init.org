@@ -964,6 +964,8 @@ We'll use scss-mode for both CSS and SCSS files.
     (org-pretty-entities t) ;; use UTF-8 characters
     ;; Don't interpret underscores as TEX syntax.
     (org-use-sub-superscripts nil)
+    (org-attach-id-dir (expand-file-name "assets" org-roam-directory))
+    (org-link-file-path-type 'relative)
 
     :config
     ;; Ellipsis styling
@@ -979,6 +981,7 @@ We'll use scss-mode for both CSS and SCSS files.
   	  (browse-url (format "https://primary.atlassian.net/browse/%s" issue)))))
       nil))
 #+end_src
+
 ** COMMENT Latex export
 #+begin_src emacs-lisp
   (use-package ox-latex
@@ -1243,6 +1246,14 @@ The setup below relies on the following configuration settings in logseq's .edn:
   		    ":END:\n\n%^{Tasting Note}\n%i\n"
   		    ))))
 #+end_src
+** Org Download
+#+begin_src emacs-lisp
+  (use-package org-download
+    :custom
+    (org-download-method 'attach)
+    (org-download-link-format "[[file:%s]]"))
+#+end_src
+
 * vTerm (Terminal)
 ** vTerm 
 This only works if libvterm is installed, e.g. with Brew
