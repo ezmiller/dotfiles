@@ -59,7 +59,6 @@
 
 (setq user-full-name "Ethan Miller")
 (setq xterm-extra-capabilities nil)
-(setq delete-old-versions -1)
 (setq ring-bell-function 'ignore)
 (setq coding-system-for-read 'utf-8)
 (setq coding-system-for-write 'utf-8)
@@ -82,6 +81,38 @@
   (setq global-auto-revert-non-file-buffers t)
   (setq auto-revert-verbose nil)
   (global-auto-revert-mode +1))
+
+;; Centralize backup files
+(setq backup-directory-alist
+      `(("." . ,(expand-file-name "backups" user-emacs-directory))))
+
+;; Backup settings - keep them useful
+(setq backup-by-copying t)       ; Don't clobber symlinks
+(setq version-control t)         ; Use version numbers on backups
+(setq delete-old-versions t)     ; Delete old versions silently
+(setq kept-new-versions 6)       ; Keep 6 newest versions
+(setq kept-old-versions 2)       ; Keep 2 oldest versions
+
+;; Centralize auto-save files
+(setq auto-save-file-name-transforms
+      `((".*" ,(expand-file-name "auto-saves/" user-emacs-directory) t)))
+
+;; Disable lock files (these are the .# files)
+;; Since you have git, you have good protection against simultaneous edits
+(setq create-lockfiles nil)
+
+;; Ensure directories exist
+(make-directory (expand-file-name "backups" user-emacs-directory) t)
+(make-directory (expand-file-name "auto-saves" user-emacs-directory) t)
+
+(defun my/clean-old-backups ()
+"Delete backup files older than a week."
+(interactive)
+(let ((week-ago (time-subtract (current-time) (days-to-time 7))))
+  (dolist (file (directory-files-recursively 
+                 (expand-file-name "backups" user-emacs-directory) ".*"))
+    (when (time-less-p (nth 5 (file-attributes file)) week-ago)
+      (delete-file file)))))
 
 (defun my/toggle-buffers ()
   (interactive)
@@ -577,6 +608,7 @@ same directory as the org-buffer and insert a link to this file."
 	     :files ("*.el"))
   :config
   (setenv "OPENAI_API_KEY" secret/openai-api-key)
+  (setenv "CLAUDE_API_KEY" secret/s)
   )
 
 (setq js-indent-level 2)
@@ -944,7 +976,7 @@ Only sends the tmux command once per vterm buffer to avoid nesting warnings."
 
 (use-package denote
   :custom
-  (denote-directory "~/Documents/2024")
+  (denote-directory "~/Documents/2025")
   :config
   (defun my/denote-rename-file-date ()
     (declare (interactive-only t))
