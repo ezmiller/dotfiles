@@ -6,3 +6,6 @@ emacs-29.d/straight/build-cache.el
 
 # Ignore machine-specific project list
 emacs-29.d/projects
+
+# ignore clojure cpcache
+clojure/.cpcache/*
