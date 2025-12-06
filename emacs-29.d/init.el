@@ -608,7 +608,7 @@ same directory as the org-buffer and insert a link to this file."
 	     :files ("*.el"))
   :config
   (setenv "OPENAI_API_KEY" secret/openai-api-key)
-  (setenv "CLAUDE_API_KEY" secret/s)
+  (setenv "CLAUDE_API_KEY" secret/claude-api-key)
   )
 
 (setq js-indent-level 2)

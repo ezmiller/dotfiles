@@ -817,7 +817,7 @@ A useful guide for setup here: https://robert.kra.hn/posts/2023-02-22-copilot-em
   	     :files ("*.el"))
     :config
     (setenv "OPENAI_API_KEY" secret/openai-api-key)
-    (setenv "CLAUDE_API_KEY" secret/s)
+    (setenv "CLAUDE_API_KEY" secret/claude-api-key)
     )
 #+end_src
 
