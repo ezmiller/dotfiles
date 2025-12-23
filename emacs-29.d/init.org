@@ -294,7 +294,7 @@ Also spacious padding
     :non-normal-prefix "C-SPC"
     :prefix-map 'dominant-prefix-map))
 #+end_src
-*** Setup bindings
+*** Setup Evil bindings
 #+begin_src emacs-lisp
 (with-eval-after-load 'evil
   (spc-key-definer
@@ -311,6 +311,14 @@ Also spacious padding
    :states 'normal
    :keymaps 'process-menu-mode-map
    "d" 'process-menu-delete-process))
+#+end_src
+*** Function navigtion 
+#+begin_src emacs-lisp
+;; Global navigation keybindings
+(general-define-key
+ :states '(normal visual insert emacs)
+ "M-." 'xref-find-definitions
+ "M-," 'xref-pop-marker-stack)
 #+end_src
 
 ** Which key
@@ -721,6 +729,8 @@ Helps surrounding text with symbols, e.g. quotes.
     :defer t
     :hook ((lsp-mode . lsp-enable-which-key-integration))
     :commands lsp-deferred
+    :bind (:map lsp-mode-map
+                  ("s-l g b" . xref-quit-and-pop-marker-stack))
     :config
     (setq lsp-auto-configure t
           lsp-auto-guess-root t
@@ -892,9 +902,6 @@ Then we install each app seprately.
     :hook (typescript-mode js-mode typescript-tsx-mode))
 
 #+end_src
-
-#+RESULTS:
-| jest-test-mode |
 
 *** Graphql-mode
 #+begin_src emacs-lisp
@@ -1384,7 +1391,7 @@ related terminal.
 #+begin_src emacs-lisp
   (use-package denote
     :custom
-    (denote-directory "~/Documents/2025")
+    (denote-directory "~/Documents/archive")
     :config
     (defun my/denote-rename-file-date ()
       (declare (interactive-only t))

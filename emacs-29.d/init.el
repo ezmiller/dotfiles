@@ -223,6 +223,12 @@ same directory as the org-buffer and insert a link to this file."
    :keymaps 'process-menu-mode-map
    "d" 'process-menu-delete-process))
 
+;; Global navigation keybindings
+(general-define-key
+ :states '(normal visual insert emacs)
+ "M-." 'xref-find-definitions
+ "M-," 'xref-pop-marker-stack)
+
 (use-package which-key
   :init
   (setq which-key-separator " ")
@@ -556,6 +562,8 @@ same directory as the org-buffer and insert a link to this file."
   :defer t
   :hook ((lsp-mode . lsp-enable-which-key-integration))
   :commands lsp-deferred
+  :bind (:map lsp-mode-map
+                ("s-l g b" . xref-quit-and-pop-marker-stack))
   :config
   (setq lsp-auto-configure t
         lsp-auto-guess-root t
@@ -976,7 +984,7 @@ Only sends the tmux command once per vterm buffer to avoid nesting warnings."
 
 (use-package denote
   :custom
-  (denote-directory "~/Documents/2025")
+  (denote-directory "~/Documents/archive")
   :config
   (defun my/denote-rename-file-date ()
     (declare (interactive-only t))
