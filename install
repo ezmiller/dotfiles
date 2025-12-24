@@ -4,11 +4,64 @@ set -e
 
 CONFIG=".install.conf.yaml"
 DOTBOT_DIR=".dotbot"
-
 DOTBOT_BIN="bin/dotbot"
 BASEDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-cd "${BASEDIR}"
-git submodule update --init --recursive "${DOTBOT_DIR}"
+# Parse arguments for quick mode
+QUICK_MODE=false
+FULL_MODE=false
+DOTBOT_ARGS=()
 
-"${BASEDIR}/${DOTBOT_DIR}/${DOTBOT_BIN}" -d "${BASEDIR}" -c "${CONFIG}" "${@}"
+for arg in "$@"; do
+    case $arg in
+        -q|--quick)
+            QUICK_MODE=true
+            ;;
+        -f|--full)
+            FULL_MODE=true
+            ;;
+        *)
+            DOTBOT_ARGS+=("$arg")
+            ;;
+    esac
+done
+
+cd "${BASEDIR}"
+
+# Only update dotbot submodule in full mode or if it doesn't exist
+if [[ "$FULL_MODE" == true ]] || [[ ! -f "${DOTBOT_DIR}/${DOTBOT_BIN}" ]]; then
+    echo "Updating dotbot submodule..."
+    git submodule update --init --recursive "${DOTBOT_DIR}"
+elif [[ "$QUICK_MODE" == true ]]; then
+    echo "Quick mode: Skipping dotbot submodule update"
+fi
+
+# Use appropriate config based on mode
+if [[ "$QUICK_MODE" == true ]]; then
+    CONFIG=".install.conf.quick.yaml"
+    echo "Running in quick mode (skipping heavy operations)..."
+elif [[ "$FULL_MODE" == true ]]; then
+    CONFIG=".install.conf.full.yaml"
+    echo "Running in full mode (including all operations)..."
+fi
+
+"${BASEDIR}/${DOTBOT_DIR}/${DOTBOT_BIN}" -d "${BASEDIR}" -c "${CONFIG}" "${DOTBOT_ARGS[@]}"
+
+# Run heavy operations only in full mode (unless quick mode explicitly set)
+if [[ "$FULL_MODE" == true ]] && [[ "$QUICK_MODE" == false ]]; then
+    echo ""
+    echo "Running heavy operations..."
+    echo "  - Synchronizing submodules..."
+    git submodule sync --recursive
+    echo "  - Updating all submodules..."
+    git submodule update --init --recursive
+    echo "  - Installing Homebrew packages..."
+    brew bundle
+    echo "  - Building Alacritty..."
+    ./install-alacritty.sh
+    echo ""
+    echo "Full installation complete!"
+elif [[ "$QUICK_MODE" == true ]]; then
+    echo ""
+    echo "Quick installation complete! Run './install --full' for complete setup."
+fi

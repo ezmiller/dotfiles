@@ -1,11 +1,52 @@
 # Agent Development Guide
 
 ## Build/Install Commands
-- **Install dotfiles**: `./install` (idempotent, safe to run multiple times)
-- **Install Alacritty**: `./install-alacritty.sh`
-- **Update dotfiles**: `dfu` (alias: cd ~/.dotfiles && git pull --ff-only && ./install -q)
+- **Install dotfiles (quick)**: `./install` or `./install -q` (~0.5s, symlinks only - default mode)
+- **Install dotfiles (full)**: `./install -f` or `./install --full` (~5-10min, includes submodules, brew, Alacritty build)
+- **Update dotfiles**: `dfu` (alias: `cd ~/.dotfiles && git pull --ff-only && ./install -q`)
+- **Install Alacritty**: `./install-alacritty.sh` (builds from source)
 - **Install Homebrew packages**: `brew bundle`
 - **Update submodules**: See "Updating Git Submodules" section below
+
+### 🚀 Performance & Usage Guidelines
+
+**Default Workflow** (use 99% of the time):
+```bash
+cd ~/.dotfiles
+git pull
+./install          # Fast! ~0.5 seconds
+# or use the dfu alias
+```
+
+**Full Install** (use rarely):
+```bash
+./install --full   # Slow! ~5-10 minutes
+```
+
+**When to use Quick Mode** (`./install` or `./install -q`):
+- ✅ After pulling dotfile changes from git
+- ✅ After editing any config file (`.bashrc`, `.zshrc`, etc.)
+- ✅ Daily/frequent updates
+- ✅ Testing configuration changes
+- ✅ The `dfu` alias uses this automatically
+
+**When to use Full Mode** (`./install -f` or `./install --full`):
+- ⚠️ First-time setup on a new machine
+- ⚠️ After updating git submodules (pyenv, rbenv, nvm, dotbot, etc.)
+- ⚠️ After modifying `Brewfile` (to install new packages)
+- ⚠️ After updating Alacritty source code
+- ⚠️ When troubleshooting - need to rebuild everything
+
+**What each mode does:**
+
+| Operation | Quick Mode | Full Mode |
+|-----------|------------|-----------|
+| Create/update symlinks | ✅ Yes | ✅ Yes |
+| Clean broken symlinks | ✅ Yes | ✅ Yes |
+| Update git submodules | ❌ No | ✅ Yes |
+| Run `brew bundle` | ❌ No | ✅ Yes |
+| Build Alacritty | ❌ No | ✅ Yes |
+| **Time taken** | **~0.5s** | **~5-10min** |
 
 ## Install System Architecture
 
@@ -14,14 +55,24 @@ This repository uses **Dotbot** — a declarative configuration tool for managin
 
 **How it works:**
 1. **`./install` script** (entry point):
-   - Updates the `.dotbot` git submodule
-   - Executes Dotbot with `.install.conf.yaml` configuration
+   - **Default mode**: Fast symlink-only updates (`.install.conf.yaml`)
+   - **Quick mode** (`-q` flag): Same as default, explicitly skips heavy operations
+   - **Full mode** (`-f` flag): Includes all heavy operations (`.install.conf.full.yaml`)
+     - Updates all git submodules (dotbot, nvm, pyenv, rbenv, etc.)
+     - Runs `brew bundle` to install/update Homebrew packages
+     - Builds and installs Alacritty from source
+   - Executes Dotbot with appropriate configuration file
 
-2. **`.install.conf.yaml`** (configuration blueprint):
+2. **Configuration files**:
+   - **`.install.conf.yaml`**: Default/quick mode (symlinks only)
+   - **`.install.conf.quick.yaml`**: Explicit quick mode (same as default)
+   - **`.install.conf.full.yaml`**: Full mode with all heavy operations
+   
+   All configs include:
    - **`clean`**: Removes broken symlinks in `~` and `~/.config`
    - **`link`**: Creates symlinks from repo files → home directory (e.g., `~/.bashrc` → `~/.dotfiles/.bashrc`)
    - **`create`**: Ensures required directories exist
-   - **`shell`**: Runs post-install commands (submodules, brew bundle, Alacritty build)
+   - Full config adds **`shell`**: Runs post-install commands (submodules, brew bundle, Alacritty build)
 
 3. **Symlink approach**:
    - Configuration files remain in the repository
@@ -32,11 +83,34 @@ This repository uses **Dotbot** — a declarative configuration tool for managin
    - Safe to run `./install` multiple times without breaking existing setup
    - Automatically relinks changed files
    - Non-destructive to manual changes in home directory
+   - Quick mode is very fast for frequent updates
+   - Full mode should be run occasionally or after pulling submodule changes
 
 **Key files:**
-- `install` — Main entry script
-- `.install.conf.yaml` — Symlink and command definitions
+- `install` — Main entry script with mode selection
+- `.install.conf.yaml` — Default mode config (symlinks only, ~0.5s)
+- `.install.conf.quick.yaml` — Explicit quick mode config (identical to default)
+- `.install.conf.full.yaml` — Full mode config (includes heavy operations)
 - `.dotbot/` — Dotbot framework (git submodule)
+
+**Performance:**
+- **Quick/Default mode**: ~0.5 seconds (symlinks only)
+- **Full mode**: Several minutes (compiles Alacritty, updates all submodules, runs brew bundle)
+
+**When to use each mode:**
+- **Default/Quick** (`./install` or `./install -q`): 
+  - Daily updates after pulling changes
+  - Testing config file changes
+  - When you only changed dotfiles (not submodules or dependencies)
+  - ✅ Use 99% of the time
+
+- **Full** (`./install -f` or `./install --full`):
+  - First-time setup on a new machine
+  - After updating git submodules (dotbot, pyenv, rbenv, nvm, etc.)
+  - After modifying `Brewfile` (adding/removing packages)
+  - After updating Alacritty source code
+  - When something isn't working and you want to rebuild everything
+  - ⚠️ Use rarely, only when needed
 
 ### ⚠️ Symlinked Directory Complexity
 
@@ -97,8 +171,9 @@ cd .dotbot && git log --oneline v1.19.1..HEAD | head -20
 ### Important notes:
 - **Dotbot has nested submodules**: Always use `--recursive` flag or manually update `lib/pyyaml`
 - **Test before committing**: Verify `python3 .dotbot/bin/dotbot --version` works
-- **The install script**: Runs `git submodule update --init --recursive` on each run, so it will use the committed version
-- **After committing**: Subsequent `./install` runs will automatically use the new submodule version
+- **The install script**: In full mode (`./install -f`), runs `git submodule update --init --recursive` to update all submodules
+- **Quick/default mode**: Does NOT update submodules (fast!)
+- **After committing submodule changes**: Run `./install -f` to update to the committed version
 
 ### Update all submodules:
 
