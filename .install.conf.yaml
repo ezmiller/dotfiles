@@ -16,7 +16,10 @@
       path: emacs-29.d
     ~/.gitconfig:
     ~/.gitignore_global:
-    ~/.gnupg:
+    ~/.gnupg/gpg.conf:
+      path: gnupg/gpg.conf
+    ~/.gnupg/common.conf:
+      path: gnupg/common.conf
     ~/.irbrc:
     ~/.nvm:
     ~/.nvmrc:
@@ -47,8 +50,7 @@
     - ~/.pyenv/plugins/pyenv-virtualenv
 
 - shell: 
-  - [git submodule sync --recursive, Syncronize submodule remote Urls]
+  - [git submodule sync --recursive, Synchronize submodule remote Urls]
   - [git submodule update --init --recursive, Initialize/Update submodules] 
   - [brew bundle, Installing package from Brewfile]
-  - [brew link gnupg@2.2, Linking GPG v2.2 (Temporary step)]
   - [./install-alacritty.sh, Building and installing Alacritty]
