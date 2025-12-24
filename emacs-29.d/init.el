@@ -363,7 +363,7 @@ same directory as the org-buffer and insert a link to this file."
   :after ace-window
   :init
   ;; Exclude vterm buffers and enable mode (simple setup)
-  (setq golden-ratio-exclude-modes '(vterm-mode vterm-copy-mode))
+  (setq golden-ratio-exclude-buffer-regexp '("\\*vterm\\*"))
   (golden-ratio-mode 1)
   :config
   (add-to-list 'golden-ratio-extra-commands 'ace-window))
@@ -909,6 +909,16 @@ same directory as the org-buffer and insert a link to this file."
   (org-download-method 'attach)
   (org-download-link-format "[[file:%s]]"))
 
+;; Configure vterm to always display in a 30% tall bottom window
+;; Use display-buffer-reuse-window first for better toggle behavior
+(add-to-list 'display-buffer-alist
+             '("\\*vterm\\*"  ; Match any buffer with *vterm* in name
+               (display-buffer-reuse-window
+                display-buffer-in-side-window)
+               (side . bottom)
+               (window-height . 0.3)
+               (slot . 0)))  ; Optional: controls which side window slot
+
 (use-package vterm
   :hook (vterm-mode . goto-address-mode)
   :custom
@@ -926,7 +936,7 @@ same directory as the org-buffer and insert a link to this file."
     "Toggle vterm and jack into a tmux session named after the project folder.
 Only sends the tmux command once per vterm buffer to avoid nesting warnings."
     (interactive)
-    (require 'project) (require 'vterm)
+    (require 'project) (require 'vterm) (require 'vterm-toggle)
     (let* ((root (or (when-let ((p (project-current)))
   		     (project-root p))
   		   default-directory))
@@ -945,26 +955,22 @@ Only sends the tmux command once per vterm buffer to avoid nesting warnings."
           (setq-local my/vterm-tmux-session session)
           (setq-local my/vterm-project-root root)))))
 
+  (defun my/vterm-plain ()
+    "Open a plain vterm without tmux in a bottom window."
+    (interactive)
+    (require 'vterm) (require 'vterm-toggle)
+    (if (fboundp 'vterm-toggle) (vterm-toggle) (vterm)))
+
 (use-package vterm-toggle
   :commands (vterm-toggle vterm-toggle-cd)
   :bind
   (
-   ;; ("s-t" . vterm-toggle)
-   ("s-t" . my/vterm-jack-in) ;; for termux
-   ("s-T" . vterm-toggle-cd))
+   ("s-t" . my/vterm-jack-in)    ;; Terminal with tmux
+   ("s-T" . my/vterm-plain))      ;; Plain terminal without tmux
   :custom
   (vterm-toggle-scope 'project)
   (vterm-toggle-project-root t)
-  (vterm-toggle-fullscreen-p nil)
-  :config
-  ;; Show vterm in a 30% tall bottom side window
-  (add-to-list 'display-buffer-alist
-               '((lambda (buf _)
-                   (with-current-buffer buf
-                     (derived-mode-p 'vterm-mode)))
-                 (display-buffer-in-side-window)
-                 (side . bottom)
-                 (window-height . 0.3))))
+  (vterm-toggle-fullscreen-p nil))
 
 (use-package gptel
   :custom
