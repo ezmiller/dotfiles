@@ -991,3 +991,11 @@ Only sends the tmux command once per vterm buffer to avoid nesting warnings."
     (interactive)
     (let ((denote-prompts (denote-add-prompts '(date))))
       (call-interactively #'denote-rename-file))))
+
+(use-package consult-denote
+  :ensure t
+  :bind
+  (("C-c n f" . consult-denote-find)
+   ("C-c n g" . consult-denote-grep))
+  :config
+  (consult-denote-mode 1))

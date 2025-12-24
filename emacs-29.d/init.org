@@ -1388,8 +1388,10 @@ related terminal.
     (pdf-tools-install :no-query))
 #+end_src
 ** Denote
+*** Basic installation
 #+begin_src emacs-lisp
   (use-package denote
+    :straight t
     :custom
     (denote-directory "~/Documents/archive")
     :config
@@ -1398,4 +1400,15 @@ related terminal.
       (interactive)
       (let ((denote-prompts (denote-add-prompts '(date))))
         (call-interactively #'denote-rename-file))))
+#+end_src
+*** Consult Denote Integration
+#+begin_src emacs-lisp
+  (use-package consult-denote
+    :straight t
+    :after denote
+    :bind
+    (("C-c n f" . consult-denote-find)
+     ("C-c n g" . consult-denote-grep))
+    :config
+    (consult-denote-mode 1))
 #+end_src
