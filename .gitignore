@@ -7,5 +7,8 @@ emacs-29.d/straight/build-cache.el
 # Ignore machine-specific project list
 emacs-29.d/projects
 
+# Ignore ECA binaries (auto-downloaded)
+emacs-29.d/eca/
+
 # ignore clojure cpcache
 clojure/.cpcache/*
