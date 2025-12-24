@@ -335,39 +335,44 @@ Also spacious padding
 ** Evil Mode
 
 #+begin_src emacs-lisp
-;; Allow C-u/d for page up/down
-(setq evil-want-C-u-scroll t)
-(setq evil-want-C-d-scroll t)
+  ;; Allow C-u/d for page up/down
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-d-scroll t)
 
-;; Set this to match clojure indent style
-;; May need to be set per mode at some point?
-(setq evil-shift-width 2)
+  ;; Set this to match clojure indent style
+  ;; May need to be set per mode at some point?
+  (setq evil-shift-width 2)
 
-(use-package evil
-  :init
-  ;; These needs to be set when using evil-collection
-  (setq evil-want-integration t)
-  (setq evil-want-keybinding nil)
-  :config
-  (evil-mode 1)
-  (setq-default evil-escape-delay 0.2)
-  (general-define-key
-  :states 'visual
-  ">" 'my/evil-shift-right
-  "<" 'my/evil-shift-left)
-  )
+  (use-package evil
+    :init
+    ;; These needs to be set when using evil-collection
+    (setq evil-want-integration t)
+    (setq evil-want-keybinding nil)
+    :config
+    (evil-mode 1)
 
-(use-package evil-collection
-  :after evil
-  :config
-  (setq evil-collection-mode-list nil) ;; disable all evil bindings as default
-  (evil-collection-init '(magit dired wgrep org)))
+    ;; Set vterm to always start in emacs state
+    (evil-set-initial-state 'vterm-mode 'emacs)
 
-(use-package evil-nerd-commenter
-  :config
-  (general-define-key
-  "M-;" 'evilnc-comment-or-uncomment-lines))
+    (setq-default evil-escape-delay 0.2)
+    (general-define-key
+    :states 'visual
+    ">" 'my/evil-shift-right
+    "<" 'my/evil-shift-left)
+    )
+
+  (use-package evil-collection
+    :after evil
+    :config
+    (setq evil-collection-mode-list nil) ;; disable all evil bindings as default
+    (evil-collection-init '(magit dired wgrep org)))
+
+  (use-package evil-nerd-commenter
+    :config
+    (general-define-key
+    "M-;" 'evilnc-comment-or-uncomment-lines))
 #+end_src
+
 ** Completions, Search, etc
 #+begin_src emacs-lisp
   (use-package vertico
@@ -1319,45 +1324,55 @@ This only works if libvterm is installed, e.g. with Brew
     (vterm-toggle-fullscreen-p nil)
     (vterm-kill-buffer-on-exit t)
     (vterm-max-scrollback 10000)
-    (vterm-mouse-mode t)
-    :config
-    ;; Disable evil mode in vterm
-    (setq evil-emacs-state-cursor nil)
-    (add-hook 'vterm-mode-hook
-            (lambda () (evil-emacs-state))))
+    (vterm-mouse-mode t))
 #+end_src
 
 ** Custom vTerm jack-in
 We use this function below in the vterm-toggle configuration block when we set the key bindings, but it can also just be called by itself. 
 #+begin_src emacs-lisp
-    (defun my/vterm-jack-in ()
-      "Toggle vterm and jack into a tmux session named after the project folder.
+  (defun my/vterm-jack-in ()
+    "Toggle vterm and jack into a tmux session named after the project folder.
   Only sends the tmux command once per vterm buffer to avoid nesting warnings."
-      (interactive)
-      (require 'project) (require 'vterm) (require 'vterm-toggle)
-      (let* ((root (or (when-let ((p (project-current)))
-    		     (project-root p))
-    		   default-directory))
-             (session (file-name-nondirectory (directory-file-name root)))
-             (cmd (format "tmux new-session -As %s -c %s"
-                          (shell-quote-argument session)
-                          (shell-quote-argument (expand-file-name root)))))
-        (if (fboundp 'vterm-toggle) (vterm-toggle) (vterm))
-        ;; Only send the tmux attach command if we haven't already done so
-        (when (derived-mode-p 'vterm-mode)
-          (unless (and (boundp 'my/vterm-tmux-attached-p)
-                       my/vterm-tmux-attached-p)
-            (vterm-send-string cmd)
-            (vterm-send-return)
-            (setq-local my/vterm-tmux-attached-p t)
-            (setq-local my/vterm-tmux-session session)
-            (setq-local my/vterm-project-root root)))))
+    (interactive)
+    (require 'project) (require 'vterm) (require 'vterm-toggle)
+    (let* ((root (or (when-let (p (project-current))
+                       (project-root p))
+                     default-directory))
+           (session (file-name-nondirectory (directory-file-name root)))
+           (cmd (format "tmux new-session -As %s -c %s"
+                        (shell-quote-argument session)
+                        (shell-quote-argument (expand-file-name root)))))
+      ;; Toggle vterm - this will switch to the vterm buffer
+      (if (fboundp 'vterm-toggle) (vterm-toggle) (vterm))
+      ;; Use run-with-idle-timer to ensure vterm-toggle has completed.
+      ;; We dynamically find the vterm buffer rather than capturing (current-buffer)
+      ;; because vterm-toggle may not have switched buffers yet at capture time.
+      (run-with-idle-timer 0.1 nil
+        (lambda (cmd session root)
+          (condition-case err
+              (let ((vterm-buf (seq-find 
+                                (lambda (buf)
+                                  (with-current-buffer buf
+                                    (derived-mode-p 'vterm-mode)))
+                                (buffer-list))))
+                (when vterm-buf
+                  (with-current-buffer vterm-buf
+                    (let ((attached (and (boundp 'my/vterm-tmux-attached-p)
+                                         my/vterm-tmux-attached-p)))
+                      (unless attached
+                        (vterm-send-string cmd)
+                        (vterm-send-return)
+                        (setq-local my/vterm-tmux-attached-p t)
+                        (setq-local my/vterm-tmux-session session)
+                        (setq-local my/vterm-project-root root))))))
+            (error (message "Error in vterm-jack-in timer: %S" err))))
+        cmd session root)))
 
-    (defun my/vterm-plain ()
-      "Open a plain vterm without tmux in a bottom window."
-      (interactive)
-      (require 'vterm) (require 'vterm-toggle)
-      (if (fboundp 'vterm-toggle) (vterm-toggle) (vterm)))
+  (defun my/vterm-plain ()
+    "Open a plain vterm without tmux in a bottom window."
+    (interactive)
+    (require 'vterm) (require 'vterm-toggle)
+    (if (fboundp 'vterm-toggle) (vterm-toggle) (vterm)))
 #+end_src
 
 ** vterm-toggle

@@ -252,6 +252,10 @@ same directory as the org-buffer and insert a link to this file."
   (setq evil-want-keybinding nil)
   :config
   (evil-mode 1)
+
+  ;; Set vterm to always start in emacs state
+  (evil-set-initial-state 'vterm-mode 'emacs)
+
   (setq-default evil-escape-delay 0.2)
   (general-define-key
   :states 'visual
@@ -925,41 +929,55 @@ same directory as the org-buffer and insert a link to this file."
   (vterm-toggle-fullscreen-p nil)
   (vterm-kill-buffer-on-exit t)
   (vterm-max-scrollback 10000)
-  (vterm-mouse-mode t)
-  :config
-  ;; Disable evil mode in vterm
-  (setq evil-emacs-state-cursor nil)
-  (add-hook 'vterm-mode-hook
-          (lambda () (evil-emacs-state))))
+  (vterm-mouse-mode t))
 
 (defun my/vterm-jack-in ()
-    "Toggle vterm and jack into a tmux session named after the project folder.
+  "Toggle vterm and jack into a tmux session named after the project folder.
 Only sends the tmux command once per vterm buffer to avoid nesting warnings."
-    (interactive)
-    (require 'project) (require 'vterm) (require 'vterm-toggle)
-    (let* ((root (or (when-let ((p (project-current)))
-  		     (project-root p))
-  		   default-directory))
-           (session (file-name-nondirectory (directory-file-name root)))
-           (cmd (format "tmux new-session -As %s -c %s"
-                        (shell-quote-argument session)
-                        (shell-quote-argument (expand-file-name root)))))
-      (if (fboundp 'vterm-toggle) (vterm-toggle) (vterm))
-      ;; Only send the tmux attach command if we haven't already done so
-      (when (derived-mode-p 'vterm-mode)
-        (unless (and (boundp 'my/vterm-tmux-attached-p)
-                     my/vterm-tmux-attached-p)
-          (vterm-send-string cmd)
-          (vterm-send-return)
-          (setq-local my/vterm-tmux-attached-p t)
-          (setq-local my/vterm-tmux-session session)
-          (setq-local my/vterm-project-root root)))))
+  (interactive)
+  (require 'project) (require 'vterm) (require 'vterm-toggle)
+  (let* ((root (or (when-let (p (project-current))
+                     (project-root p))
+                   default-directory))
+         (session (file-name-nondirectory (directory-file-name root)))
+         (cmd (format "tmux new-session -As %s -c %s"
+                      (shell-quote-argument session)
+                      (shell-quote-argument (expand-file-name root)))))
+    ;; First, toggle vterm to get or create the buffer
+    (if (fboundp 'vterm-toggle) (vterm-toggle) (vterm))
+    ;; Capture the buffer AFTER vterm-toggle switches to it
+    (let ((vterm-buf (current-buffer)))
+      ;; Then send the tmux command after a short delay to ensure vterm is ready
+      (run-with-timer 0.3 nil
+        (lambda (buf cmd session root)
+          (message "DEBUG: inside with-current-buffer, mode=%S attached=%S"
+                        major-mode 
+                        (and (boundp 'my/vterm-tmux-attached-p) 
+                              my/vterm-tmux-attached-p))
+          (when (buffer-live-p buf)
+            (with-current-buffer buf
+              (when (derived-mode-p 'vterm-mode)
+                (unless (and (boundp 'my/vterm-tmux-attached-p)
+                             my/vterm-tmux-attached-p)
+                  (message "DEBUG: About to send cmd: %S" cmd)
+                  (message "DEBUG: vterm process: %S" vterm--process)
+                  (message "DEBUG: process status: %S" 
+                           (when (boundp 'vterm--process)
+                             (process-status vterm--process)))
+                  (vterm-send-string cmd)
+                  (message "DEBUG: After vterm-send-string")
+                  (vterm-send-return)
+                  (message "DEBUG: After vterm-send-return")
+                  (setq-local my/vterm-tmux-attached-p t)
+                  (setq-local my/vterm-tmux-session session)
+                  (setq-local my/vterm-project-root root))))))
+        vterm-buf cmd session root))))
 
-  (defun my/vterm-plain ()
-    "Open a plain vterm without tmux in a bottom window."
-    (interactive)
-    (require 'vterm) (require 'vterm-toggle)
-    (if (fboundp 'vterm-toggle) (vterm-toggle) (vterm)))
+(defun my/vterm-plain ()
+  "Open a plain vterm without tmux in a bottom window."
+  (interactive)
+  (require 'vterm) (require 'vterm-toggle)
+  (if (fboundp 'vterm-toggle) (vterm-toggle) (vterm)))
 
 (use-package vterm-toggle
   :commands (vterm-toggle vterm-toggle-cd)
