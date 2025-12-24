@@ -12,6 +12,6 @@ sudo tic -xe alacritty,alacritty-direct extra/alacritty.info
 # Create the directory for Alacritty shell completions if it doesn't already exist.
 if [ ! -d ${ZDOTDIR:-~}/.zsh_functions ]; then
     mkdir ${ZDOTDIR:-~}/.zsh_functions
-    cp extra/completions/_alacritty ${ZDOTDIR:-~}/.zsh_functions/_alacritty
 fi
+cp extra/completions/_alacritty ${ZDOTDIR:-~}/.zsh_functions/_alacritty
 
