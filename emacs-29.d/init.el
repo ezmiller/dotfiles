@@ -167,6 +167,7 @@ same directory as the org-buffer and insert a link to this file."
 
 (setq display-line-numbers 'visual)
 (setq display-line-numbers-type 'relative)
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
 (use-package modus-themes
   :custom
@@ -644,9 +645,6 @@ same directory as the org-buffer and insert a link to this file."
   (define-key rjsx-mode-map "<" nil)
   (define-key rjsx-mode-map (kbd "C-d") nil)
   (define-key rjsx-mode-map ">" nil)
-
-  ;; setup hook to enable line numbers mode
-  (add-hook 'rjsx-mode-hook 'display-line-numbers-mode)
   )
 
 (use-package prettier-js
@@ -983,6 +981,7 @@ Only sends the tmux command once per vterm buffer to avoid nesting warnings."
   (pdf-tools-install :no-query))
 
 (use-package denote
+  :straight t
   :custom
   (denote-directory "~/Documents/archive")
   :config
@@ -993,7 +992,8 @@ Only sends the tmux command once per vterm buffer to avoid nesting warnings."
       (call-interactively #'denote-rename-file))))
 
 (use-package consult-denote
-  :ensure t
+  :straight t
+  :after denote
   :bind
   (("C-c n f" . consult-denote-find)
    ("C-c n g" . consult-denote-grep))

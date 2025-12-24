@@ -237,10 +237,11 @@ support them as far as I can tell.
     (global-ligature-mode 't))
 #+end_src
 ** Line Numbers
-Hooks for line nubmers to be displayed are set on specific language configs, i.e. not in all text buffers.
+Enable line numbers in all programming modes, but not in org-mode or text-mode.
 #+begin_src emacs-lisp
   (setq display-line-numbers 'visual)
   (setq display-line-numbers-type 'relative)
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
 #+end_src
 ** Theme
 Using modus theme that is integrated into emacs.
@@ -886,9 +887,6 @@ Then we install each app seprately.
     (define-key rjsx-mode-map "<" nil)
     (define-key rjsx-mode-map (kbd "C-d") nil)
     (define-key rjsx-mode-map ">" nil)
-
-    ;; setup hook to enable line numbers mode
-    (add-hook 'rjsx-mode-hook 'display-line-numbers-mode)
     )
 
   (use-package prettier-js
