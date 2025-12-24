@@ -5,6 +5,7 @@
 - **Install Alacritty**: `./install-alacritty.sh`
 - **Update dotfiles**: `dfu` (alias: cd ~/.dotfiles && git pull --ff-only && ./install -q)
 - **Install Homebrew packages**: `brew bundle`
+- **Update submodules**: See "Updating Git Submodules" section below
 
 ## Install System Architecture
 
@@ -59,6 +60,53 @@ This repository uses **Dotbot** — a declarative configuration tool for managin
 5. **When in doubt**, ask before committing files in symlinked directories
 
 **For AI agents**: When suggesting changes to or working with symlinked directories (`~/.nvm`, `~/.pyenv`, `~/.rbenv`, etc.), proactively remind the user about this complexity and recommend careful review of `git status` before committing.
+
+## Updating Git Submodules
+
+This repository includes multiple git submodules (dotbot, nvm, pyenv, rbenv, etc.). Some have **nested submodules** (e.g., dotbot contains lib/pyyaml).
+
+### Update a single submodule to latest:
+
+```bash
+# Method 1: Update to latest from remote (recommended for dotbot)
+cd .dotbot
+git fetch origin
+git checkout origin/master
+git submodule update --init --recursive  # Update nested submodules
+cd ..
+git add .dotbot
+
+# Method 2: Using git submodule command
+git submodule update --remote --init --recursive .dotbot
+```
+
+### Verify the update:
+
+```bash
+# Check version
+python3 .dotbot/bin/dotbot --version
+
+# Check what changed
+git diff --cached .dotbot
+git submodule status
+
+# View new commits
+cd .dotbot && git log --oneline v1.19.1..HEAD | head -20
+```
+
+### Important notes:
+- **Dotbot has nested submodules**: Always use `--recursive` flag or manually update `lib/pyyaml`
+- **Test before committing**: Verify `python3 .dotbot/bin/dotbot --version` works
+- **The install script**: Runs `git submodule update --init --recursive` on each run, so it will use the committed version
+- **After committing**: Subsequent `./install` runs will automatically use the new submodule version
+
+### Update all submodules:
+
+```bash
+git submodule update --remote --recursive
+```
+
+**Warning**: Be selective when updating all submodules. Some (like pyenv, rbenv, nvm) may introduce breaking changes. Review each update individually.
 
 ## Testing
 - **Emacs Lisp tests**: `cd org-journal && make test` (runs ert-run-tests-batch-and-exit)
