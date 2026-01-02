@@ -913,30 +913,36 @@ Then we install each app seprately.
 ** Clojure
 *** Basic setup
 #+begin_src emacs-lisp
-  (use-package clojure-mode
-    :defer t
-    :hook ((clojure-mode . lsp-deferred))) 
+    (use-package clojure-mode
+      :defer t
+      :hook ((clojure-mode . lsp-deferred))) 
 
-  (use-package clojure-ts-mode
-    :defer t)
+    (use-package clojure-ts-mode
+      :defer t)
 
-  (use-package cider
-    :defer t
-    :config
-    (setq cider-repl-pop-to-buffer-on-connect nil))
+        (use-package cider
+          :defer t
+          :hook ((clojure-mode . (lambda ()
+      		     (add-hook 'before-save-hook 'cider-format-buffer nil t))))
+          :config
+          (setq cider-repl-pop-to-buffer-on-connect nil))
 
-  (use-package rainbow-delimiters
-    :defer t
-    :init
-    (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+    (use-package rainbow-delimiters
+      :defer t
+      :init
+      (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
 
-  (use-package company
-    :config
-    (progn
-      (add-hook 'cider-repl-mode-hook #'company-mode)
-      (add-hook 'cider-mode-hook #'company-mode)))
+    (use-package company
+      :config
+      (progn
+        (add-hook 'cider-repl-mode-hook #'company-mode)
+        (add-hook 'cider-mode-hook #'company-mode)))
 #+end_src
-
+*** Flycheck Clj-Kondo Integration
+Enables squiggly lines under lint warnings / errors.
+#+begin_src emacs-lisp
+  (use-package flycheck-clj-kondo)
+#+end_src
 *** Clay (literate notebooks)
 #+begin_src emacs-lisp
 (use-package clay
@@ -1299,7 +1305,7 @@ The setup below relies on the following configuration settings in logseq's .edn:
     (org-download-link-format "[[file:%s]]"))
 #+end_src
 
-* vTerm (Terminal)
+* TODO vTerm (Terminal)
 ** vTerm Display Rules
 Set up display rules for vterm buffers to always appear in a bottom side window.
 This must be configured BEFORE vterm loads to work correctly on first toggle.

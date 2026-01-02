@@ -670,10 +670,12 @@ same directory as the org-buffer and insert a link to this file."
 (use-package clojure-ts-mode
   :defer t)
 
-(use-package cider
-  :defer t
-  :config
-  (setq cider-repl-pop-to-buffer-on-connect nil))
+    (use-package cider
+      :defer t
+      :hook ((clojure-mode . (lambda ()
+  		     (add-hook 'before-save-hook 'cider-format-buffer nil t))))
+      :config
+      (setq cider-repl-pop-to-buffer-on-connect nil))
 
 (use-package rainbow-delimiters
   :defer t
@@ -685,6 +687,8 @@ same directory as the org-buffer and insert a link to this file."
   (progn
     (add-hook 'cider-repl-mode-hook #'company-mode)
     (add-hook 'cider-mode-hook #'company-mode)))
+
+(use-package flycheck-clj-kondo)
 
 (use-package clay
   :straight (clay
@@ -943,35 +947,31 @@ Only sends the tmux command once per vterm buffer to avoid nesting warnings."
          (cmd (format "tmux new-session -As %s -c %s"
                       (shell-quote-argument session)
                       (shell-quote-argument (expand-file-name root)))))
-    ;; First, toggle vterm to get or create the buffer
+    ;; Toggle vterm - this will switch to the vterm buffer
     (if (fboundp 'vterm-toggle) (vterm-toggle) (vterm))
-    ;; Capture the buffer AFTER vterm-toggle switches to it
-    (let ((vterm-buf (current-buffer)))
-      ;; Then send the tmux command after a short delay to ensure vterm is ready
-      (run-with-timer 0.3 nil
-        (lambda (buf cmd session root)
-          (message "DEBUG: inside with-current-buffer, mode=%S attached=%S"
-                        major-mode 
-                        (and (boundp 'my/vterm-tmux-attached-p) 
-                              my/vterm-tmux-attached-p))
-          (when (buffer-live-p buf)
-            (with-current-buffer buf
-              (when (derived-mode-p 'vterm-mode)
-                (unless (and (boundp 'my/vterm-tmux-attached-p)
-                             my/vterm-tmux-attached-p)
-                  (message "DEBUG: About to send cmd: %S" cmd)
-                  (message "DEBUG: vterm process: %S" vterm--process)
-                  (message "DEBUG: process status: %S" 
-                           (when (boundp 'vterm--process)
-                             (process-status vterm--process)))
-                  (vterm-send-string cmd)
-                  (message "DEBUG: After vterm-send-string")
-                  (vterm-send-return)
-                  (message "DEBUG: After vterm-send-return")
-                  (setq-local my/vterm-tmux-attached-p t)
-                  (setq-local my/vterm-tmux-session session)
-                  (setq-local my/vterm-project-root root))))))
-        vterm-buf cmd session root))))
+    ;; Use run-with-idle-timer to ensure vterm-toggle has completed.
+    ;; We dynamically find the vterm buffer rather than capturing (current-buffer)
+    ;; because vterm-toggle may not have switched buffers yet at capture time.
+    (run-with-idle-timer 0.1 nil
+      (lambda (cmd session root)
+        (condition-case err
+            (let ((vterm-buf (seq-find 
+                              (lambda (buf)
+                                (with-current-buffer buf
+                                  (derived-mode-p 'vterm-mode)))
+                              (buffer-list))))
+              (when vterm-buf
+                (with-current-buffer vterm-buf
+                  (let ((attached (and (boundp 'my/vterm-tmux-attached-p)
+                                       my/vterm-tmux-attached-p)))
+                    (unless attached
+                      (vterm-send-string cmd)
+                      (vterm-send-return)
+                      (setq-local my/vterm-tmux-attached-p t)
+                      (setq-local my/vterm-tmux-session session)
+                      (setq-local my/vterm-project-root root))))))
+          (error (message "Error in vterm-jack-in timer: %S" err))))
+      cmd session root)))
 
 (defun my/vterm-plain ()
   "Open a plain vterm without tmux in a bottom window."
