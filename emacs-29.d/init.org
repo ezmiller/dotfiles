@@ -480,11 +480,16 @@ Enables easy toggle and other things that I've not yet used.
     (add-to-list 'golden-ratio-extra-commands 'ace-window))
 #+end_src
 
-** Origami Mode
+** Hideshow Mode (Code Folding)
 #+begin_src emacs-lisp
-  (use-package origami
-    :config
-    (add-hook 'js-to-mode 'origami-mode))
+  ;; Hideshow is built-in, so no use-package needed
+  (add-hook 'prog-mode-hook 'hs-minor-mode)
+  
+  ;; Optional: Better keybindings (more convenient than default C-c @ ...)
+  (with-eval-after-load 'hideshow
+    (define-key hs-minor-mode-map (kbd "C-c h") 'hs-toggle-hiding)
+    (define-key hs-minor-mode-map (kbd "C-c C-h") 'hs-hide-all)
+    (define-key hs-minor-mode-map (kbd "C-c C-s") 'hs-show-all))
 #+end_src
 ** Flycheck for errors
 #+begin_src emacs-lisp

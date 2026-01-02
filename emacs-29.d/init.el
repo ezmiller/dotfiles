@@ -372,9 +372,14 @@ same directory as the org-buffer and insert a link to this file."
   :config
   (add-to-list 'golden-ratio-extra-commands 'ace-window))
 
-(use-package origami
-  :config
-  (add-hook 'js-to-mode 'origami-mode))
+;; Hideshow is built-in, so no use-package needed
+(add-hook 'prog-mode-hook 'hs-minor-mode)
+
+;; Optional: Better keybindings (more convenient than default C-c @ ...)
+(with-eval-after-load 'hideshow
+  (define-key hs-minor-mode-map (kbd "C-c h") 'hs-toggle-hiding)
+  (define-key hs-minor-mode-map (kbd "C-c C-h") 'hs-hide-all)
+  (define-key hs-minor-mode-map (kbd "C-c C-s") 'hs-show-all))
 
 (use-package flycheck
   :hook ((prog-mode . flycheck-mode))
