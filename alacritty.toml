@@ -1,13 +1,21 @@
 [window]
-opacity = 0.95
+opacity = 0.9
 option_as_alt = "OnlyLeft"
+dynamic_title = true
+blur = true
 
   [window.padding]
   x = 5
   y = 5
 
+[scrolling]
+history = 10000
+multiplier = 3
+
 [font]
 size = 16
+offset = { x = 0, y = 1 }
+glyph_offset = { x = 0, y = 0 }
 
   [font.normal]
   family = "Fira Code"
@@ -19,6 +27,41 @@ size = 16
   [font.italic]
   family = "Fira Code"
 
-[cursor.style]
-shape = "Beam"
-blinking = "On"
+[cursor]
+unfocused_hollow = true
+thickness = 0.2
+
+  [cursor.style]
+  shape = "Beam"
+  blinking = "On"
+
+[selection]
+semantic_escape_chars = ",│`|:\"' ()[]{}<>"
+
+[colors.primary]
+background = "#101018"
+foreground = "#e4e7f5"
+
+[colors.cursor]
+text = "#101018"
+cursor = "#ffffff"
+
+[colors.normal]
+black   = "#2b2d3a"
+red     = "#ff9f1a"  # orange for "red"
+green   = "#00c896"  # teal for "green"
+yellow  = "#ffd86b"
+blue    = "#5f9cff"
+magenta = "#d58cff"
+cyan    = "#4fd5ff"
+white   = "#d0d3e5"
+
+[colors.bright]
+black   = "#3b3f54"
+red     = "#ffb347"
+green   = "#22e3ad"
+yellow  = "#ffe27f"
+blue    = "#7fb1ff"
+magenta = "#e5a6ff"
+cyan    = "#70ddff"
+white   = "#f1f3ff"
