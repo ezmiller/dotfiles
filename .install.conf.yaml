@@ -44,7 +44,8 @@
     ~/.vim:
     ~/.zsh:
     ~/.zshrc:
-    ~/.alacritty.toml:
+    ~/.config/ghostty/config:
+      path: ghostty/config
 
 - create:
     - ~/.pyenv/plugins/pyenv-virtualenv

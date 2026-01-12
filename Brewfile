@@ -56,6 +56,9 @@ brew "yarn"
 # Fira Code Font used in Emacs
 cask 'font-fira-code'
 
+# Ghostty terminal
+cask "ghostty"
+
 # AWS Cli
 brew "awscli"
 

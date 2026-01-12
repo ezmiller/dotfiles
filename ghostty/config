@@ -1,0 +1,46 @@
+# Window settings
+background-opacity = 0.9
+macos-option-as-alt = left
+window-padding-x = 5
+window-padding-y = 5
+
+# Scrollback
+scrollback-limit = 10000
+
+# Font settings
+font-family = "Fira Code"
+font-style = Light
+font-size = 16
+adjust-cell-height = 1
+
+# Cursor settings
+cursor-style = bar
+cursor-style-blink = true
+
+# Colors - Primary
+background = #101018
+foreground = #e4e7f5
+
+# Cursor colors
+cursor-color = #ffffff
+cursor-text = #101018
+
+# Normal colors (0-7)
+palette = 0=#2b2d3a
+palette = 1=#ff9f1a
+palette = 2=#00c896
+palette = 3=#ffd86b
+palette = 4=#5f9cff
+palette = 5=#d58cff
+palette = 6=#4fd5ff
+palette = 7=#d0d3e5
+
+# Bright colors (8-15)
+palette = 8=#3b3f54
+palette = 9=#ffb347
+palette = 10=#22e3ad
+palette = 11=#ffe27f
+palette = 12=#7fb1ff
+palette = 13=#e5a6ff
+palette = 14=#70ddff
+palette = 15=#f1f3ff

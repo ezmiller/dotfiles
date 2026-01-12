@@ -44,13 +44,13 @@
     ~/.vim:
     ~/.zsh:
     ~/.zshrc:
-    ~/.alacritty.toml:
+    ~/.config/ghostty/config:
+      path: ghostty/config
 
 - create:
     - ~/.pyenv/plugins/pyenv-virtualenv
 
-- shell: 
+- shell:
   - [git submodule sync --recursive, Synchronize submodule remote Urls]
-  - [git submodule update --init --recursive, Initialize/Update submodules] 
+  - [git submodule update --init --recursive, Initialize/Update submodules]
   - [brew bundle, Installing package from Brewfile]
-  - [./install-alacritty.sh, Building and installing Alacritty]
