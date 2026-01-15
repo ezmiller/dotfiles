@@ -4,8 +4,8 @@ macos-option-as-alt = left
 window-padding-x = 5
 window-padding-y = 5
 
-# Scrollback
-scrollback-limit = 10000
+# Scrollback (increased for long agent outputs)
+scrollback-limit = 100000
 
 # Font settings
 font-family = "Fira Code"
@@ -44,3 +44,19 @@ palette = 12=#7fb1ff
 palette = 13=#e5a6ff
 palette = 14=#70ddff
 palette = 15=#f1f3ff
+
+# Shell integration
+shell-integration = detect
+shell-integration-features = cursor,sudo,title
+
+# Clipboard behavior
+copy-on-select = true
+clipboard-paste-protection = false
+
+# Session persistence
+window-save-state = always
+
+# Quick terminal (drop-down)
+quick-terminal-position = bottom
+quick-terminal-autohide = true
+keybind = global:ctrl+backtick=toggle_quick_terminal
