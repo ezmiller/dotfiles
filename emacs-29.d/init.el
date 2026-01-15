@@ -624,9 +624,10 @@ same directory as the org-buffer and insert a link to this file."
 	     :host github
 	     :repo "editor-code-assistant/eca-emacs"
 	     :files ("*.el"))
+  :bind ("s-e" . eca-chat-toggle-window)
   :config
-  (setenv "OPENAI_API_KEY" secret/openai-api-key)
-  (setenv "CLAUDE_API_KEY" secret/claude-api-key)
+  ;; (setenv "OPENAI_API_KEY" secret/openai-api-key)
+  ;; (setenv "CLAUDE_API_KEY" secret/claude-api-key)
   )
 
 (setq js-indent-level 2)

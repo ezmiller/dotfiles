@@ -828,17 +828,18 @@ A useful guide for setup here: https://robert.kra.hn/posts/2023-02-22-copilot-em
      (add-to-list 'copilot-indentation-alist '(js2-mode 2))
      (add-to-list 'copilot-indentation-alist '(rjsx-mode 2)))
 #+end_src
-** ECA (by Erica Dallo)
+** Editor Code Assistant 
 #+begin_src emacs-lisp
   (use-package eca
     :straight (eca
-  	     :type git
-  	     :host github
-  	     :repo "editor-code-assistant/eca-emacs"
-  	     :files ("*.el"))
+	     :type git
+	     :host github
+	     :repo "editor-code-assistant/eca-emacs"
+	     :files ("*.el"))
+    :bind ("s-e" . eca-chat-toggle-window)
     :config
-    (setenv "OPENAI_API_KEY" secret/openai-api-key)
-    (setenv "CLAUDE_API_KEY" secret/claude-api-key)
+    ;; (setenv "OPENAI_API_KEY" secret/openai-api-key)
+    ;; (setenv "CLAUDE_API_KEY" secret/claude-api-key)
     )
 #+end_src
 
@@ -1310,7 +1311,7 @@ The setup below relies on the following configuration settings in logseq's .edn:
     (org-download-link-format "[[file:%s]]"))
 #+end_src
 
-* TODO vTerm (Terminal)
+* vTerm (Terminal)
 ** vTerm Display Rules
 Set up display rules for vterm buffers to always appear in a bottom side window.
 This must be configured BEFORE vterm loads to work correctly on first toggle.
