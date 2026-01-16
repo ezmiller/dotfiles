@@ -16,7 +16,7 @@
  ("consult-org-roam" . "a6dec09dcd06a3014409044399c4f8860ca45ef1")
  ("dash.el" . "af5ea5d8a13735fa27d2c3e6f756d065639a7b45")
  ("denote" . "bdd8a692d4d00eb5f737f517a47153225f92c5df")
- ("eca-emacs" . "c6c56a4cd55ad1792f19fa09bd39bc48c81b23c9")
+ ("eca-emacs" . "b772ca7756bb1446694d88bc13f801c772e29c2f")
  ("el-get" . "ec5cba8d965980b2c47a8a11dce30dd5e845ed2a")
  ("eldoc" . "91a8ae2fa66ac09f45337f9eca6c7aa643a063f4")
  ("elisp-tree-sitter" . "3cfab8a0e945db9b3df84437f27945746a43cc71")
