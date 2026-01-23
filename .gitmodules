@@ -40,3 +40,10 @@
 [submodule "alacritty"]
 	path = alacritty
 	url = git@github.com:alacritty/alacritty.git
+[submodule "pk-skills"]
+	path = pk-skills
+	url = git@github.com:PrimaryKids/pk-skills.git
+	branch = api-upgrade-skill
+[submodule "skills"]
+	path = skills
+	url = git@github.com:ezmiller/skills.git

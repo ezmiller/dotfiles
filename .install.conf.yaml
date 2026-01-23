@@ -47,6 +47,16 @@
     ~/.zshrc:
     ~/.config/ghostty/config:
       path: ghostty/config
+    # Claude Code skills
+    ~/.claude/skills/api-upgrade:
+      path: pk-skills/skills/api-upgrade
+    ~/.claude/skills/financial-aid-application:
+      path: skills/skills/financial-aid-application
+    # ECA skills
+    ~/.config/eca/skills/api-upgrade:
+      path: pk-skills/skills/api-upgrade
+    ~/.config/eca/skills/financial-aid-application:
+      path: skills/skills/financial-aid-application
 
 - create:
     - ~/.pyenv/plugins/pyenv-virtualenv
