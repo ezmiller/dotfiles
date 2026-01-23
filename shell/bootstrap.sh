@@ -1,8 +1,7 @@
 # Set emacs mode
 set -o emacs
 
-path_prepend "$HOME/bin"
-path_prepend "$HOME/.dotfiles/bin"
+path_prepend "$HOME/.local/bin"  # User-local binaries (Claude Code, scripts via dotbot, etc.)
 
 # For rbenv
 path_prepend "$HOME/.rbenv/bin"

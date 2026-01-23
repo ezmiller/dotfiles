@@ -9,7 +9,8 @@
     ~/.bash:
     ~/.bashrc:
     ~/.bash_profile:
-    ~/bin:
+    ~/.local/bin/pdf2txt.sh:
+      path: bin/pdf2txt.sh
     ~/.clojure:
     ~/.direnvrc:
     ~/.emacs.d:
