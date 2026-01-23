@@ -34,6 +34,11 @@ fi
 path_prepend "$HOME/miniconda/bin"
 path_append "$HOME/miniconda"
 
+# For PostgreSQL (keg-only, needs explicit PATH)
+if [ -d "$(brew --prefix 2>/dev/null)/opt/postgresql@14/bin" ]; then
+    path_prepend "$(brew --prefix)/opt/postgresql@14/bin"
+fi
+
 # For Hub (http://hub.github.com)
 eval "$(hub alias -s)"
 

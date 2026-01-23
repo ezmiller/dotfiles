@@ -43,6 +43,9 @@ brew "hub"
 # Note: Brew does not automatically symlink these so we need to do a brew link command after.
 brew "gnupg@2.2"
 
+# Databases
+brew "postgresql@14"
+
 # Programming languages & related
 brew "clojure"
 brew "rust"
