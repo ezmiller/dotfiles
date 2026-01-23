@@ -996,11 +996,6 @@ Only sends the tmux command once per vterm buffer to avoid nesting warnings."
   (vterm-toggle-project-root t)
   (vterm-toggle-fullscreen-p nil))
 
-(use-package gptel
-  :custom
-  (gptel-default-mode 'org-mode)
-  (gptel-api-key secret/openai-api-key))
-
 ;; This registers an autoloaded command for pdf-view-mode, defers
 ;; loading of pdf-tools, and runs pdf-view-mode if the beginning of a
 ;; buffer matches the string "%PDF".

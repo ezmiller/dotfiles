@@ -1404,7 +1404,7 @@ related terminal.
 #+end_src
 
 * Other stuff
-** Gptel (Chat GPT)
+** COMMENT Gptel (Chat GPT)
 #+begin_src emacs-lisp
   (use-package gptel
     :custom
