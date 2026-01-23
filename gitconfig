@@ -112,37 +112,8 @@
 [core]
 	excludesfile = ~/.gitignore_global
 
-# Allow local customizations in the .gitconfig_local file
+# Allow local customizations (machine-specific settings like [safe] directory)
 [include]
 	path = ~/.gitconfig_local
 [init]
 	defaultBranch = main
-[safe]
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/eventbridge-connector
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/eventbridge-connector
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/eventbridge-connector
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/eventbridge-connector
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
-	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
