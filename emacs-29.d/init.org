@@ -792,6 +792,37 @@ Helps surrounding text with symbols, e.g. quotes.
      company-dabbrev-downcase t    ;; don't downcase completions
      ))
 #+end_src
+** Editor Code Assistant 
+#+begin_src emacs-lisp
+  (use-package eca
+    :straight (eca
+	     :type git
+	     :host github
+	     :repo "editor-code-assistant/eca-emacs"
+	     :files ("*.el"))
+    :bind ("s-e" . eca-chat-toggle-window)
+    :config
+    ;; (setenv "OPENAI_API_KEY" secret/openai-api-key)
+    ;; (setenv "CLAUDE_API_KEY" secret/claude-api-key)
+    )
+#+end_src
+** Emacs MCPs
+There are several of these by the same name, current one is: https://github.com/rhblind/emacs-mcp-server
+
+This Emacs MCP server allows an LLM to look read/modify buffers, execute elisp code, navigate across files, etc. It can 
+- Type: Pure Elisp server (no external dependencies except =socat= for stdio transport)
+- Features: Buffer read/write, elisp execution, file navigation, diagnostics (flycheck/flymake)
+
+The Emacs MCP ecosystem has several implementations with different approaches. Search emacs-mcp-server to see others.
+
+#+begin_src emacs-lisp
+  (use-package mcp-server
+    :straight (:type git :host github :repo "rhblind/emacs-mcp-server"
+               :files ("*.el" "tools/*.el" "mcp-wrapper.py" "mcp-wrapper.sh"))
+    :config
+    (add-hook 'emacs-startup-hook #'mcp-server-start-unix))
+#+end_src
+
 ** COMMENT Copilot
 A useful guide for setup here: https://robert.kra.hn/posts/2023-02-22-copilot-emacs-setup/
 
@@ -827,20 +858,6 @@ A useful guide for setup here: https://robert.kra.hn/posts/2023-02-22-copilot-em
      (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode 2))
      (add-to-list 'copilot-indentation-alist '(js2-mode 2))
      (add-to-list 'copilot-indentation-alist '(rjsx-mode 2)))
-#+end_src
-** Editor Code Assistant 
-#+begin_src emacs-lisp
-  (use-package eca
-    :straight (eca
-	     :type git
-	     :host github
-	     :repo "editor-code-assistant/eca-emacs"
-	     :files ("*.el"))
-    :bind ("s-e" . eca-chat-toggle-window)
-    :config
-    ;; (setenv "OPENAI_API_KEY" secret/openai-api-key)
-    ;; (setenv "CLAUDE_API_KEY" secret/claude-api-key)
-    )
 #+end_src
 
 ** COMMENT Emacs Application Framework
