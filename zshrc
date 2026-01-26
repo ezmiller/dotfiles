@@ -43,9 +43,10 @@ if [ -f ~/.zshrc_local_after ]; then
 fi
 
 # added by Snowflake SnowSQL installer v1.2
-export PATH=/Applications/SnowSQL.app/Contents/MacOS:$PATH
+path_append /Applications/SnowSQL.app/Contents/MacOS
 
-export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
+path_append "$HOME/.yarn/bin"
+path_append "$HOME/.config/yarn/global/node_modules/.bin"
 
 # tabtab source for serverless package
 # uninstall by removing these lines or running `tabtab uninstall serverless`
