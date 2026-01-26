@@ -1327,6 +1327,38 @@ The setup below relies on the following configuration settings in logseq's .edn:
     (org-download-method 'attach)
     (org-download-link-format "[[file:%s]]"))
 #+end_src
+* Markdown Mode
+#+begin_src emacs-lisp
+  (use-package markdown-mode
+    :mode (("README\\.md\\'" . gfm-mode)
+           ("\\.md\\'" . markdown-mode)
+           ("\\.markdown\\'" . markdown-mode))
+    :custom
+    ;; Use pandoc with GitHub Flavored Markdown to preserve code block classes
+    (markdown-command "pandoc -f gfm -t html")
+    (markdown-fontify-code-blocks-natively t)
+    :config
+    ;; Enable markdown-mode for GitHub Flavored Markdown
+    (setq markdown-enable-math t)
+    (setq markdown-enable-wiki-links t)
+    
+    ;; Add mermaid.js support for HTML preview
+    (setq markdown-xhtml-header-content
+          "<script type=\"module\">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  
+  // Process mermaid blocks that are wrapped in code tags (from pandoc)
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('pre.mermaid > code').forEach((codeBlock) => {
+      const pre = codeBlock.parentElement;
+      pre.textContent = codeBlock.textContent;
+      pre.classList.add('mermaid');
+    });
+    mermaid.initialize({ startOnLoad: true });
+    mermaid.run();
+  });
+</script>"))
+#+end_src
 
 * vTerm (Terminal)
 ** vTerm Display Rules
