@@ -7,8 +7,14 @@ emacs-29.d/straight/build-cache.el
 # Ignore machine-specific project list
 emacs-29.d/projects
 
+# Ignore generated init.el (source is init.org)
+emacs-29.d/init.el
+
 # Ignore ECA binaries (auto-downloaded)
 emacs-29.d/eca/
+
+# Ignore Claude/ECA settings (contains permission grants)
+.claude/
 
 # ignore clojure cpcache
 clojure/.cpcache/*
