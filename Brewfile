@@ -20,6 +20,9 @@ brew "tmux"
 # JQ, of course
 brew "jq"
 
+# socat - networking utility for socket connections
+brew "socat"
+
 # A useeful tool for learning about cli commands
 # https://github.com/tldr-pages/tldr
 brew "tldr"
