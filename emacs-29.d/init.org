@@ -320,6 +320,13 @@ Also spacious padding
  :states '(normal visual insert emacs)
  "M-." 'xref-find-definitions
  "M-," 'xref-pop-marker-stack)
+
+;; Disable Evil mode in xref buffers so default keybindings (like RET) work
+;; But add j/k for navigation since that's muscle memory
+(with-eval-after-load 'xref
+  (evil-set-initial-state 'xref--xref-buffer-mode 'emacs)
+  (define-key xref--xref-buffer-mode-map (kbd "j") 'next-line)
+  (define-key xref--xref-buffer-mode-map (kbd "k") 'previous-line))
 #+end_src
 
 ** Which key
@@ -814,6 +821,8 @@ This Emacs MCP server allows an LLM to look read/modify buffers, execute elisp c
 - Features: Buffer read/write, elisp execution, file navigation, diagnostics (flycheck/flymake)
 
 The Emacs MCP ecosystem has several implementations with different approaches. Search emacs-mcp-server to see others.
+
+*Note (Feb 2, 2026):* When using with ECA/Claude CLI, configure with the Python wrapper script (=mcp-wrapper.py=) rather than direct Unix socket. Also enable security prompting with =(setq mcp-server-security-prompt-for-permissions t)= to allow buffer access operations interactively.
 
 #+begin_src emacs-lisp
   (use-package mcp-server
