@@ -1172,33 +1172,37 @@ The theme must be reloaded after setting the values.
 
 ** Org Journal
 #+begin_src emacs-lisp
-  (use-package org-journal
-    :defer t
-    :after (org-roam)
-    :init
-    (general-define-key
-        :prefix "C-c"
-        "C-j" nil ;; override default C-j binding for org-journal
-        "C-j o" 'org-journal-open-current-journal-file
-        "C-j n" 'org-journal-new-entry
-        "C-j d" 'org-journal-new-date-entry)
-      :config
-      ;; set org-journal-dir by concatting org-roam-directory with "journals"
-      (setq org-journal-dir (concat org-roam-directory "journals/"))
-      (setq org-agenda-file-regexp "\\`\\([^.].*\\.org\\|[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}\\.org\\(\\.gpg\\)?\\)\\'")
-      (setq org-journal-file-type 'daily)
-      (setq org-journal-file-format "%Y-%m-%d.org")
-      (setq org-journal-date-format "%B %d %Y")
-      (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"STARTED\"|TODO=\"REVIEW\"|TODO=\"BLOCKED\"")
-      (setq org-journal-find-file #'find-file-other-window)
-      (defun org-journal-file-header-func (time)
-        "Custom function to create journal header."
-        (concat
-        (pcase org-journal-file-type
-  	(`daily (format-time-string "#+TITLE: %Y-%m-%d\n#+STARTUP: folded")))))
-      (setq org-journal-file-header 'org-journal-file-header-func)
-      ;;(setq org-journal-after-header-create-hook #'org-id-get-create)
-      )
+    (use-package org-journal
+      :defer t
+      :after (org-roam)
+      :init
+      (general-define-key
+          :prefix "C-c"
+          "C-j" nil ;; override default C-j binding for org-journal
+          "C-j o" 'org-journal-open-current-journal-file
+          "C-j n" 'org-journal-new-entry
+          "C-j d" 'org-journal-new-date-entry)
+        :config
+              ;; set org-journal-dir by concatting org-roam-directory with "journals"
+              (setq org-journal-dir (concat org-roam-directory "journals/"))
+              (setq org-agenda-file-regexp "\\`\\([^.].*\\.org\\|[0-9]\\{4\\}_[0-9]\\{2\\}_[0-9]\\{2\\}\\.org\\(\\.gpg\\)?\\)\\'")
+              (setq org-journal-file-type 'daily)
+              (setq org-journal-file-format "%Y_%m_%d.org")
+              ;; Remove the automatic date heading entirely (date is already in TITLE)
+              ;; Use a space to satisfy org-journal's validation while not displaying anything
+              (setq org-journal-date-format " ")
+              ;; Set entries to top-level headings (*)
+              (setq org-journal-time-prefix "* ")
+              (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"STARTED\"|TODO=\"REVIEW\"|TODO=\"BLOCKED\"")
+        (setq org-journal-find-file #'find-file-other-window)
+        (defun org-journal-file-header-func (time)
+          "Custom function to create journal header."
+          (concat
+          (pcase org-journal-file-type
+  	(`daily (format-time-string "#+TITLE: %Y_%m_%d\n#+STARTUP: folded")))))
+        (setq org-journal-file-header 'org-journal-file-header-func)
+        ;;(setq org-journal-after-header-create-hook #'org-id-get-create)
+        )
 #+end_src
 
 ** Org Roam
