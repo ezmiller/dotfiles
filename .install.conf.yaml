@@ -47,6 +47,11 @@
     ~/.zshrc:
     ~/.config/ghostty/config:
       path: ghostty/config
+    ~/.config/tmuxinator:
+      path: tmuxinator
+    # Claude Code config
+    ~/.claude/.mcp.json:
+      path: .claude/.mcp.json
     # Claude Code skills
     ~/.claude/skills/api-upgrade:
       path: pk-skills/skills/api-upgrade

@@ -1,0 +1,16 @@
+name: agents
+root: ~/
+
+windows:
+  - grid:
+      layout: tiled
+      panes:
+        -
+        -
+        -
+        -
+        -
+        -
+        -
+        -
+        -

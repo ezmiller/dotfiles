@@ -16,6 +16,7 @@ brew "bat"
 
 # Tmux, of course
 brew "tmux"
+brew "tmuxinator"
 
 # JQ, of course
 brew "jq"
@@ -32,9 +33,9 @@ brew "ripgrep"
 brew "ag"
 brew "fd"
 
-# The hub tool for working with github
-# https://cli.github.com/ 
-brew "hub"
+# GitHub CLI (replaces hub)
+# https://cli.github.com/
+brew "gh"
 
 # GnuPG for GPG key management
 # Pinning to v2.2 because latest version 2.4.2 has bug
@@ -67,6 +68,9 @@ cask "ghostty"
 
 # AWS Cli
 brew "awscli"
+
+# Terraform for infrastructure as code
+brew "terraform"
 
 # Emacs
 brew "gcc"
