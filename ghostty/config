@@ -52,6 +52,12 @@ shell-integration-features = cursor,sudo,title
 # Clipboard behavior
 copy-on-select = true
 clipboard-paste-protection = false
+clipboard-read = allow
+
+# Image pasting in Claude Code: Use Ctrl+V (not Cmd+V) to paste images.
+# Ghostty doesn't yet support OSC 5252 for image clipboard data.
+# Tracking: https://github.com/ghostty-org/ghostty/discussions/10099
+#           https://github.com/ghostty-org/ghostty/discussions/8275
 
 # Session persistence
 window-save-state = always
