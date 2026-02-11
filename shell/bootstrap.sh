@@ -2,6 +2,7 @@
 set -o emacs
 
 path_prepend "$HOME/.local/bin"  # User-local binaries (Claude Code, scripts via dotbot, etc.)
+path_prepend "$HOME/.fly/bin"    # Fly.io CLI
 
 # For rbenv
 path_prepend "$HOME/.rbenv/bin"
@@ -38,8 +39,8 @@ if [ -d "$(brew --prefix 2>/dev/null)/opt/postgresql@14/bin" ]; then
     path_prepend "$(brew --prefix)/opt/postgresql@14/bin"
 fi
 
-# For Hub (http://hub.github.com)
-eval "$(hub alias -s)"
+# GitHub CLI (gh) - replaces hub
+# No alias needed; use `gh repo clone user/repo` directly
 
 # For Alacritty (terminal) completions. This
 # assumes that the zsh_functions directory
