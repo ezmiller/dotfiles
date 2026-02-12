@@ -62,7 +62,3 @@ clipboard-read = allow
 # Session persistence
 window-save-state = always
 
-# Quick terminal (drop-down)
-quick-terminal-position = bottom
-quick-terminal-autohide = true
-keybind = global:ctrl+backtick=toggle_quick_terminal
