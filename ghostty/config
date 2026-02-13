@@ -8,9 +8,9 @@ window-padding-y = 5
 scrollback-limit = 100000
 
 # Font settings
-font-family = "Fira Code"
-font-style = Light
-font-size = 16
+font-family = "Hack"
+font-style = Regular
+font-size = 15
 adjust-cell-height = 1
 
 # Cursor settings
