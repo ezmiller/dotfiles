@@ -5,6 +5,9 @@
 
 - clean: ['~', '~/.config']
 
+- shell:
+    - [agents/build.sh, Building agent instruction files]
+
 - link:
     ~/.bash:
     ~/.bashrc:
@@ -41,6 +44,7 @@
     ~/.spacemacs-private:
     ~/.tmux:
     ~/.tmux.conf: tmux/tmux.conf
+    ~/.gitmux.conf: tmux/gitmux.conf
     ~/.vimrc:
     ~/.vim:
     ~/.zsh:
@@ -52,11 +56,18 @@
     # Claude Code config
     ~/.claude/.mcp.json:
       path: .claude/.mcp.json
+    ~/.claude/CLAUDE.md:
+      path: agents/dist/CLAUDE.md
     # Claude Code skills
     ~/.claude/skills/api-upgrade:
       path: pk-skills/skills/api-upgrade
     ~/.claude/skills/financial-aid-application:
       path: skills/skills/financial-aid-application
+    # ECA agent config
+    ~/.config/eca/AGENTS.md:
+      path: agents/eca.md
+    ~/.config/eca/base.md:
+      path: agents/base.md
     # ECA skills
     ~/.config/eca/skills/api-upgrade:
       path: pk-skills/skills/api-upgrade
