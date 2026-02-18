@@ -1,0 +1,11 @@
+name: <%= @args[0] || "agents-2x2" %>
+root: ~/Projects
+
+windows:
+  - grid:
+      layout: tiled
+      panes:
+        -
+        -
+        -
+        -

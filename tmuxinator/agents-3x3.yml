@@ -1,5 +1,5 @@
-name: agents
-root: ~/
+name: <%= @args[0] || "agents-3x3" %>
+root: ~/Projects
 
 windows:
   - grid:
