@@ -35,7 +35,9 @@
 #+begin_src emacs-lisp
 (use-package exec-path-from-shell
   :config
-  (when (memq window-system '(mac ns x))
+  (when (or (memq window-system '(mac ns x))
+            (daemonp)
+            (getenv "TERM"))
     (exec-path-from-shell-initialize)))
 #+end_src
 ** Load secrets
@@ -107,6 +109,26 @@ aren't relevant for the user here. See [[https://github.com/protesilaos/dotfiles
     (setq auto-revert-verbose nil)
     (global-auto-revert-mode +1))
   #+end_src
+
+** Terminal-Specific Setup
+When running in terminal mode (emacs -nw), enable mouse support and clipboard integration.
+
+#+begin_src emacs-lisp
+  (unless (display-graphic-p)
+    ;; Enable mouse support in terminal
+    (xterm-mouse-mode 1)
+    ;; Enable mouse scrolling
+    (global-set-key (kbd "<mouse-4>") 'scroll-down-line)
+    (global-set-key (kbd "<mouse-5>") 'scroll-up-line)
+    ;; Terminal-friendly alternatives for super-key bindings
+    (global-set-key (kbd "C-c t") 'my/vterm-jack-in)
+    (global-set-key (kbd "C-c T") 'my/vterm-plain)
+    (global-set-key (kbd "C-c e") 'eca-chat-toggle-window))
+
+  ;; Clipboard integration via OSC 52 (works over SSH/tmux)
+  (use-package clipetty
+    :hook (after-init . global-clipetty-mode))
+#+end_src
 
 ** Backup & Lock files
 #+begin_src emacs-lisp
@@ -575,7 +597,7 @@ Enables easy toggle and other things that I've not yet used.
           treemacs-project-follow-cleanup        nil
           treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
           treemacs-position                      'left
-          treemacs-read-string-input             'from-child-frame
+          treemacs-read-string-input             (if (display-graphic-p) 'from-child-frame 'from-minibuffer)
           treemacs-recenter-distance             0.1
           treemacs-recenter-after-file-follow    nil
           treemacs-recenter-after-tag-follow     nil
@@ -764,7 +786,7 @@ Helps surrounding text with symbols, e.g. quotes.
     (setq lsp-ui-doc-enable t
           lsp-ui-doc-max-width 100
           lsp-ui-doc-max-height 30
-          lsp-ui-doc-use-childframe t
+          lsp-ui-doc-use-childframe (display-graphic-p)
           lsp-ui-doc-position 'bottom
           
           ;; Turn off sideline diagnostics
@@ -807,11 +829,23 @@ Helps surrounding text with symbols, e.g. quotes.
 	     :host github
 	     :repo "editor-code-assistant/eca-emacs"
 	     :files ("*.el"))
-    :bind ("s-e" . eca-chat-toggle-window)
+    :bind (("s-e" . eca-chat-toggle-window)
+           ("C-c C-SPC" . eca-complete))  ;; Manual completion trigger
     :config
     ;; (setenv "OPENAI_API_KEY" secret/openai-api-key)
     ;; (setenv "CLAUDE_API_KEY" secret/claude-api-key)
-    )
+    
+    ;; ECA completion keybindings (for when completion overlay is active)
+    (with-eval-after-load 'eca
+      (define-key eca-completion-map (kbd "C-j") 'eca-completion-next)
+      (define-key eca-completion-map (kbd "C-k") 'eca-completion-previous)
+      (define-key eca-completion-map (kbd "C-n") 'eca-completion-next)
+      (define-key eca-completion-map (kbd "C-p") 'eca-completion-previous)
+      (define-key eca-completion-map (kbd "TAB") 'eca-completion-accept)
+      (define-key eca-completion-map (kbd "<tab>") 'eca-completion-accept)
+      (define-key eca-completion-map (kbd "RET") 'eca-completion-accept)
+      (define-key eca-completion-map (kbd "<return>") 'eca-completion-accept)
+      (define-key eca-completion-map (kbd "C-g") 'eca-completion-cancel)))
 #+end_src
 ** Emacs MCPs
 There are several of these by the same name, current one is: https://github.com/rhblind/emacs-mcp-server
@@ -1027,6 +1061,33 @@ We'll use scss-mode for both CSS and SCSS files.
     :init
     (add-hook 'ruby-mode-hook 'rubocop-mode)
     :diminish rubocop-mode)
+#+end_src
+** Rust
+*** Rust-mode
+#+begin_src emacs-lisp
+  (use-package rust-mode
+    :mode "\\.rs\\'"
+    :hook ((rust-mode . lsp-deferred))
+    :init
+    (setq rust-format-on-save t)
+    :config
+    ;; Use rustfmt for formatting
+    (setq rust-format-on-save t))
+#+end_src
+
+*** Cargo integration
+#+begin_src emacs-lisp
+  (use-package cargo
+    :hook (rust-mode . cargo-minor-mode)
+    :config
+    (setq cargo-process--command-flags nil))
+#+end_src
+
+*** Flycheck Rust integration
+#+begin_src emacs-lisp
+  (use-package flycheck-rust
+    :after (rust-mode flycheck)
+    :hook (flycheck-mode . flycheck-rust-setup))
 #+end_src
 * Org Mode
 ** Load & configure org
@@ -1480,7 +1541,7 @@ related terminal.
   ;; loading of pdf-tools, and runs pdf-view-mode if the beginning of a
   ;; buffer matches the string "%PDF".
   (use-package pdf-tools
-    :load-path "site-lisp/pdf-tools/lisp"
+    :straight t
     :magic ("%PDF" . pdf-view-mode)
     :config
     (pdf-tools-install :no-query))
