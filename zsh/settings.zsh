@@ -1,4 +1,5 @@
 # Initialize completion
+fpath=(/opt/homebrew/share/zsh/site-functions $fpath)
 autoload -Uz compinit && compinit -i
 zstyle ':completion:*' menu select=4
 zmodload zsh/complist

@@ -219,6 +219,57 @@ When running in terminal mode (emacs -nw), enable mouse support and clipboard in
     (if (file-exists-p filename)
         (insert (concat "[[file:" filename "]]"))))
 #+end_src
+*** Revert Some Buffers
+Like ~save-some-buffers~, but for reverting. Prompts for each file-visiting
+buffer whose file has changed on disk, with ~y/n/!~ choices.
+
+#+begin_src emacs-lisp
+  (defun my/revert-some-buffers (&optional revert-all)
+    "Prompt to revert each file-visiting buffer that has changed on disk.
+  With prefix argument REVERT-ALL (or \\='!\\=' during prompts), revert all
+  without asking.  Responds to the following keys:
+    y / SPC  revert this buffer
+    n / DEL  skip this buffer
+    !        revert this and all remaining buffers
+    q        quit without reverting further buffers"
+    (interactive "P")
+    (let ((buffers (seq-filter
+                    (lambda (buf)
+                      (and (buffer-file-name buf)
+                           (not (verify-visited-file-modtime buf))
+                           (file-exists-p (buffer-file-name buf))))
+                    (buffer-list)))
+          (reverted 0)
+          (skipped  0)
+          (force    revert-all))
+      (if (null buffers)
+          (message "No buffers need reverting.")
+        (catch 'quit
+          (dolist (buf buffers)
+            (let ((fname (buffer-file-name buf)))
+              (if force
+                  (progn
+                    (with-current-buffer buf (revert-buffer t t t))
+                    (cl-incf reverted))
+                (let ((response
+                       (read-char-choice
+                        (format "Revert %s? [y/n/!/q] "
+                                (abbreviate-file-name fname))
+                        '(?y ?  ?n ?\C-h ?\177 ?! ?q))))
+                  (pcase response
+                    ((or ?y ? )
+                     (with-current-buffer buf (revert-buffer t t t))
+                     (cl-incf reverted))
+                    ((or ?n ?\C-h ?\177)
+                     (cl-incf skipped))
+                    (?!
+                     (with-current-buffer buf (revert-buffer t t t))
+                     (cl-incf reverted)
+                     (setq force t))
+                    (?q
+                     (throw 'quit nil))))))))
+        (message "Reverted %d buffer(s), skipped %d." reverted skipped))))
+#+end_src
 * Advanced UI Setup
 ** Fonts Setup
 *** Set font families
@@ -825,16 +876,17 @@ Helps surrounding text with symbols, e.g. quotes.
 #+begin_src emacs-lisp
   (use-package eca
     :straight (eca
-	     :type git
-	     :host github
-	     :repo "editor-code-assistant/eca-emacs"
-	     :files ("*.el"))
+  	     :type git
+  	     :host github
+  	     :repo "editor-code-assistant/eca-emacs"
+  	     :files ("*.el"))
     :bind (("s-e" . eca-chat-toggle-window)
-           ("C-c C-SPC" . eca-complete))  ;; Manual completion trigger
+           ("C-c C-SPC" . eca-complete) ;; Manual completion trigger
+  	 ("C-c C-c" . eca-chat-stop-prompt)) 
     :config
     ;; (setenv "OPENAI_API_KEY" secret/openai-api-key)
     ;; (setenv "CLAUDE_API_KEY" secret/claude-api-key)
-    
+
     ;; ECA completion keybindings (for when completion overlay is active)
     (with-eval-after-load 'eca
       (define-key eca-completion-map (kbd "C-j") 'eca-completion-next)
@@ -863,6 +915,7 @@ The Emacs MCP ecosystem has several implementations with different approaches. S
     :straight (:type git :host github :repo "rhblind/emacs-mcp-server"
                :files ("*.el" "tools/*.el" "mcp-wrapper.py" "mcp-wrapper.sh"))
     :config
+    (setq mcp-server-security-prompt-for-permissions t)
     (add-hook 'emacs-startup-hook #'mcp-server-start-unix))
 #+end_src
 

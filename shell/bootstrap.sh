@@ -42,6 +42,11 @@ fi
 # GitHub CLI (gh) - replaces hub
 # No alias needed; use `gh repo clone user/repo` directly
 
+# For Rust/Cargo
+if [ -f "$HOME/.cargo/env" ]; then
+    source "$HOME/.cargo/env"
+fi
+
 # For Alacritty (terminal) completions. This
 # assumes that the zsh_functions directory
 # exists in the home directory and has had the

@@ -17,6 +17,7 @@ brew "bat"
 # Tmux, of course
 brew "tmux"
 brew "tmuxinator"
+brew "gitmux"
 
 # JQ, of course
 brew "jq"
@@ -52,7 +53,10 @@ brew "postgresql@14"
 
 # Programming languages & related
 brew "clojure"
+tap "clojure-lsp/brew"
+brew "clojure-lsp-native"
 brew "rust"
+brew "rust-analyzer"
 brew "python"
 brew "python-setuptools"
 brew "java"
