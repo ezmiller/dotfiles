@@ -15,6 +15,13 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and read them 
 - Select files to commit carefully. There may be other changes produced by the user or other agents.
 - Prefer explicit `git add <file>` over `git add .` or `git add -A`
 - Review `git status` carefully before committing
+- Be careful with branch management: there may be other work in the directory, the current branch might not be `main`, and we should avoid creating a new branch off a non-`main` branch unless the user requests it
+
+## Documentation Location
+
+- Keep doc sources (Markdown/reST/ADR) in `docs/` and link them from the root `README`; do not commit generated outputs.
+- Code/version-coupled guides stay in-repo. If the user wants a personal copy (e.g., `~/org/techwork`), keep critical steps in `docs/` and just add a pointer.
+- If unsure where a doc belongs, ask; keep one canonical home per topic and note any secondary location.
 
 ## MCP Tool Usage
 
