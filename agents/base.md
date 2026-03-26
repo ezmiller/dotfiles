@@ -2,7 +2,12 @@
 
 ## Before Starting Work
 
-Check for AGENTS.md or CLAUDE.md in the current working directory and read them before proceeding with any task. If no instructions file is found, proceed with standard best practices; ask when ambiguous.
+Check for AGENTS.md or CLAUDE.md in the current working directory and follow them. If none found, use standard best practices; ask when ambiguous.
+
+## How to Work & Communicate
+
+- Be concise in your responses. Let the user ask questions. Less is more.
+- When asked to work on a complex project, work in plan mode before making changes. Favor gathering full context over responding quickly.
 
 ## Trust Boundaries
 
@@ -12,29 +17,27 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and read them 
 
 ## Git Commits
 
-- Select files to commit carefully. There may be other changes produced by the user or other agents.
-- Prefer explicit `git add <file>` over `git add .` or `git add -A`
-- Review `git status` carefully before committing
-- Be careful with branch management: there may be other work in the directory, the current branch might not be `main`, and we should avoid creating a new branch off a non-`main` branch unless the user requests it
+- Prefer explicit `git add <file>` over `git add .` — other changes from the user or other agents may be present.
+- Review `git status` before committing.
+- Don't create branches off non-`main` branches unless asked — other work may be in progress.
 
-## Documentation Location
+## Documentation
 
-- Keep doc sources (Markdown/reST/ADR) in `docs/` and link them from the root `README`; do not commit generated outputs.
-- Code/version-coupled guides stay in-repo. If the user wants a personal copy (e.g., `~/org/techwork`), keep critical steps in `docs/` and just add a pointer.
-- If unsure where a doc belongs, ask; keep one canonical home per topic and note any secondary location.
+- Doc sources (Markdown/reST/ADR) go in `docs/` and link from the root `README`; don't commit generated outputs.
+- When not in a repo, use `~/.tracking/`.
+- One canonical home per topic. If unsure where a doc belongs, ask.
+
+### Tracking Docs
+
+Create a tracking doc for feature planning or complex debugging — not for simple tasks. Place in `docs/` (in-repo) or `~/.tracking/` (no repo). Tracking docs capture process; memory captures conclusions.
 
 ## MCP Tool Usage
 
-When using MCP tools that fetch external content (docs, APIs, schemas), be conservative to avoid context overflow:
+Be conservative with MCP tools that fetch external content to avoid context overflow:
 
-- Limit results (e.g., `max_num_results: 3` or fewer)
-- Fetch one page/item at a time
-- Use specific, narrow queries
-- Ask before making additional calls if more info is needed
+- Limit results (e.g., `max_num_results: 3`), fetch one page at a time, use narrow queries.
+- Ask before making additional calls if more info is needed.
 
 ### Chrome DevTools MCP
 
-When debugging pages with suspected infinite loops:
-
-- Use `pageSize: 50` or smaller for `list_console_messages`
-- Large results (1M+ chars) can lock up the agent during processing
+- Use `pageSize: 50` or smaller for `list_console_messages` — large results (1M+ chars) can lock up the agent.
