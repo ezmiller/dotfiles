@@ -10,6 +10,10 @@ EMACS_URL="https://ftp.gnu.org/gnu/emacs/emacs-${EMACS_VERSION}.tar.xz"
 TREE_SITTER_URL="https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v${TREE_SITTER_VERSION}.tar.gz"
 BUILD_DIR="/tmp/emacs-build"
 
+# tree-sitter installs to /usr/local, which pkg-config doesn't search by default on AL2023
+export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+export LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH:-}"
+
 echo "==> Installing build dependencies..."
 sudo dnf groupinstall -y "Development Tools"
 sudo dnf install -y \
