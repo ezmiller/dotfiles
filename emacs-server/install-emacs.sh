@@ -33,6 +33,7 @@ if ! pkg-config --exists tree-sitter 2>/dev/null; then
   cd "tree-sitter-${TREE_SITTER_VERSION}"
   make -j"$(nproc)"
   sudo make install
+  echo '/usr/local/lib' | sudo tee /etc/ld.so.conf.d/local.conf >/dev/null
   sudo ldconfig
   cd /
   echo "==> tree-sitter installed: $(pkg-config --modversion tree-sitter)"
