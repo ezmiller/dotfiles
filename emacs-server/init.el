@@ -283,7 +283,7 @@
 (add-hook 'typescript-ts-mode-hook 'eglot-ensure)
 (add-hook 'tsx-ts-mode-hook 'eglot-ensure)
 (add-hook 'js-mode-hook 'eglot-ensure)
-(add-hook 'clojure-mode-hook 'eglot-ensure)
+(add-hook 'lisp-mode-hook 'eglot-ensure)
 (add-hook 'bash-ts-mode-hook 'eglot-ensure)
 (add-hook 'sh-mode-hook 'eglot-ensure)
 
@@ -331,12 +331,13 @@
 ;;; Language-specific
 ;;; ============================================================
 
-;; Clojure — basic support via built-in lisp modes
+;; Clojure — use lisp-mode as fallback (clojure-mode is not built-in)
+;; Gives paren matching, indentation, and syntax highlighting
 ;; For REPL: run `clj` in eshell or use M-x run-lisp
-(add-to-list 'auto-mode-alist '("\\.clj\\'" . clojure-mode))
-(add-to-list 'auto-mode-alist '("\\.cljs\\'" . clojure-mode))
-(add-to-list 'auto-mode-alist '("\\.cljc\\'" . clojure-mode))
-(add-to-list 'auto-mode-alist '("\\.edn\\'" . clojure-mode))
+(add-to-list 'auto-mode-alist '("\\.clj\\'" . lisp-mode))
+(add-to-list 'auto-mode-alist '("\\.cljs\\'" . lisp-mode))
+(add-to-list 'auto-mode-alist '("\\.cljc\\'" . lisp-mode))
+(add-to-list 'auto-mode-alist '("\\.edn\\'" . lisp-mode))
 
 ;; TypeScript/TSX — handled by tree-sitter remap above
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
