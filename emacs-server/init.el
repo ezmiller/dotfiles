@@ -166,6 +166,10 @@
 
 (load-theme 'modus-vivendi t)
 
+;; Use terminal's own background instead of theme's — avoids mismatched bg color
+(unless (display-graphic-p)
+  (set-face-background 'default "unspecified-bg"))
+
 ;;; ============================================================
 ;;; Leader Key (C-z)
 ;;; ============================================================
