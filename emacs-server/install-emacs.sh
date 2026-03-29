@@ -5,7 +5,9 @@
 set -euo pipefail
 
 EMACS_VERSION="30.1"
+TREE_SITTER_VERSION="0.24.7"
 EMACS_URL="https://ftp.gnu.org/gnu/emacs/emacs-${EMACS_VERSION}.tar.xz"
+TREE_SITTER_URL="https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v${TREE_SITTER_VERSION}.tar.gz"
 BUILD_DIR="/tmp/emacs-build"
 
 echo "==> Installing build dependencies..."
@@ -15,8 +17,24 @@ sudo dnf install -y \
   gnutls-devel \
   libxml2-devel \
   jansson-devel \
-  texinfo \
-  libtree-sitter-devel || true  # may not be in AL2023 repo
+  texinfo
+
+# Build tree-sitter from source (not in AL2023 repos)
+if ! pkg-config --exists tree-sitter 2>/dev/null; then
+  echo "==> Building tree-sitter ${TREE_SITTER_VERSION} from source..."
+  mkdir -p "$BUILD_DIR"
+  cd "$BUILD_DIR"
+  curl -L "$TREE_SITTER_URL" -o tree-sitter.tar.gz
+  tar xf tree-sitter.tar.gz
+  cd "tree-sitter-${TREE_SITTER_VERSION}"
+  make -j"$(nproc)"
+  sudo make install
+  sudo ldconfig
+  cd /
+  echo "==> tree-sitter installed: $(pkg-config --modversion tree-sitter)"
+else
+  echo "==> tree-sitter already installed: $(pkg-config --modversion tree-sitter)"
+fi
 
 echo "==> Downloading Emacs ${EMACS_VERSION}..."
 mkdir -p "$BUILD_DIR"
