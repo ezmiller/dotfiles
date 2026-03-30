@@ -1,49 +1,36 @@
-;;; init.el --- Minimal server Emacs config (Emacs 30, no packages) -*- lexical-binding: t; -*-
+;;; init.el --- Minimal server Emacs config (Emacs 30) -*- lexical-binding: t; -*-
 
 ;; Designed for: terminal-only use on remote servers (EC2 AL2023)
 ;; Languages: Clojure, TypeScript, Bash
-;; Zero external dependencies — built-ins only
+;; External packages: evil, evil-collection, evil-nerd-commenter
 
 ;;; ============================================================
-;;; QUICK REFERENCE (C-z h to show this anytime)
+;;; QUICK REFERENCE (SPC h to show this anytime)
 ;;; ============================================================
 ;;
-;; LEADER KEY: C-z  (press C-z then the next key)
-;;   C-z f    find file in project     C-z g    grep in project
-;;   C-z b    switch buffer            C-z p    switch project
-;;   C-z d    dired                    C-z r    recent files
-;;   C-z s    shell                    C-z v    vc-dir (git)
-;;   C-z h    show this help
+;; Evil (vim) mode is active. Normal vim motions work.
 ;;
-;; FILES & BUFFERS
-;;   C-x C-f  open file               C-x C-s  save file
-;;   C-x b    switch buffer            C-x k    kill buffer
-;;   C-x C-b  list buffers
+;; LEADER KEY: SPC  (normal mode)
+;;   SPC f    find file in project     SPC g    grep in project
+;;   SPC b    switch buffer            SPC p    switch project
+;;   SPC d    dired                    SPC r    recent files
+;;   SPC s    shell                    SPC v    vc-dir (git)
+;;   SPC h    show this help           SPC k    kill buffer
 ;;
-;; MOVEMENT
-;;   C-f/b    char forward/back        M-f/b    word forward/back
-;;   C-n/p    next/prev line           C-a/e    begin/end of line
-;;   M-</M->  begin/end of buffer      C-l      recenter
-;;   M-g g    go to line number
+;; VIM BASICS
+;;   h/j/k/l  move                     w/b      word forward/back
+;;   gg/G     top/bottom of file       C-u/C-d  page up/down
+;;   /        search forward           ?        search backward
+;;   n/N      next/prev match          *        search word under cursor
+;;   dd       delete line              yy       copy line
+;;   p        paste                    u        undo
+;;   C-r      redo                     .        repeat last change
+;;   v        visual select            V        visual line
+;;   C-v      visual block             >/<      indent/dedent (visual)
+;;   M-;      comment/uncomment
 ;;
-;; SEARCH & REPLACE
-;;   C-s      search forward           C-r      search backward
-;;   M-%      query replace            C-M-%    regex replace
-;;
-;; SELECTION & EDITING
-;;   C-SPC    set mark (start select)  C-w      cut region
-;;   M-w      copy region              C-y      paste (yank)
-;;   M-y      cycle paste history      C-/      undo
-;;   C-x u    undo                     M-u/l    upper/lowercase word
-;;   C-M-\    indent region            TAB      indent line
-;;
-;; WINDOWS
-;;   C-x 2    split horizontal         C-x 3    split vertical
-;;   C-x 1    close other windows      C-x 0    close this window
-;;   C-x o    other window             M-o      other window (alias)
-;;
-;; CODE NAVIGATION (with eglot/LSP)
-;;   M-.      go to definition         M-,      go back
+;; CODE NAVIGATION (eglot/LSP)
+;;   gd       go to definition         M-,      go back
 ;;   M-?      find references          C-c C-r  rename symbol
 ;;   C-c C-a  code action              C-c C-f  format buffer
 ;;
@@ -52,9 +39,8 @@
 ;;   C-c ! l  list errors
 ;;
 ;; MISC
-;;   M-x      run any command          C-g      cancel anything
-;;   C-h m    show current mode help   C-h b    all keybindings
-;;   C-h k    describe key             C-h f    describe function
+;;   :        ex command               M-x      run any emacs command
+;;   C-g      cancel anything          C-h k    describe key
 ;;
 
 ;;; ============================================================
@@ -82,6 +68,80 @@
 (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (when (fboundp 'tooltip-mode) (tooltip-mode -1))
 (menu-bar-mode -1)
+
+;;; ============================================================
+;;; Package Management
+;;; ============================================================
+
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(package-initialize)
+
+(unless package-archive-contents
+  (package-refresh-contents))
+
+(dolist (pkg '(evil evil-collection evil-nerd-commenter))
+  (unless (package-installed-p pkg)
+    (package-install pkg)))
+
+;;; ============================================================
+;;; Evil Mode (vim keybindings)
+;;; ============================================================
+
+;; Must be set before loading evil
+(setq evil-want-C-u-scroll t)
+(setq evil-want-C-d-scroll t)
+(setq evil-want-integration t)
+(setq evil-want-keybinding nil)
+(setq evil-shift-width 2)
+
+(require 'evil)
+(evil-mode 1)
+
+;; Visual mode indent keeps selection (like your local config)
+(defun my/evil-shift-right ()
+  (interactive)
+  (evil-shift-right evil-visual-beginning evil-visual-end)
+  (evil-normal-state)
+  (evil-visual-restore))
+
+(defun my/evil-shift-left ()
+  (interactive)
+  (evil-shift-left evil-visual-beginning evil-visual-end)
+  (evil-normal-state)
+  (evil-visual-restore))
+
+(define-key evil-visual-state-map (kbd ">") 'my/evil-shift-right)
+(define-key evil-visual-state-map (kbd "<") 'my/evil-shift-left)
+
+;; evil-collection for dired, vc, flymake, etc.
+(require 'evil-collection)
+(setq evil-collection-mode-list '(dired flymake eglot))
+(evil-collection-init)
+
+;; Comment/uncomment with M-;
+(require 'evil-nerd-commenter)
+(global-set-key (kbd "M-;") 'evilnc-comment-or-uncomment-lines)
+
+;; Leader key: SPC in normal mode
+(define-prefix-command 'my-leader-map)
+(define-key evil-normal-state-map (kbd "SPC") 'my-leader-map)
+
+;; Leader bindings
+(define-key my-leader-map (kbd "f") 'project-find-file)
+(define-key my-leader-map (kbd "g") 'project-find-regexp)
+(define-key my-leader-map (kbd "p") 'project-switch-project)
+(define-key my-leader-map (kbd "b") 'switch-to-buffer)
+(define-key my-leader-map (kbd "r") 'recentf-open-files)
+(define-key my-leader-map (kbd "d") 'dired-jump)
+(define-key my-leader-map (kbd "k") 'kill-buffer)
+(define-key my-leader-map (kbd "s") 'eshell)
+(define-key my-leader-map (kbd "v") 'vc-dir)
+(define-key my-leader-map (kbd "1") 'delete-other-windows)
+(define-key my-leader-map (kbd "2") 'split-window-below)
+(define-key my-leader-map (kbd "3") 'split-window-right)
+(define-key my-leader-map (kbd "0") 'delete-window)
+(define-key my-leader-map (kbd "h") 'my/show-help)
 
 ;;; ============================================================
 ;;; Terminal Setup
@@ -170,38 +230,6 @@
 (unless (display-graphic-p)
   (set-face-background 'default "unspecified-bg"))
 
-;;; ============================================================
-;;; Leader Key (C-z)
-;;; ============================================================
-
-;; C-z is normally `suspend-frame` — useless in terminal with tmux
-(define-prefix-command 'my-leader-map)
-(global-set-key (kbd "C-z") 'my-leader-map)
-
-;; Project
-(define-key my-leader-map (kbd "f") 'project-find-file)
-(define-key my-leader-map (kbd "g") 'project-find-regexp)
-(define-key my-leader-map (kbd "p") 'project-switch-project)
-
-;; Buffers & files
-(define-key my-leader-map (kbd "b") 'switch-to-buffer)
-(define-key my-leader-map (kbd "r") 'recentf-open-files)
-(define-key my-leader-map (kbd "d") 'dired-jump)
-(define-key my-leader-map (kbd "k") 'kill-buffer)
-
-;; Tools
-(define-key my-leader-map (kbd "s") 'eshell)
-(define-key my-leader-map (kbd "v") 'vc-dir)
-
-;; Window management
-(define-key my-leader-map (kbd "1") 'delete-other-windows)
-(define-key my-leader-map (kbd "2") 'split-window-below)
-(define-key my-leader-map (kbd "3") 'split-window-right)
-(define-key my-leader-map (kbd "0") 'delete-window)
-
-;; Help
-(define-key my-leader-map (kbd "h") 'my/show-help)
-
 ;; Convenience
 (global-set-key (kbd "M-o") 'other-window)
 
@@ -221,37 +249,31 @@
       (read-only-mode -1)
       (erase-buffer)
       (insert
-       "LEADER (C-z)                         FILES & BUFFERS\n"
-       "  f  find file in project              C-x C-f  open file\n"
-       "  g  grep in project                   C-x C-s  save\n"
-       "  b  switch buffer                     C-x b    switch buffer\n"
-       "  p  switch project                    C-x k    kill buffer\n"
-       "  r  recent files\n"
-       "  d  dired                           MOVEMENT\n"
-       "  s  eshell                            C-n/p    next/prev line\n"
-       "  v  vc-dir (git)                      C-f/b    char fwd/back\n"
-       "  k  kill buffer                       M-f/b    word fwd/back\n"
-       "  1  close other windows               C-a/e    begin/end line\n"
-       "  2  split horizontal                  M-g g    go to line\n"
-       "  3  split vertical                    M-</>    begin/end buffer\n"
-       "  0  close this window\n"
-       "  h  this help                       SEARCH & REPLACE\n"
-       "                                       C-s/r    search fwd/back\n"
-       "SELECTION & EDITING                    M-%      query replace\n"
-       "  C-SPC   start selection\n"
-       "  C-w     cut                        CODE (eglot)\n"
-       "  M-w     copy                         M-.      go to definition\n"
-       "  C-y     paste                        M-,      go back\n"
-       "  C-/     undo                         M-?      find references\n"
-       "  C-M-\\   indent region                C-c C-r  rename symbol\n"
-       "                                       C-c C-a  code action\n"
-       "WINDOWS\n"
-       "  M-o     other window               FLYMAKE\n"
-       "  C-x 1   only this window             C-c ! n  next error\n"
-       "  C-x 2   split horiz                  C-c ! p  prev error\n"
-       "  C-x 3   split vert                   C-c ! l  list errors\n"
+       "LEADER (SPC)                         VIM BASICS\n"
+       "  f  find file in project              h/j/k/l  move\n"
+       "  g  grep in project                   w/b      word fwd/back\n"
+       "  b  switch buffer                     gg/G     top/bottom\n"
+       "  p  switch project                    C-u/C-d  page up/down\n"
+       "  r  recent files                      /  ?     search fwd/back\n"
+       "  d  dired                             n/N      next/prev match\n"
+       "  s  eshell                            *        search word\n"
+       "  v  vc-dir (git)\n"
+       "  k  kill buffer                     EDITING\n"
+       "  1  close other windows               dd       delete line\n"
+       "  2  split horizontal                  yy       copy line\n"
+       "  3  split vertical                    p        paste\n"
+       "  0  close this window                 u        undo\n"
+       "  h  this help                         C-r      redo\n"
+       "                                       v/V/C-v  visual/line/block\n"
+       "CODE (eglot)                           >/<      indent (visual)\n"
+       "  gd       go to definition            M-;      comment toggle\n"
+       "  M-,      go back\n"
+       "  M-?      find references           WINDOWS\n"
+       "  C-c C-r  rename symbol               M-o      other window\n"
+       "  C-c C-a  code action                 C-x 1    only this window\n"
+       "  C-c C-f  format buffer               C-x 2/3  split h/v\n"
        "\n"
-       "  C-g  cancel anything    M-x  run command    C-h m  mode help\n")
+       "  C-g  cancel    :  ex command    M-x  emacs command    C-h k  describe key\n"))
       (goto-char (point-min))
       (read-only-mode 1))
     (display-buffer buf '(display-buffer-in-side-window
