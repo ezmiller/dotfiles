@@ -80,7 +80,7 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-(dolist (pkg '(evil evil-collection evil-nerd-commenter))
+(dolist (pkg '(evil evil-collection evil-nerd-commenter cider corfu))
   (unless (package-installed-p pkg)
     (package-install pkg)))
 
@@ -116,7 +116,7 @@
 
 ;; evil-collection for dired, vc, flymake, etc.
 (require 'evil-collection)
-(setq evil-collection-mode-list '(dired flymake eglot))
+(setq evil-collection-mode-list '(dired flymake eglot cider))
 (evil-collection-init)
 
 ;; Comment/uncomment with M-;
@@ -309,7 +309,7 @@
 (add-hook 'typescript-ts-mode-hook 'eglot-ensure)
 (add-hook 'tsx-ts-mode-hook 'eglot-ensure)
 (add-hook 'js-mode-hook 'eglot-ensure)
-(add-hook 'lisp-mode-hook 'eglot-ensure)
+(add-hook 'clojure-mode-hook 'eglot-ensure)
 (add-hook 'bash-ts-mode-hook 'eglot-ensure)
 (add-hook 'sh-mode-hook 'eglot-ensure)
 
@@ -357,13 +357,12 @@
 ;;; Language-specific
 ;;; ============================================================
 
-;; Clojure — use lisp-mode as fallback (clojure-mode is not built-in)
-;; Gives paren matching, indentation, and syntax highlighting
-;; For REPL: run `clj` in eshell or use M-x run-lisp
-(add-to-list 'auto-mode-alist '("\\.clj\\'" . lisp-mode))
-(add-to-list 'auto-mode-alist '("\\.cljs\\'" . lisp-mode))
-(add-to-list 'auto-mode-alist '("\\.cljc\\'" . lisp-mode))
-(add-to-list 'auto-mode-alist '("\\.edn\\'" . lisp-mode))
+;; Clojure — cider provides clojure-mode + REPL
+;; Use cider-jack-in (C-c M-j) to start a REPL
+(add-to-list 'auto-mode-alist '("\\.clj\\'" . clojure-mode))
+(add-to-list 'auto-mode-alist '("\\.cljs\\'" . clojurescript-mode))
+(add-to-list 'auto-mode-alist '("\\.cljc\\'" . clojurec-mode))
+(add-to-list 'auto-mode-alist '("\\.edn\\'" . clojure-mode))
 
 ;; TypeScript/TSX — handled by tree-sitter remap above
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
@@ -400,6 +399,24 @@
 
 (setq tab-always-indent 'complete)
 (setq completion-auto-help 'always)
+
+;; Corfu — completion popup
+(require 'corfu)
+(setq corfu-auto t)
+(setq corfu-auto-delay 0.2)
+(setq corfu-auto-prefix 2)
+(global-corfu-mode 1)
+
+;;; ============================================================
+;;; CIDER (Clojure REPL)
+;;; ============================================================
+
+(with-eval-after-load 'cider
+  (setq cider-repl-display-help-banner nil)
+  (setq cider-show-error-buffer 'only-in-repl)
+  (setq cider-font-lock-dynamically nil)
+  ;; Use evil in CIDER REPL
+  (evil-set-initial-state 'cider-repl-mode 'normal))
 
 ;;; ============================================================
 ;;; Server (so emacsclient works)
