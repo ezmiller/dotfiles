@@ -80,7 +80,7 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-(dolist (pkg '(evil evil-collection evil-nerd-commenter cider corfu))
+(dolist (pkg '(evil evil-collection evil-nerd-commenter cider corfu corfu-terminal cape))
   (unless (package-installed-p pkg)
     (package-install pkg)))
 
@@ -398,12 +398,22 @@
 (setq tab-always-indent 'complete)
 (setq completion-auto-help 'always)
 
-;; Corfu — completion popup
+;; Corfu — completion popup (with terminal support)
 (require 'corfu)
 (setq corfu-auto t)
 (setq corfu-auto-delay 0.2)
 (setq corfu-auto-prefix 2)
 (global-corfu-mode 1)
+
+;; Terminal support for corfu (child frames don't work in terminal)
+(unless (display-graphic-p)
+  (require 'corfu-terminal)
+  (corfu-terminal-mode 1))
+
+;; Cape — extra completion backends (buffer words, file paths, etc.)
+(require 'cape)
+(add-to-list 'completion-at-point-functions #'cape-dabbrev)
+(add-to-list 'completion-at-point-functions #'cape-file)
 
 ;;; ============================================================
 ;;; CIDER (Clojure REPL)
