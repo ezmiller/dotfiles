@@ -884,6 +884,8 @@ Helps surrounding text with symbols, e.g. quotes.
            ("C-c C-SPC" . eca-complete) ;; Manual completion trigger
   	 ("C-c C-c" . eca-chat-stop-prompt)) 
     :config
+    ;; Uncomment to use a local build of editor-code-assistant for development
+    ;; (setq eca-custom-command '("/Users/ethanmiller/Projects/eca/eca" "server"))
     ;; (setenv "OPENAI_API_KEY" secret/openai-api-key)
     ;; (setenv "CLAUDE_API_KEY" secret/claude-api-key)
 
@@ -1311,10 +1313,11 @@ The theme must be reloaded after setting the values.
               (setq org-agenda-file-regexp "\\`\\([^.].*\\.org\\|[0-9]\\{4\\}_[0-9]\\{2\\}_[0-9]\\{2\\}\\.org\\(\\.gpg\\)?\\)\\'")
               (setq org-journal-file-type 'daily)
               (setq org-journal-file-format "%Y_%m_%d.org")
-              ;; Remove the automatic date heading entirely (date is already in TITLE)
-              ;; Use a space to satisfy org-journal's validation while not displaying anything
-              (setq org-journal-date-format " ")
-              ;; Set entries to top-level headings (*)
+              ;; Date as file keyword, not a heading — avoids a redundant * date
+              ;; heading in daily files where #+TITLE already carries the date.
+              (setq org-journal-date-format "%Y-%m-%d")
+              (setq org-journal-date-prefix "#+date: ")
+              ;; Entries are top-level headings (*)
               (setq org-journal-time-prefix "* ")
               (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"STARTED\"|TODO=\"REVIEW\"|TODO=\"BLOCKED\"")
         (setq org-journal-find-file #'find-file-other-window)
