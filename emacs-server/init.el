@@ -84,6 +84,10 @@
   (unless (package-installed-p pkg)
     (package-install pkg)))
 
+;; clay.el is not on MELPA — install from GitHub
+(unless (package-installed-p 'clay)
+  (package-vc-install "https://github.com/scicloj/clay.el"))
+
 ;;; ============================================================
 ;;; Evil Mode (vim keybindings)
 ;;; ============================================================
@@ -425,6 +429,19 @@
   (setq cider-font-lock-dynamically nil)
   ;; Use evil in CIDER REPL
   (evil-set-initial-state 'cider-repl-mode 'normal))
+
+;;; ============================================================
+;;; Clay (notebook rendering via CIDER)
+;;; ============================================================
+;; Requires CIDER connected. View output at http://100.97.168.36:1971
+;; Uses clay.el from https://github.com/scicloj/clay.el
+
+(require 'clay nil t)
+
+;; Leader bindings for Clay
+(define-key my-leader-map (kbd "c f") 'clay-make-file)
+(define-key my-leader-map (kbd "c d") 'clay-make-defun-at-point)
+(define-key my-leader-map (kbd "c n") 'clay-make-ns)
 
 ;;; ============================================================
 ;;; Server (so emacsclient works)
