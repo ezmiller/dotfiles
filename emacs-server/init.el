@@ -299,17 +299,15 @@
   (define-key eglot-mode-map (kbd "C-c C-r") 'eglot-rename)
   (define-key eglot-mode-map (kbd "C-c C-a") 'eglot-code-actions)
   (define-key eglot-mode-map (kbd "C-c C-f") 'eglot-format-buffer)
-  (setq eglot-autoshutdown t))
+  (setq eglot-autoshutdown t)
+  (setq eglot-connect-timeout 120))
 
 ;; Auto-start eglot for supported languages
-;; Requires language servers to be installed:
-;;   npm i -g typescript-language-server typescript
-;;   npm i -g bash-language-server
-;;   clojure-lsp (see https://clojure-lsp.io/installation/)
+;; Clojure excluded — clojure-lsp indexing is slow on first run
+;; Use M-x eglot manually for Clojure when needed
 (add-hook 'typescript-ts-mode-hook 'eglot-ensure)
 (add-hook 'tsx-ts-mode-hook 'eglot-ensure)
 (add-hook 'js-mode-hook 'eglot-ensure)
-(add-hook 'clojure-mode-hook 'eglot-ensure)
 (add-hook 'bash-ts-mode-hook 'eglot-ensure)
 (add-hook 'sh-mode-hook 'eglot-ensure)
 
