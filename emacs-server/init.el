@@ -59,6 +59,9 @@
 (setq create-lockfiles nil)
 (setq xterm-extra-capabilities nil)
 
+;; Reduce ESC delay so C-[ works reliably as ESC in terminal
+(setq evil-esc-delay 0.01)
+
 ;; Better performance
 (setq read-process-output-max (* 1024 1024))
 (setq gc-cons-threshold (* 50 1000 1000))
