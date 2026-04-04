@@ -283,10 +283,10 @@
        "\n"
        "  C-g  cancel    :  ex command    M-x  emacs command    C-h k  describe key\n"))
       (goto-char (point-min))
-      (read-only-mode 1))
-    (display-buffer buf '(display-buffer-in-side-window
-                          (side . bottom)
-                          (window-height . 0.4))))
+      (read-only-mode 1)
+      (display-buffer buf '(display-buffer-in-side-window
+                            (side . bottom)
+                            (window-height . 0.4)))))
 
 ;;; ============================================================
 ;;; Flymake
