@@ -59,8 +59,17 @@
 (setq create-lockfiles nil)
 (setq xterm-extra-capabilities nil)
 
-;; Reduce ESC delay so C-[ works reliably as ESC in terminal
-(setq evil-esc-delay 0.01)
+;; Reduce ESC delay so C-[ works reliably as ESC in terminal/mosh.
+;; Terminal ESC is ambiguous (same byte starts arrow/function key sequences),
+;; so Emacs waits to see if more keys follow. Over SSH this compounds with
+;; network latency. Both layers need short timeouts.
+(setq evil-esc-delay 0)
+(setq-default evil-escape-delay 0.1)
+
+;; This is the Emacs-level timeout for multi-byte terminal escape sequences.
+;; Default is 0.1s which feels sluggish over SSH. Setting lower means C-[
+;; registers faster, but too low can break arrow keys. 0.01 is usually safe.
+(setq read-key-sequence-timeout 0.01)
 
 ;; Better performance
 (setq read-process-output-max (* 1024 1024))
@@ -412,7 +421,13 @@
   (setq cider-show-error-buffer 'only-in-repl)
   (setq cider-font-lock-dynamically nil)
   ;; Use evil in CIDER REPL
-  (evil-set-initial-state 'cider-repl-mode 'normal))
+  (evil-set-initial-state 'cider-repl-mode 'normal)
+
+  ;; Make inline eval results readable in terminal (no background, just bold)
+  (set-face-attribute 'cider-result-overlay-face nil
+                      :background 'unspecified
+                      :foreground "yellow"
+                      :weight 'bold))
 
 ;;; ============================================================
 ;;; Clay (notebook rendering via CIDER)
