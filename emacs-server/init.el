@@ -102,9 +102,6 @@
 (require 'evil)
 (evil-mode 1)
 
-;; C-g exits insert/replace state back to normal state
-(define-key evil-insert-state-map (kbd "C-g") 'evil-normal-state)
-(define-key evil-replace-state-map (kbd "C-g") 'evil-normal-state)
 
 ;; Visual mode indent keeps selection (like your local config)
 (defun my/evil-shift-right ()
