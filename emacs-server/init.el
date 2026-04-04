@@ -114,6 +114,9 @@
 (require 'evil)
 (evil-mode 1)
 
+;; Restore M-. and M-, for xref navigation (evil overrides M-.)
+(define-key evil-normal-state-map (kbd "M-.") 'xref-find-definitions)
+(define-key evil-normal-state-map (kbd "M-,") 'xref-go-back)
 
 ;; Visual mode indent keeps selection (like your local config)
 (defun my/evil-shift-right ()
