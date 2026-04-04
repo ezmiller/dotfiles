@@ -5,7 +5,7 @@
 ;; External packages: evil, evil-collection, evil-nerd-commenter
 
 ;;; ============================================================
-;;; QUICK REFERENCE (SPC h to show this anytime)
+;;; QUICK REFERENCE (press SPC and wait for which-key popup)
 ;;; ============================================================
 ;;
 ;; Evil (vim) mode is active. Normal vim motions work.
@@ -15,7 +15,7 @@
 ;;   SPC b    switch buffer            SPC p    switch project
 ;;   SPC d    dired                    SPC r    recent files
 ;;   SPC s    shell                    SPC v    vc-dir (git)
-;;   SPC h    show this help           SPC k    kill buffer
+;;   SPC k    kill buffer
 ;;
 ;; VIM BASICS
 ;;   h/j/k/l  move                     w/b      word forward/back
@@ -80,7 +80,7 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-(dolist (pkg '(evil evil-collection evil-nerd-commenter cider corfu corfu-terminal cape))
+(dolist (pkg '(evil evil-collection evil-nerd-commenter which-key cider corfu corfu-terminal cape))
   (unless (package-installed-p pkg)
     (package-install pkg)))
 
@@ -131,6 +131,11 @@
 (require 'evil-nerd-commenter)
 (global-set-key (kbd "M-;") 'evilnc-comment-or-uncomment-lines)
 
+;; which-key: show available keys after pressing a prefix
+(require 'which-key)
+(setq which-key-idle-delay 0.3)
+(which-key-mode 1)
+
 ;; Leader key: SPC in normal mode
 (define-prefix-command 'my-leader-map)
 (define-key evil-normal-state-map (kbd "SPC") 'my-leader-map)
@@ -149,7 +154,6 @@
 (define-key my-leader-map (kbd "2") 'split-window-below)
 (define-key my-leader-map (kbd "3") 'split-window-right)
 (define-key my-leader-map (kbd "0") 'delete-window)
-(define-key my-leader-map (kbd "h") 'my/show-help)
 
 ;;; ============================================================
 ;;; Terminal Setup
@@ -246,47 +250,23 @@
 (setq which-key-idle-delay 0.3)
 
 ;;; ============================================================
-;;; Help Buffer
+;;; which-key descriptions for leader keys
 ;;; ============================================================
 
-(defun my/show-help ()
-  "Show quick-reference keybinding help."
-  (interactive)
-  (let ((buf (get-buffer-create "*Quick Reference*")))
-    (with-current-buffer buf
-      (read-only-mode -1)
-      (erase-buffer)
-      (insert
-       "LEADER (SPC)                         VIM BASICS\n"
-       "  f  find file in project              h/j/k/l  move\n"
-       "  g  grep in project                   w/b      word fwd/back\n"
-       "  b  switch buffer                     gg/G     top/bottom\n"
-       "  p  switch project                    C-u/C-d  page up/down\n"
-       "  r  recent files                      /  ?     search fwd/back\n"
-       "  d  dired                             n/N      next/prev match\n"
-       "  s  eshell                            *        search word\n"
-       "  v  vc-dir (git)\n"
-       "  k  kill buffer                     EDITING\n"
-       "  1  close other windows               dd       delete line\n"
-       "  2  split horizontal                  yy       copy line\n"
-       "  3  split vertical                    p        paste\n"
-       "  0  close this window                 u        undo\n"
-       "  h  this help                         C-r      redo\n"
-       "                                       v/V/C-v  visual/line/block\n"
-       "CODE (eglot)                           >/<      indent (visual)\n"
-       "  gd       go to definition            M-;      comment toggle\n"
-       "  M-,      go back\n"
-       "  M-?      find references           WINDOWS\n"
-       "  C-c C-r  rename symbol               M-o      other window\n"
-       "  C-c C-a  code action                 C-x 1    only this window\n"
-       "  C-c C-f  format buffer               C-x 2/3  split h/v\n"
-       "\n"
-       "  C-g  cancel    :  ex command    M-x  emacs command    C-h k  describe key\n"))
-      (goto-char (point-min))
-      (read-only-mode 1)
-      (display-buffer buf '(display-buffer-in-side-window
-                            (side . bottom)
-                            (window-height . 0.4)))))
+(which-key-add-keymap-based-replacements my-leader-map
+  "f" "find file"
+  "g" "grep project"
+  "p" "switch project"
+  "b" "switch buffer"
+  "r" "recent files"
+  "d" "dired"
+  "k" "kill buffer"
+  "s" "eshell"
+  "v" "vc-dir (git)"
+  "1" "only window"
+  "2" "split horiz"
+  "3" "split vert"
+  "0" "close window")
 
 ;;; ============================================================
 ;;; Flymake
