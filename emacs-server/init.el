@@ -15,7 +15,7 @@
 ;;   SPC b    switch buffer            SPC p    switch project
 ;;   SPC d    dired                    SPC r    recent files
 ;;   SPC s    shell                    SPC v    vc-dir (git)
-;;   SPC k    kill buffer
+;;   SPC x    kill buffer              SPC k    sexp (structural edit)
 ;;
 ;; VIM BASICS
 ;;   h/j/k/l  move                     w/b      word forward/back
@@ -92,7 +92,7 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-(dolist (pkg '(evil evil-collection evil-nerd-commenter which-key cider corfu corfu-terminal cape))
+(dolist (pkg '(evil evil-collection evil-nerd-commenter which-key cider corfu corfu-terminal cape smartparens))
   (unless (package-installed-p pkg)
     (package-install pkg)))
 
@@ -159,7 +159,7 @@
 (define-key my-leader-map (kbd "b") 'switch-to-buffer)
 (define-key my-leader-map (kbd "r") 'recentf-open-files)
 (define-key my-leader-map (kbd "d") 'dired-jump)
-(define-key my-leader-map (kbd "k") 'kill-buffer)
+(define-key my-leader-map (kbd "x") 'kill-buffer)
 (define-key my-leader-map (kbd "s") 'eshell)
 (define-key my-leader-map (kbd "v") 'vc-dir)
 (define-key my-leader-map (kbd "1") 'delete-other-windows)
@@ -192,7 +192,7 @@
 
 (setq show-paren-delay 0)
 (show-paren-mode 1)
-(electric-pair-mode 1)
+;; Smartparens handles pairing — see structural editing section below
 (global-auto-revert-mode 1)
 (setq global-auto-revert-non-file-buffers t)
 (setq auto-revert-verbose nil)
@@ -216,6 +216,47 @@
 (setq-default tab-width 2)
 (setq js-indent-level 2)
 (setq css-indent-offset 2)
+
+;;; ============================================================
+;;; Structural Editing (Smartparens)
+;;; ============================================================
+
+(require 'smartparens-config)
+(smartparens-global-mode 1)
+
+(defun my-lisp/insert-sexp-after ()
+  "Insert sexp after the current one."
+  (interactive)
+  (let ((sp-navigate-consider-symbols nil))
+    (if (char-equal (char-after) ?\() (forward-char))
+    (sp-up-sexp)
+    (evil-insert-state)
+    (sp-newline)
+    (sp-insert-pair "(")))
+
+(defun my-lisp/insert-sexp-before ()
+  "Insert sexp before the current one."
+  (interactive)
+  (let ((sp-navigate-consider-symbols nil))
+    (if (char-equal (char-after) ?\() (forward-char))
+    (sp-backward-sexp)
+    (evil-insert-state)
+    (sp-newline)
+    (evil-previous-visual-line)
+    (evil-end-of-line)
+    (insert " ")
+    (sp-insert-pair "(")
+    (indent-for-tab-command)))
+
+;; SPC k — sexp prefix
+(define-prefix-command 'my-sexp-map)
+(define-key my-leader-map (kbd "k") 'my-sexp-map)
+(define-key my-sexp-map (kbd "y") 'sp-copy-sexp)
+(define-key my-sexp-map (kbd "dx") 'sp-kill-sexp)
+(define-key my-sexp-map (kbd "s") 'sp-forward-slurp-sexp)
+(define-key my-sexp-map (kbd "b") 'sp-forward-barf-sexp)
+(define-key my-sexp-map (kbd ")") 'my-lisp/insert-sexp-after)
+(define-key my-sexp-map (kbd "(") 'my-lisp/insert-sexp-before)
 
 ;;; ============================================================
 ;;; Backups & Auto-saves (centralized)
@@ -272,7 +313,8 @@
   "b" "switch buffer"
   "r" "recent files"
   "d" "dired"
-  "k" "kill buffer"
+  "x" "kill buffer"
+  "k" "sexp"
   "s" "eshell"
   "v" "vc-dir (git)"
   "1" "only window"
