@@ -18,11 +18,12 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and follow the
 ## Git
 
 - NEVER push without asking
+- ALWAYS ensure you are on the correct branch before commiting or
+  pushing.Don't create branches off non-`main` branches unless asked
+- Built commits carefully; work on several branches may be in progress.
+- Use conventional commits style commits
 - Prefer explicit `git add <file>` over `git add .` — other changes from the user or other agents may be present.
 - Review `git status` before committing.
-- ALWAYS ensure you are on the correct branch before commiting or
-  pushing. Don't create branches off non-`main` branches unless asked
-  — other work may be in progress.
 
 ## Documentation
 
