@@ -17,13 +17,16 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and follow the
 
 ## Git
 
-- NEVER push without asking
-- ALWAYS ensure you are on the correct branch before commiting or
-  pushing.Don't create branches off non-`main` branches unless asked
-- Built commits carefully; work on several branches may be in progress.
-- Use conventional commits style commits
-- Prefer explicit `git add <file>` over `git add .` — other changes from the user or other agents may be present.
-- Review `git status` before committing.
+- NEVER push or commit without asking
+- NEVER work directly on `main`. Always create a new branch off `main`.
+- Don't create branches off non-`main` branches unless asked.
+- **Branch naming**: When a Jira ticket is known, the branch MUST use
+  it as a prefix: `epd-1234-short-description`. Always ask for the
+  ticket number if one isn't provided.
+- Build commits carefully; work on several branches may be in progress.
+  Use conventional commits style. Review `git status` before committing.
+- Prefer explicit `git add <file>` over `git add .` — other changes
+  from the user or other agents may be present.
 
 ## Documentation
 
