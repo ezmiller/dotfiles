@@ -92,7 +92,7 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-(dolist (pkg '(evil evil-collection evil-nerd-commenter which-key cider corfu corfu-terminal cape smartparens olivetti markdown-mode))
+(dolist (pkg '(evil evil-collection evil-nerd-commenter which-key cider corfu corfu-terminal cape smartparens queue olivetti markdown-mode))
   (unless (package-installed-p pkg)
     (package-install pkg)))
 
