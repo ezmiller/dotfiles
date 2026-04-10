@@ -488,6 +488,37 @@
 (define-key my-leader-map (kbd "c n") 'clay-make-ns)
 
 ;;; ============================================================
+;;; Writing
+;;; ============================================================
+
+;; Olivetti — centered, distraction-free writing
+(use-package olivetti
+  :ensure t
+  :hook
+  (org-mode . olivetti-mode)
+  (markdown-mode . olivetti-mode)
+  :custom
+  (olivetti-body-width 0.75)
+  (olivetti-style 'fancy))
+
+;; Markdown
+(use-package markdown-mode
+  :ensure t
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :custom
+  (markdown-command "pandoc -f gfm -t html")
+  (markdown-fontify-code-blocks-natively t)
+  :config
+  (setq markdown-enable-math t)
+  (setq markdown-enable-wiki-links t))
+
+;; visual-line-mode for prose (wrap at window width, not fill-column)
+(add-hook 'org-mode-hook #'visual-line-mode)
+(add-hook 'markdown-mode-hook #'visual-line-mode)
+
+;;; ============================================================
 ;;; Server (so emacsclient works)
 ;;; ============================================================
 
