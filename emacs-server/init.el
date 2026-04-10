@@ -92,7 +92,7 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-(dolist (pkg '(evil evil-collection evil-nerd-commenter which-key cider corfu corfu-terminal cape smartparens))
+(dolist (pkg '(evil evil-collection evil-nerd-commenter which-key cider corfu corfu-terminal cape smartparens olivetti markdown-mode))
   (unless (package-installed-p pkg)
     (package-install pkg)))
 
@@ -486,6 +486,31 @@
 (define-key my-leader-map (kbd "c f") 'clay-make-file)
 (define-key my-leader-map (kbd "c d") 'clay-make-defun-at-point)
 (define-key my-leader-map (kbd "c n") 'clay-make-ns)
+
+;;; ============================================================
+;;; Writing
+;;; ============================================================
+
+;; Olivetti — centered, distraction-free writing
+(require 'olivetti)
+(add-hook 'org-mode-hook #'olivetti-mode)
+(add-hook 'markdown-mode-hook #'olivetti-mode)
+(setq olivetti-body-width 0.75)
+(setq olivetti-style 'fancy)
+
+;; Markdown
+(require 'markdown-mode)
+(add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(setq markdown-command "pandoc -f gfm -t html")
+(setq markdown-fontify-code-blocks-natively t)
+(setq markdown-enable-math t)
+(setq markdown-enable-wiki-links t)
+
+;; Wrap prose at window width
+(add-hook 'org-mode-hook #'visual-line-mode)
+(add-hook 'markdown-mode-hook #'visual-line-mode)
 
 ;;; ============================================================
 ;;; Server (so emacsclient works)
