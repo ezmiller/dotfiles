@@ -492,21 +492,21 @@
 ;;; ============================================================
 
 ;; Olivetti — centered, distraction-free writing
-(require 'olivetti)
-(add-hook 'org-mode-hook #'olivetti-mode)
-(add-hook 'markdown-mode-hook #'olivetti-mode)
-(setq olivetti-body-width 0.75)
-(setq olivetti-style 'fancy)
+(when (require 'olivetti nil t)
+  (add-hook 'org-mode-hook #'olivetti-mode)
+  (add-hook 'markdown-mode-hook #'olivetti-mode)
+  (setq olivetti-body-width 0.75)
+  (setq olivetti-style 'fancy))
 
 ;; Markdown
-(require 'markdown-mode)
-(add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
-(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
-(setq markdown-command "pandoc -f gfm -t html")
-(setq markdown-fontify-code-blocks-natively t)
-(setq markdown-enable-math t)
-(setq markdown-enable-wiki-links t)
+(when (require 'markdown-mode nil t)
+  (add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
+  (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+  (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+  (setq markdown-command "pandoc -f gfm -t html")
+  (setq markdown-fontify-code-blocks-natively t)
+  (setq markdown-enable-math t)
+  (setq markdown-enable-wiki-links t))
 
 ;; Wrap prose at window width
 (add-hook 'org-mode-hook #'visual-line-mode)
