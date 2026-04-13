@@ -1,12 +1,14 @@
 ---
 name: pk-dev-server
 description: >
-  Start, authenticate, and monitor the pk-shopify-theme local dev server. Use
-  this skill whenever working in pk-shopify-theme and the user asks to start
-  dev, run the dev server, spin up local, authenticate with Shopify, fix dev
-  server errors, or check on a running dev session. Also trigger when the user
-  mentions "yarn serve", "shopify theme dev", webpack HMR not working, a 502
-  introspection error, or a rogue node process.
+  Start, authenticate, monitor, and troubleshoot the pk-shopify-theme local dev
+  server. In the pk-shopify-theme project, "the server" always means this dev
+  setup — trigger this skill any time the user mentions the server, server
+  status, checking on things, starting dev, spinning up local, or anything
+  related to the running dev session. Also trigger on: "yarn serve", "shopify
+  theme dev", webpack HMR not working, a 502 introspection error, a rogue node
+  process, auth issues, preview URL, or port conflicts. When in doubt in this
+  project context, assume "server" means the pk-dev-server.
 ---
 
 # pk-shopify-theme Dev Server
