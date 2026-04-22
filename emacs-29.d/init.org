@@ -1035,6 +1035,16 @@ Then we install each app seprately.
 #+begin_src emacs-lisp
 (use-package graphql-mode)
 #+end_src
+*** Web-mode (Liquid templates)
+#+begin_src emacs-lisp
+(use-package web-mode
+  :defer t
+  :mode ("\\.liquid\\'")
+  :config
+  (setq web-mode-markup-indent-offset 2
+        web-mode-css-indent-offset 2
+        web-mode-code-indent-offset 2))
+#+end_src
 ** Clojure
 *** Basic setup
 #+begin_src emacs-lisp
@@ -1490,6 +1500,27 @@ The setup below relies on the following configuration settings in logseq's .edn:
     :custom
     (org-download-method 'attach)
     (org-download-link-format "[[file:%s]]"))
+#+end_src
+
+** Mermaid Diagrams (ob-mermaid)
+Render =#+begin_src mermaid= blocks as inline images via mermaid-cli (~mmdc~).
+Run =C-c C-c= on a block to generate the image — it will display inline automatically.
+
+#+begin_src emacs-lisp
+  (use-package ob-mermaid
+    :custom
+    (ob-mermaid-cli-path "/Users/ethanmiller/.dotfiles/nvm/versions/node/v20.19.1/bin/mmdc")
+    :config
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     (append org-babel-load-languages
+             '((mermaid . t))))
+    (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)
+
+    ;; Fit inline images to window width dynamically
+    (defun em/org-fit-images-to-window (&rest _)
+      (setq org-image-actual-width (list (window-body-width nil t))))
+    (advice-add 'org-display-inline-images :before #'em/org-fit-images-to-window))
 #+end_src
 * Markdown Mode
 #+begin_src emacs-lisp
