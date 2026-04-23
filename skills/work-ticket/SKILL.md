@@ -26,9 +26,10 @@ recorded there.
 `~/org/techwork/journals/YYYY_MM_DD.org` is where work happens and is recorded. Treat it as
 a system of record, not a diary.
 
-- **Columns** are state keywords on task headlines: `TODO` (queued) → `STARTED` (in flight)
-  → `DONE` (merged/closed). Some orgs use `REVIEW` between STARTED and DONE; Ethan
-  historically goes STARTED → DONE, but respect `REVIEW` if he uses it.
+- **Columns** are state keywords on task headlines. Canonical flow:
+  `TODO` (queued) → `STARTED` (in flight, pre-PR) → `REVIEW` (PR open, awaiting review or
+  iterating on it) → `DONE` (merged/closed). Each transition is a column move and must be
+  recorded with a LOGBOOK entry.
 - **Cards** are task subtrees: the `* STATE ... :tags:` heading + any `:LOGBOOK:` block +
   body notes.
 - **Progress log** is a chronological list of `- [YYYY-MM-DD Day] …` bullets appended under
@@ -96,12 +97,12 @@ See the `techwork` skill for deeper org-mode conventions.
 The lifecycle is a state machine driven by the journal. Your behavior on invocation depends
 on what the ticket's current state is in today's journal.
 
-| Journal state          | You are…           | Skip to section          |
-|------------------------|--------------------|--------------------------|
-| TODO (or not yet in journal) | Picking it up      | Pickup                   |
-| STARTED, no PR yet     | Resuming in-flight | Implement / Commit & Push |
-| STARTED, PR open       | Iterating on review | Review Iteration         |
-| STARTED/REVIEW, merged | Closing out        | Merge Cleanup            |
+| Journal state                | You are…            | Skip to section           |
+|------------------------------|---------------------|---------------------------|
+| TODO (or not yet in journal) | Picking it up       | Pickup                    |
+| STARTED                      | Resuming in-flight  | Implement / Commit & Push |
+| REVIEW                       | Iterating on review | Review Iteration          |
+| REVIEW (after merge)         | Closing out         | Merge Cleanup             |
 
 ### 1. Pickup
 
@@ -262,14 +263,19 @@ Then announce the PR URL in chat.
 
 **Journal write:**
 
+- Change heading: `* STARTED EPD-XXXX …` → `* REVIEW EPD-XXXX …`
+- Add LOGBOOK entry above existing ones:
+  ```
+  :LOGBOOK:
+  - State "REVIEW"     from "STARTED"    [YYYY-MM-DD Day HH:MM]
+  <preserve existing entries below>
+  :END:
+  ```
 - Append under the task body:
   ```
   - [YYYY-MM-DD Day] PR open: [[<url>][#<num>]]. <brief note about test expectations or next step>.
   ```
-- Announce: `Journal: EPD-XXXX PR note added (#<num>)`
-
-Leave state as `STARTED` unless Ethan uses a `REVIEW` keyword. Do not transition to DONE
-here.
+- Announce: `Journal: EPD-XXXX REVIEW, PR note added (#<num>)`
 
 ### 8. Review iteration
 
@@ -331,11 +337,11 @@ Triggered when Ethan says the PR is merged (or you can verify via `gh pr view --
 
 **Journal close-out:**
 
-- Change heading: `* STARTED EPD-XXXX …` → `* DONE EPD-XXXX …`
-- Add LOGBOOK entry:
+- Change heading: `* REVIEW EPD-XXXX …` → `* DONE EPD-XXXX …`
+- Add LOGBOOK entry above existing ones:
   ```
   :LOGBOOK:
-  - State "DONE"       from "STARTED"    [YYYY-MM-DD Day HH:MM]
+  - State "DONE"       from "REVIEW"     [YYYY-MM-DD Day HH:MM]
   <preserve existing entries below>
   :END:
   ```
@@ -367,13 +373,13 @@ the safe variants fail — and in that case, diagnose before force.
 Use this as a checklist for mandatory writes. Every phase listed must end with a journal
 write.
 
-| Phase                | Write                                                     |
-|----------------------|-----------------------------------------------------------|
-| Pickup               | `TODO → STARTED` + LOGBOOK + scope note                   |
-| PR opened            | Append PR link + test-plan summary                        |
-| Review round (in)    | Append reviewer + state + requested change summary        |
-| Review round (out)   | Append what changed + commit sha                          |
-| Merge                | `STARTED → DONE` + LOGBOOK + "Merged. Closing out." note  |
+| Phase                | Write                                                      |
+|----------------------|------------------------------------------------------------|
+| Pickup               | `TODO → STARTED` + LOGBOOK + scope note                    |
+| PR opened            | `STARTED → REVIEW` + LOGBOOK + PR link + test-plan summary |
+| Review round (in)    | Append reviewer + state + requested change summary         |
+| Review round (out)   | Append what changed + commit sha                           |
+| Merge                | `REVIEW → DONE` + LOGBOOK + "Merged. Closing out." note    |
 
 **Discretionary** (bar: "would this matter in tomorrow's briefing?"):
 
