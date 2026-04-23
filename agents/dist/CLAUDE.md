@@ -24,7 +24,10 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and follow the
   it as a prefix: `epd-1234-short-description`. Always ask for the
   ticket number if one isn't provided.
 - Build commits carefully; work on several branches may be in progress.
-  Use conventional commits style. Review `git status` before committing.
+  Review `git status` before committing.
+- Commit messages MUST use [Conventional Commits](https://www.conventionalcommits.org).
+  Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`,
+  `build`, `ci`, `chore`, `revert`. No other prefixes (e.g. `wip:`).
 - Prefer explicit `git add <file>` over `git add .` — other changes
   from the user or other agents may be present.
 
