@@ -18,3 +18,9 @@ emacs-29.d/eca/
 
 # ignore clojure cpcache
 clojure/.cpcache/*
+
+# Vim netrw auto-generated directory history
+vim/.netrwhist
+
+# Emacs multisession persistent variable storage
+emacs-29.d/multisession/
