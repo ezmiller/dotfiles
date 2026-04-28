@@ -1218,6 +1218,9 @@ monospace for code blocks, tables, and metadata.
   ;; Enable variable-pitch-mode for org buffers
   (add-hook 'org-mode-hook 'variable-pitch-mode)
   (add-hook 'org-mode-hook 'visual-line-mode)
+  ;; org-modern's README recommends line-spacing between 0.1 and 0.4 so
+  ;; its label boxes have room to render against scaled headline fonts.
+  (add-hook 'org-mode-hook (lambda () (setq-local line-spacing 0.1)))
 
   ;; Keep these elements in fixed-pitch (monospace)
   (custom-theme-set-faces
@@ -1253,7 +1256,15 @@ and stretched separators. Composes with =olivetti-mode=,
     ;; Override `'auto`: it inflates label padding on scaled-headline lines.
     (org-modern-label-border 1)
     :config
-    (global-org-modern-mode 1))
+    (global-org-modern-mode 1)
+    ;; Pin labels to fixed-pitch and drop `:width condensed`. Without this,
+    ;; tags inherit the headline's scaled variable-pitch metrics (Palatino
+    ;; has no condensed variant — Emacs synthesizes, which throws off the
+    ;; box bounds and leaves visible empty padding above the tag text).
+    (set-face-attribute 'org-modern-label nil
+                        :inherit 'fixed-pitch
+                        :width 'normal
+                        :height 0.85))
 #+end_src
 
 ** Olivetti writing mode
