@@ -2,13 +2,14 @@
 name: pk-dev-server
 description: >
   Start, authenticate, monitor, and troubleshoot the pk-shopify-theme local dev
-  server. In the pk-shopify-theme project, "the server" always means this dev
-  setup — trigger this skill any time the user mentions the server, server
-  status, checking on things, starting dev, spinning up local, or anything
-  related to the running dev session. Also trigger on: "yarn serve", "shopify
-  theme dev", webpack HMR not working, a 502 introspection error, a rogue node
-  process, auth issues, preview URL, or port conflicts. When in doubt in this
-  project context, assume "server" means the pk-dev-server.
+  server (webpack + Shopify CLI). This skill is scoped to the pk-shopify-theme
+  project workspace. Trigger whenever the workspace is pk-shopify-theme AND the
+  user mentions: "the server", "server status", "check server", "check the
+  server", "is the server running", "start the server", "spin up", "yarn serve",
+  "shopify theme dev", "preview URL", "HMR not working", "502 introspection
+  error", "rogue node process", "auth issues", or port conflicts on 9292/8080.
+  Do NOT confuse with the `servers` skill — this is a local dev process, not a
+  Tailscale VPN node.
 ---
 
 # pk-shopify-theme Dev Server

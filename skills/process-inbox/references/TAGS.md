@@ -62,6 +62,7 @@ Always apply tags in this order: **person → organization → category → type
 | `childcare` | Childcare, after-school programs |
 | `legal` | Legal documents, contracts |
 | `hsa` | Health Savings Account (hybrid finance/medical) |
+| `psychotherapy` | Psychotherapy sessions, invoices, and payments |
 
 ## Document Types
 
