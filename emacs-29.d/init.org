@@ -1238,16 +1238,6 @@ monospace for code blocks, tables, and metadata.
    '(org-indent ((t (:inherit (org-hide fixed-pitch))))))
 #+end_src
 
-** Olivetti writing mode
-#+begin_src emacs-lisp
-  (use-package olivetti
-    :hook
-    (org-mode . olivetti-mode)
-    :custom
-    (olivetti-body-width 0.75)
-  (olivetti-style 'fancy))
-#+end_src
-
 ** Org Modern
 Cohesive styling across all org buffers: real bullet glyphs, boxed
 TODO keywords and tags, code-block backgrounds with language labels,
@@ -1266,6 +1256,16 @@ and stretched separators. Composes with =olivetti-mode=,
     (org-modern-tag t)
     :config
     (global-org-modern-mode 1))
+#+end_src
+
+** Olivetti writing mode
+#+begin_src emacs-lisp
+  (use-package olivetti
+    :hook
+    (org-mode . olivetti-mode)
+    :custom
+    (olivetti-body-width 0.75)
+  (olivetti-style 'fancy))
 #+end_src
 
 ** Todo Setup
