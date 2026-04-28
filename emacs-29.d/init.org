@@ -1248,6 +1248,26 @@ monospace for code blocks, tables, and metadata.
   (olivetti-style 'fancy))
 #+end_src
 
+** Org Modern
+Cohesive styling across all org buffers: real bullet glyphs, boxed
+TODO keywords and tags, code-block backgrounds with language labels,
+and stretched separators. Composes with =olivetti-mode=,
+=variable-pitch-mode=, and =modus-vivendi-tinted=.
+#+begin_src emacs-lisp
+  (use-package org-modern
+    :after org
+    :custom
+    (org-modern-star '(replace . ["◉" "○" "✸" "✿"]))
+    (org-modern-list '((?- . "–")
+                       (?* . "•")
+                       (?+ . "‣")))
+    (org-modern-block-name t)
+    (org-modern-todo t)
+    (org-modern-tag t)
+    :config
+    (global-org-modern-mode 1))
+#+end_src
+
 ** Todo Setup
 #+begin_src emacs-lisp
   ;; Setup status tags
