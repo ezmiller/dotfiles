@@ -1195,47 +1195,6 @@ We'll use scss-mode for both CSS and SCSS files.
       nil))
 #+end_src
 
-** COMMENT Latex export
-#+begin_src emacs-lisp
-  (use-package ox-latex
-    :straight nil  ;; ox-latex is part of org
-    :after org
-    :config
-    ;; Configure LaTeX export classes
-    (add-to-list 'org-latex-classes
-                 '("article"
-                   "\\documentclass{article}"
-                   ("\\section{%s}" . "\\section*{%s}")
-                   ("\\subsection{%s}" . "\\subsection*{%s}")
-                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-                   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-                   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-    
-    ;; Set default packages
-    (setq org-latex-default-packages-alist
-          '(("AUTO" "inputenc" t ("pdflatex"))
-            ("T1" "fontenc" t ("pdflatex"))
-            ("" "graphicx" t)
-            ("" "longtable" nil)
-            ("" "wrapfig" nil)
-            ("" "rotating" nil)
-            ("normalem" "ulem" t)
-            ("" "amsmath" t)
-            ("" "textcomp" t)
-            ("" "amssymb" t)
-            ("" "capt-of" nil)
-            ("" "hyperref" nil)))
-    
-    ;; Configure PDF processing command
-    (setq org-latex-pdf-process
-          '("pdflatex -interaction nonstopmode -output-directory %o %f"
-            "pdflatex -interaction nonstopmode -output-directory %o %f"
-            "pdflatex -interaction nonstopmode -output-directory %o %f")))
-#+end_src
-
-#+RESULTS:
-: t
-
 ** Use modus-theme to do some styling
 Modus-themes can help style org mode and I'm using that feature here.
 The theme must be reloaded after setting the values.
@@ -1280,30 +1239,6 @@ monospace for code blocks, tables, and metadata.
    '(org-property-value ((t (:inherit fixed-pitch))))
    '(org-drawer ((t (:inherit fixed-pitch))))
    '(org-indent ((t (:inherit (org-hide fixed-pitch))))))
-#+end_src
-
-** COMMENT Org-modern
-#+begin_src emacs-lisp 
-  (setq org-modern-star '("◉" "○" "◈" "◇" "*"))
-
-  (use-package org-modern
-    :hook
-    (org-mode . org-modern-mode)
-    :custom
-    (org-modern-table nil)
-    (org-modern-keyword nil)
-    (org-modern-timestamp nil)
-    (org-modern-priority nil)
-    (org-modern-checkbox nil)
-    (org-modern-tag nil)
-    (org-modern-block-name nil)
-    (org-modern-keyword nil)
-    (org-modern-footnote nil)
-    (org-modern-internal-target nil)
-    (org-modern-radio-target nil)
-    (org-modern-statistics nil)
-    (org-modern-block-name nil)
-    (org-modern-list t))
 #+end_src
 
 ** Olivetti writing mode
