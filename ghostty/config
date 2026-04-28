@@ -27,7 +27,7 @@ cursor-text = #101018
 
 # Normal colors (0-7)
 palette = 0=#2b2d3a
-palette = 1=#ff9f1a
+palette = 1=#ff5c8a
 palette = 2=#00c896
 palette = 3=#ffd86b
 palette = 4=#5f9cff
@@ -37,7 +37,7 @@ palette = 7=#d0d3e5
 
 # Bright colors (8-15)
 palette = 8=#3b3f54
-palette = 9=#ffb347
+palette = 9=#ff87a8
 palette = 10=#22e3ad
 palette = 11=#ffe27f
 palette = 12=#7fb1ff
