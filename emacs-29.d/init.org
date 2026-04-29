@@ -1267,6 +1267,27 @@ and stretched separators. Composes with =olivetti-mode=,
     (global-org-modern-mode 1))
 #+end_src
 
+** Org Appear
+Hides emphasis markers (=*bold*=, =/italic/=, ~=verbatim=~, =~code~=)
+at rest and reveals them automatically when point enters the markup.
+Cuts visual noise without losing the ability to edit the syntax.
+=org-hide-emphasis-markers= is the underlying display toggle that
+=org-appear= rides on — without it the markers are always visible and
+the package has nothing to reveal.
+#+begin_src emacs-lisp
+  (setq org-hide-emphasis-markers t)
+
+  (use-package org-appear
+    :after org
+    :hook (org-mode . org-appear-mode)
+    :custom
+    (org-appear-autoemphasis t)
+    ;; Links read better with their description visible — keep the URL
+    ;; revealed on point so it can still be edited.
+    (org-appear-autolinks t)
+    (org-appear-autosubmarkers t))
+#+end_src
+
 ** Valign
 =variable-pitch-mode= makes glyphs different widths, which causes
 org table columns to drift out of alignment. =valign= post-processes
