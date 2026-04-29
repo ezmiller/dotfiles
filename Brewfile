@@ -64,8 +64,14 @@ brew "openjdk"
 brew "npm"
 brew "yarn"
 
-# Fira Code Font used in Emacs
+# Fonts used in Emacs
 cask 'font-fira-code'
+# Coordinated mono + proportional pair for org-modern harmony.
+# Iosevka Term — terminal-friendly monospace (no ligatures), used for
+# `default` and `fixed-pitch`. Iosevka Aile — proportional sans
+# companion with matching metrics, used for `variable-pitch`.
+cask 'font-iosevka-term'
+cask 'font-iosevka-aile'
 
 # Ghostty terminal
 cask "ghostty"

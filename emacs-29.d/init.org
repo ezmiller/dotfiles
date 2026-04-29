@@ -273,17 +273,18 @@ buffer whose file has changed on disk, with ~y/n/!~ choices.
 * Advanced UI Setup
 ** Fonts Setup
 *** Set font families
-Right now I am trying out a new font: M Plus 1 Code. See
-[[https://mplusfonts.github.io/#mpluscode][https://mplusfonts.github.io/#mpluscode]]. Previously, I was using [[https://github.com/tonsky/FiraCode/wiki/Installing][Fira
-Code-16]], which worked with ligatures. M Plus 1 Code does not, but
-maybe that is okay.
+Using the [[https://typeof.net/Iosevka/][Iosevka]] family. =Iosevka Term= is the terminal-friendly
+monospace variant (no ligatures); =Iosevka Aile= is its proportional
+sans companion. Both are designed by the same author with matching
+x-height and baseline, which is what [[https://github.com/minad/org-modern#configuration][org-modern]] needs to render
+labels and tags cleanly against scaled-headline lines.
 #+begin_src emacs-lisp
-  ;; Font needs to be installed in the Mac Font Book
+  ;; Fonts are installed via Homebrew Cask — see Brewfile.
 
   (when (display-graphic-p)
-    (set-face-attribute 'default nil :family "M Plus 1 Code" :height 170)
-    (set-face-attribute 'variable-pitch nil :family "Concourse T3" :height 1.2)
-    (set-face-attribute 'fixed-pitch nil :family "Sarasa Term Slab J" :height 170))
+    (set-face-attribute 'default        nil :family "Iosevka Term" :height 170)
+    (set-face-attribute 'variable-pitch nil :family "Iosevka Aile" :height 1.0)
+    (set-face-attribute 'fixed-pitch    nil :family "Iosevka Term" :height 1.0))
 #+end_src
 
 *** COMMENT Ligatures
@@ -1206,15 +1207,11 @@ The theme must be reloaded after setting the values.
 #+end_src
 
 ** Org prose styling
-Use a proportional font (Charter) for org-mode prose, while keeping
-monospace for code blocks, tables, and metadata.
+Variable-pitch (=Iosevka Aile=) is defined globally in the Fonts Setup
+section. Here we just enable =variable-pitch-mode= for org buffers and
+keep code/table elements pinned to fixed-pitch.
 
 #+begin_src emacs-lisp
-  ;; Define the variable-pitch (proportional) font
-  (set-face-attribute 'variable-pitch nil
-                      :family "Palatino"
-                      :height 1.0)
-
   ;; Enable variable-pitch-mode for org buffers
   (add-hook 'org-mode-hook 'variable-pitch-mode)
   (add-hook 'org-mode-hook 'visual-line-mode)
@@ -1256,16 +1253,7 @@ and stretched separators. Composes with =olivetti-mode=,
     ;; Override `'auto`: it inflates label padding on scaled-headline lines.
     (org-modern-label-border 1)
     :config
-    (global-org-modern-mode 1)
-    ;; Pin labels to the default font family (not `fixed-pitch`, which is
-    ;; Sarasa Term Slab J — its CJK descender area shows as empty padding
-    ;; below Latin tag text). Drop `:width condensed`; no condensed variant
-    ;; exists for Palatino, so Emacs synthesizes one and the box bounds
-    ;; drift.
-    (set-face-attribute 'org-modern-label nil
-                        :family "M Plus 1 Code"
-                        :width 'normal
-                        :height 0.85))
+    (global-org-modern-mode 1))
 #+end_src
 
 ** Olivetti writing mode
