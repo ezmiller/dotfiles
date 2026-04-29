@@ -291,9 +291,10 @@ behaves like the ligature-free /Term/ variant.
     (set-face-attribute 'fixed-pitch    nil :family "Iosevka"      :height 1.0))
 #+end_src
 
-*** COMMENT Ligatures
-These I don't need right now because the front M Plus 1 Codes doesn't
-support them as far as I can tell.
+*** Ligatures
+Iosevka supports the standard programming ligature set, so we use
+[[https://github.com/mickeynp/ligature.el][mickeynp/ligature.el]] to enable them in =prog-mode= and the ~www~
+sequence everywhere.
 #+begin_src emacs-lisp
   (use-package ligature
     :config
