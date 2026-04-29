@@ -1206,8 +1206,8 @@ The theme must be reloaded after setting the values.
     ;; levels. Tuned for Iosevka Aile (sans-serif) — sans-bold reads
     ;; heavier than serif-bold at the same scale, so weights and sizes
     ;; are pulled in compared to a Palatino-era setup.
-    (setq modus-themes-headings '((1 . (variable-pitch regular 1.3))
-  				(2 . (variable-pitch regular 1.2))
+    (setq modus-themes-headings '((1 . (variable-pitch regular 1.20))
+  				(2 . (variable-pitch regular 1.15))
   				(3 . (variable-pitch regular  1.1))
   				(4 . (variable-pitch regular  1.05))
                                   (t . (regular 1.0))))
@@ -1260,8 +1260,24 @@ and stretched separators. Composes with =olivetti-mode=,
     (org-modern-tag t)
     ;; Override `'auto`: it inflates label padding on scaled-headline lines.
     (org-modern-label-border 1)
+    ;; valign owns table rendering — both packages set `display` props on
+    ;; separators, and stacking them mangles column alignment.
+    (org-modern-table nil)
     :config
     (global-org-modern-mode 1))
+#+end_src
+
+** Valign
+=variable-pitch-mode= makes glyphs different widths, which causes
+org table columns to drift out of alignment. =valign= post-processes
+each cell with a display property so columns line up regardless of
+font. =org-modern='s table feature also rewrites separators with
+display properties, so the two stack and break alignment — we set
+=org-modern-table= to nil above and let valign own table rendering.
+#+begin_src emacs-lisp
+  (use-package valign
+    :hook ((org-mode . valign-mode)
+           (markdown-mode . valign-mode)))
 #+end_src
 
 ** Olivetti writing mode
