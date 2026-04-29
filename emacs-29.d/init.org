@@ -1321,13 +1321,25 @@ display properties, so the two stack and break alignment — we set
   (setq org-todo-keywords
         '((sequence "NEXT(n)" "TODO(t)" "STARTED(s)" "REVIEW(r)" "|" "BLOCKED(b!)" "DONE(d!)" "CANCELED(c!)")))
 
-  (setq org-todo-keyword-faces
-        '(("TODO" . (:foreground "#ff39a3" :weight bold))
-  	("STARTED" . "#E35DBF")
-  	("REVIEW" . "lightblue")
-  	("BLOCKED" . "pink")
-  	("CANCELED" . (:foreground "white" :background "#4d4d4d" :weight bold))
-  	("DONE" . "#008080")))
+  ;; Pull keyword colors from the active modus-themes palette so the
+  ;; set reads as coordinated and tracks light/dark theme switches.
+  ;; org-modern-todo wraps each keyword in a box derived from the
+  ;; face foreground, so a single :foreground per keyword is enough.
+  (defun ezm/org-todo-keyword-faces-refresh ()
+    (setq org-todo-keyword-faces
+          `(("NEXT"     . (:foreground ,(modus-themes-get-color-value 'accent-1) :weight bold))
+            ("TODO"     . (:foreground ,(modus-themes-get-color-value 'warning)  :weight bold))
+            ("STARTED"  . (:foreground ,(modus-themes-get-color-value 'accent-0) :weight bold))
+            ("REVIEW"   . (:foreground ,(modus-themes-get-color-value 'info)     :weight bold))
+            ("BLOCKED"  . (:foreground ,(modus-themes-get-color-value 'err)      :weight bold))
+            ("DONE"     . (:foreground ,(modus-themes-get-color-value 'success)  :weight bold))
+            ("CANCELED" . (:foreground ,(modus-themes-get-color-value 'fg-dim)
+                           :strike-through t :weight bold)))))
+
+  (with-eval-after-load 'modus-themes
+    (ezm/org-todo-keyword-faces-refresh)
+    (add-hook 'modus-themes-after-load-theme-hook
+              #'ezm/org-todo-keyword-faces-refresh))
 #+end_src
 
 ** Block Templates
