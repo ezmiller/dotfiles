@@ -273,18 +273,22 @@ buffer whose file has changed on disk, with ~y/n/!~ choices.
 * Advanced UI Setup
 ** Fonts Setup
 *** Set font families
-Using the [[https://typeof.net/Iosevka/][Iosevka]] family. =Iosevka Term= is the terminal-friendly
-monospace variant (no ligatures); =Iosevka Aile= is its proportional
-sans companion. Both are designed by the same author with matching
-x-height and baseline, which is what [[https://github.com/minad/org-modern#configuration][org-modern]] needs to render
-labels and tags cleanly against scaled-headline lines.
+Using the [[https://typeof.net/Iosevka/][Iosevka]] family. =Iosevka= is the monospace coding font;
+=Iosevka Aile= is its proportional sans companion. Both are designed
+by the same author with matching x-height and baseline, which is
+what [[https://github.com/minad/org-modern#configuration][org-modern]] needs to render labels and tags cleanly against
+scaled-headline lines.
+
+Default Iosevka ships with ligatures, but they only render when
+=ligature.el= is active (currently disabled below), so the buffer
+behaves like the ligature-free /Term/ variant.
 #+begin_src emacs-lisp
   ;; Fonts are installed via Homebrew Cask — see Brewfile.
 
   (when (display-graphic-p)
-    (set-face-attribute 'default        nil :family "Iosevka Term" :height 170)
+    (set-face-attribute 'default        nil :family "Iosevka"      :height 170)
     (set-face-attribute 'variable-pitch nil :family "Iosevka Aile" :height 1.0)
-    (set-face-attribute 'fixed-pitch    nil :family "Iosevka Term" :height 1.0))
+    (set-face-attribute 'fixed-pitch    nil :family "Iosevka"      :height 1.0))
 #+end_src
 
 *** COMMENT Ligatures
