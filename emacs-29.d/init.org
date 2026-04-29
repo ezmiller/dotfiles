@@ -1257,12 +1257,13 @@ and stretched separators. Composes with =olivetti-mode=,
     (org-modern-label-border 1)
     :config
     (global-org-modern-mode 1)
-    ;; Pin labels to fixed-pitch and drop `:width condensed`. Without this,
-    ;; tags inherit the headline's scaled variable-pitch metrics (Palatino
-    ;; has no condensed variant — Emacs synthesizes, which throws off the
-    ;; box bounds and leaves visible empty padding above the tag text).
+    ;; Pin labels to the default font family (not `fixed-pitch`, which is
+    ;; Sarasa Term Slab J — its CJK descender area shows as empty padding
+    ;; below Latin tag text). Drop `:width condensed`; no condensed variant
+    ;; exists for Palatino, so Emacs synthesizes one and the box bounds
+    ;; drift.
     (set-face-attribute 'org-modern-label nil
-                        :inherit 'fixed-pitch
+                        :family "M Plus 1 Code"
                         :width 'normal
                         :height 0.85))
 #+end_src
