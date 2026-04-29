@@ -64,8 +64,17 @@ brew "openjdk"
 brew "npm"
 brew "yarn"
 
-# Fira Code Font used in Emacs
+# Fonts used in Emacs
 cask 'font-fira-code'
+# Coordinated mono + proportional pair for org-modern harmony.
+# Iosevka — monospace coding font, used for `default` and `fixed-pitch`.
+# Iosevka Aile — proportional sans companion with matching metrics,
+# used for `variable-pitch`.
+# Note: Homebrew does not ship a standalone "Iosevka Term" cask anymore
+# (only the Nerd Font variant). Default Iosevka has ligatures, but they
+# only render when ligature.el is active — currently commented out.
+cask 'font-iosevka'
+cask 'font-iosevka-aile'
 
 # Ghostty terminal
 cask "ghostty"
