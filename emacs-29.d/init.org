@@ -1181,6 +1181,9 @@ We'll use scss-mode for both CSS and SCSS files.
     (org-tags-column 0) ;; tags immediately after header text
     (org-auto-align-tags nil) ;; do not align tags between header
     (org-pretty-entities t) ;; use UTF-8 characters
+    ;; Hide *bold*, /italic/, =verbatim=, ~code~ markup at rest. The
+    ;; org-appear package below toggles them back on when point enters.
+    (org-hide-emphasis-markers t)
     ;; Don't interpret underscores as TEX syntax.
     (org-use-sub-superscripts nil)
     (org-attach-id-dir (expand-file-name "assets" org-roam-directory))
@@ -1268,17 +1271,18 @@ and stretched separators. Composes with =olivetti-mode=,
 #+end_src
 
 ** Org Appear
-Hides emphasis markers (=*bold*=, =/italic/=, ~=verbatim=~, =~code~=)
-at rest and reveals them automatically when point enters the markup.
-Cuts visual noise without losing the ability to edit the syntax.
-=org-hide-emphasis-markers= is the underlying display toggle that
-=org-appear= rides on — without it the markers are always visible and
-the package has nothing to reveal.
-#+begin_src emacs-lisp
-  (setq org-hide-emphasis-markers t)
+Reveals hidden markup (emphasis, links, sub/superscripts) when point
+enters it. =org-hide-emphasis-markers= and =org-pretty-entities= are
+set in the =org= block above; =org-link-descriptive= defaults to t.
+Those three are what =org-appear= rides on — without them the
+markers/URLs are always visible and reveal-on-point is a no-op.
 
+Use =:hook= alone (no =:after org=): use-package autoloads
+=org-appear-mode= when the hook fires, and =:after= would defer the
+hook registration past the first =org-mode= invocation, leaving
+reveal silently disabled in the first buffer.
+#+begin_src emacs-lisp
   (use-package org-appear
-    :after org
     :hook (org-mode . org-appear-mode)
     :custom
     (org-appear-autoemphasis t)
