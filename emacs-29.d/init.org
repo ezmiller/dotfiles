@@ -1322,17 +1322,19 @@ display properties, so the two stack and break alignment — we set
         '((sequence "NEXT(n)" "TODO(t)" "STARTED(s)" "REVIEW(r)" "|" "BLOCKED(b!)" "DONE(d!)" "CANCELED(c!)")))
 
   ;; Pull keyword colors from the active modus-themes palette so the
-  ;; set reads as coordinated and tracks light/dark theme switches.
-  ;; org-modern-todo wraps each keyword in a box derived from the
-  ;; face foreground, so a single :foreground per keyword is enough.
+  ;; set tracks light/dark theme switches. We pick from the six base
+  ;; hues (red/green/yellow/blue/magenta/cyan) rather than semantic
+  ;; mappings (err/warning/info/accent-*) — under `org-modern-todo`'s
+  ;; box rendering the semantic mappings collapse onto close pastels
+  ;; in modus-vivendi-tinted, while base hues stay maximally separated.
   (defun ezm/org-todo-keyword-faces-refresh ()
     (setq org-todo-keyword-faces
-          `(("NEXT"     . (:foreground ,(modus-themes-get-color-value 'accent-1) :weight bold))
-            ("TODO"     . (:foreground ,(modus-themes-get-color-value 'warning)  :weight bold))
-            ("STARTED"  . (:foreground ,(modus-themes-get-color-value 'accent-0) :weight bold))
-            ("REVIEW"   . (:foreground ,(modus-themes-get-color-value 'info)     :weight bold))
-            ("BLOCKED"  . (:foreground ,(modus-themes-get-color-value 'err)      :weight bold))
-            ("DONE"     . (:foreground ,(modus-themes-get-color-value 'success)  :weight bold))
+          `(("NEXT"     . (:foreground ,(modus-themes-get-color-value 'magenta) :weight bold))
+            ("TODO"     . (:foreground ,(modus-themes-get-color-value 'yellow)  :weight bold))
+            ("STARTED"  . (:foreground ,(modus-themes-get-color-value 'cyan)    :weight bold))
+            ("REVIEW"   . (:foreground ,(modus-themes-get-color-value 'blue)    :weight bold))
+            ("BLOCKED"  . (:foreground ,(modus-themes-get-color-value 'red)     :weight bold))
+            ("DONE"     . (:foreground ,(modus-themes-get-color-value 'green)   :weight bold))
             ("CANCELED" . (:foreground ,(modus-themes-get-color-value 'fg-dim)
                            :strike-through t :weight bold)))))
 
