@@ -144,13 +144,34 @@ Use `emacs__eval-elisp` to check, create, and save in one shot:
     :created))
 ```
 
-- If it returns `:already-exists` — proceed silently to Step 1.
+- If it returns `:already-exists` — proceed silently to Step 0.5.
 - If it returns `:created` — org-journal has created the file, carried over all
-  TODO/STARTED/REVIEW/BLOCKED items, and saved it to disk. Proceed to Step 1.
+  TODO/STARTED/REVIEW/BLOCKED items, and saved it to disk. Proceed to Step 0.5.
 - If the elisp call errors or the file still doesn't exist on disk after `:created`,
   ask Ethan to save the buffer manually (`C-x C-s`) and confirm before continuing.
 
 Don't mention this step to Ethan unless something went wrong. It should be invisible.
+
+**Step 0.5: File carried items into sections**
+
+Read today's file. The file header template creates four sections: `* Standup`, `* Active`,
+and `* Queued`. Carryover appends items as loose headings at the end of the file, after these
+sections.
+
+Look for any headings with TODO keywords (`TODO`, `STARTED`, `REVIEW`, `BLOCKED`) that are
+**not** nested under `* Standup`, `* Active`, or `* Queued`. These are the carried items that
+need filing.
+
+For each loose carried item:
+- `STARTED` state → move under `* Active`
+- All others (`TODO`, `REVIEW`, `BLOCKED`) → move under `* Queued`
+
+Do this by editing the file directly using `eca__edit_file` — move the heading and its full
+subtree (including body text, LOGBOOK drawers, sub-headings) from its current location to
+under the appropriate section. Preserve the heading level (`**`).
+
+If today's file already has items correctly nested under `* Active` or `* Queued` (i.e. it
+was already organized, not a fresh carryover), skip this step silently.
 
 **Step 1: Read the files**
 - Today: `journals/YYYY_MM_DD.org` (created by org-journal with carryover)
@@ -188,53 +209,69 @@ at yesterday's file and collect signals in priority order:
 5. **Meeting or 1:1 notes** — headings that look like meetings imply context that may be
    relevant to what's next.
 
-Don't synthesize these into a standup. Present them as raw evidence — Ethan will use
-them to recall the day and write his own update.
+Collect these signals — you'll use them to write a brief "what happened yesterday" summary
+in Step 3, and then incorporate them into the standup draft after Ethan adds his input.
 
 **Step 3: Produce the briefing output**
+
+The goal is a short, conversational output that orients Ethan and then opens a dialogue
+before drafting the standup. Think of it as: *here's what I found, here's where things
+stand — what do you want to add?* The standup comes after that exchange, not before.
 
 Output in this order:
 
 ---
-**📋 Standup context** *(write your own — here's what happened yesterday)*
 
-If yesterday had an EOD section or logged notes, show those prominently:
-> **EOD notes from yesterday:**
-> - [verbatim or near-verbatim bullets from EOD notes / task bodies]
+**🗓 What happened yesterday** *(2–5 bullets, memory jog only)*
 
-If yesterday's standup already exists:
-> **Yesterday's standup (Today bullets):**
-> - [the "Today" bullets from yesterday's standup, as a memory jogger]
+Synthesize signals from yesterday's file into a tight narrative: what was worked on, what
+finished, what was waiting. Pull from EOD notes, standup "Today" entries, LOGBOOK changes,
+and inline task notes — but don't reproduce them verbatim or in full. The goal is to jog
+memory in 10 seconds, not recap the whole day.
 
-Then list other signals (state changes, LOGBOOK, inline notes) briefly — 1 line each.
-Keep this section tight: the goal is jogging memory, not a wall of text.
-
-If today's file does **not** already have a `* HH:MM Standup` heading, draft a standup
-based on the context gathered above and offer to paste it in. Use `* 11:00 Standup` as the
-heading unless Ethan specifies a different time. If the standup heading already exists, skip
-this — Ethan has already started it.
+If there was an EOD section or a standup "Today" list, those are the highest-signal sources
+— lead with them. If there's nothing useful, say so briefly.
 
 ---
 
-**🔴 Active (work on today)**
-Tasks that are STARTED, or TODO with recent journal activity in the last 3 days.
+**📋 Task snapshot**
 
-**🟡 Queued (carried over, lower urgency)**
-Tasks that are TODO with no recent body updates. One line each, just the headline.
+Two compact lists — headline only, no task body detail:
 
-**⚪ Stale (hasn't moved in 7+ days)** — light touch in morning
-Just mention the count: "3 stale tasks — run 'what's stale' or deal with them at EOD."
-Don't list them all in the morning briefing — keep it lightweight. Full staleness triage
-belongs in the end-of-day wrap-up when Ethan is in cleanup mode.
+🔴 **Active** — STARTED tasks and any TODO touched in the last 3 days
+🟡 **Queued** — carried-over TODOs with no recent activity
+
+One line each. Ethan can ask to expand any item. If there are stale items (carried 7+ days
+with no progress), just note the count: "N stale — deal with at EOD."
 
 ---
 
-Keep the output scannable. Don't reproduce the full task bodies — just the headline and
-any critical context (blocker, PR link, key decision pending). Ethan can ask to expand any
-item.
+**Then ask — before drafting anything:**
 
-**What to skip:** DONE items. Anything that looks like a meeting note or standup entry
-(not a task). The blank `*  ` heading that org-journal adds as a spacer.
+End with a single open question:
+
+> "Anything to add about yesterday, or what's your main focus today?"
+
+Wait for Ethan's response. He might clarify what he actually worked on, name a priority,
+mention a blocker, or say "nothing, just draft it." All of that shapes the standup.
+
+---
+
+**Step 4: Draft the standup (after Ethan responds)**
+
+Once he's replied — even briefly — draft the standup. Combine what the notes say with
+what he just told you. Don't make him feel like he has to repeat himself; fill in from
+the notes wherever he didn't correct them.
+
+The standup has three subsections: `** Yesterday`, `** Today`, and `** Blockers`.
+
+Use `* 11:00 Standup` as the heading unless Ethan specifies a different time.
+
+After showing the draft, ask if he wants it written to the file. If today's file already
+has a `* Standup` heading, skip drafting — he's already started it.
+
+**What to skip:** DONE items. Meeting notes or standup entries (not tasks). Blank `*  `
+spacer headings org-journal adds. Don't reproduce full task bodies unprompted.
 
 ### Staleness Triage
 
