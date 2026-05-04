@@ -1397,7 +1397,7 @@ display properties, so the two stack and break alignment — we set
           "Custom function to create journal header."
           (concat
           (pcase org-journal-file-type
-  	(`daily (format-time-string "#+TITLE: %Y_%m_%d\n#+STARTUP: folded")))))
+  	(`daily (format-time-string "#+TITLE: %Y_%m_%d\n#+STARTUP: folded\n#+date: %Y-%m-%d\n\n* Standup\n** Yesterday\n** Today\n** Blockers\n\n* Active\n\n* Queued\n")))))
         (setq org-journal-file-header 'org-journal-file-header-func)
         ;;(setq org-journal-after-header-create-hook #'org-id-get-create)
         )
