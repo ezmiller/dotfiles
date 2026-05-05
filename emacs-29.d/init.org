@@ -1323,24 +1323,27 @@ display properties, so the two stack and break alignment — we set
 
   ;; Pull keyword colors from the active modus-themes palette so the
   ;; set tracks light/dark theme switches. We pick from the six base
-  ;; hues (red/green/yellow/blue/magenta/cyan) rather than semantic
-  ;; mappings (err/warning/info/accent-*) — under `org-modern-todo`'s
-  ;; box rendering the semantic mappings collapse onto close pastels
-  ;; in modus-vivendi-tinted, while base hues stay maximally separated.
+  ;; hues (red/green/yellow/blue/magenta/cyan) so they stay maximally
+  ;; separated under org-modern's boxed label rendering.
+  ;;
+  ;; Setting *both* alists is required: org-modern reads from
+  ;; `org-modern-todo-faces' (see `org-modern--todo'), and falls back
+  ;; to a single generic face when that's nil — which collapses every
+  ;; non-done keyword onto the same color. `org-todo-keyword-faces'
+  ;; still drives agenda rendering, which doesn't go through org-modern.
   (defun ezm/org-todo-keyword-faces-refresh ()
-    (setq org-todo-keyword-faces
-          `(("NEXT"     . (:foreground ,(modus-themes-get-color-value 'magenta) :weight bold))
-            ("TODO"     . (:foreground ,(modus-themes-get-color-value 'yellow)  :weight bold))
-            ("STARTED"  . (:foreground ,(modus-themes-get-color-value 'cyan)    :weight bold))
-            ("REVIEW"   . (:foreground ,(modus-themes-get-color-value 'blue)    :weight bold))
-            ("BLOCKED"  . (:foreground ,(modus-themes-get-color-value 'red)     :weight bold))
-            ("DONE"     . (:foreground ,(modus-themes-get-color-value 'green)   :weight bold))
-            ("CANCELED" . (:foreground ,(modus-themes-get-color-value 'fg-dim)
-                           :strike-through t :weight bold))))
-    ;; org-todo-keyword-faces is consulted at fontify time, so existing
-    ;; org buffers keep their baked-in face properties unless we flush.
-    ;; Refresh agenda buffers too — they cache faces at build time and
-    ;; need a full rebuild rather than just a font-lock pass.
+    (let ((spec `(("NEXT"     . (:foreground ,(modus-themes-get-color-value 'magenta) :weight bold))
+                  ("TODO"     . (:foreground ,(modus-themes-get-color-value 'yellow)  :weight bold))
+                  ("STARTED"  . (:foreground ,(modus-themes-get-color-value 'cyan)    :weight bold))
+                  ("REVIEW"   . (:foreground ,(modus-themes-get-color-value 'blue)    :weight bold))
+                  ("BLOCKED"  . (:foreground ,(modus-themes-get-color-value 'red)     :weight bold))
+                  ("DONE"     . (:foreground ,(modus-themes-get-color-value 'green)   :weight bold))
+                  ("CANCELED" . (:foreground ,(modus-themes-get-color-value 'fg-dim)
+                                 :strike-through t :weight bold)))))
+      (setq org-todo-keyword-faces spec)
+      (setq org-modern-todo-faces spec))
+    ;; Refontify live buffers so the new faces show up without revert.
+    ;; Agenda bakes faces in at build time and needs a full rebuild.
     (dolist (buf (buffer-list))
       (with-current-buffer buf
         (when (derived-mode-p 'org-mode)
