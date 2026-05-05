@@ -1321,13 +1321,42 @@ display properties, so the two stack and break alignment — we set
   (setq org-todo-keywords
         '((sequence "NEXT(n)" "TODO(t)" "STARTED(s)" "REVIEW(r)" "|" "BLOCKED(b!)" "DONE(d!)" "CANCELED(c!)")))
 
-  (setq org-todo-keyword-faces
-        '(("TODO" . (:foreground "#ff39a3" :weight bold))
-  	("STARTED" . "#E35DBF")
-  	("REVIEW" . "lightblue")
-  	("BLOCKED" . "pink")
-  	("CANCELED" . (:foreground "white" :background "#4d4d4d" :weight bold))
-  	("DONE" . "#008080")))
+  ;; Pull keyword colors from the active modus-themes palette so the
+  ;; set tracks light/dark theme switches. We pick from the six base
+  ;; hues (red/green/yellow/blue/magenta/cyan) so they stay maximally
+  ;; separated under org-modern's boxed label rendering.
+  ;;
+  ;; Setting *both* alists is required: org-modern reads from
+  ;; `org-modern-todo-faces' (see `org-modern--todo'), and falls back
+  ;; to a single generic face when that's nil — which collapses every
+  ;; non-done keyword onto the same color. `org-todo-keyword-faces'
+  ;; still drives agenda rendering, which doesn't go through org-modern.
+  (defun ezm/org-todo-keyword-faces-refresh ()
+    (let ((spec `(("NEXT"     . (:foreground ,(modus-themes-get-color-value 'magenta) :weight bold))
+                  ("TODO"     . (:foreground ,(modus-themes-get-color-value 'yellow)  :weight bold))
+                  ("STARTED"  . (:foreground ,(modus-themes-get-color-value 'cyan)    :weight bold))
+                  ("REVIEW"   . (:foreground ,(modus-themes-get-color-value 'blue)    :weight bold))
+                  ("BLOCKED"  . (:foreground ,(modus-themes-get-color-value 'red)     :weight bold))
+                  ("DONE"     . (:foreground ,(modus-themes-get-color-value 'green)   :weight bold))
+                  ("CANCELED" . (:foreground ,(modus-themes-get-color-value 'fg-dim)
+                                 :strike-through t :weight bold)))))
+      (setq org-todo-keyword-faces spec)
+      (setq org-modern-todo-faces spec))
+    ;; Refontify live buffers so the new faces show up without revert.
+    ;; Agenda bakes faces in at build time and needs a full rebuild.
+    (dolist (buf (buffer-list))
+      (with-current-buffer buf
+        (when (derived-mode-p 'org-mode)
+          (font-lock-flush))))
+    (when (get-buffer "*Org Agenda*")
+      (with-current-buffer "*Org Agenda*"
+        (when (fboundp 'org-agenda-redo-all)
+          (let ((inhibit-message t)) (org-agenda-redo-all))))))
+
+  (with-eval-after-load 'modus-themes
+    (ezm/org-todo-keyword-faces-refresh)
+    (add-hook 'modus-themes-after-load-theme-hook
+              #'ezm/org-todo-keyword-faces-refresh))
 #+end_src
 
 ** Block Templates
