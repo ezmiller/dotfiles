@@ -608,6 +608,10 @@ Enables easy toggle and other things that I've not yet used.
 #+end_src
 
 * Project Management
+** project.el (built-in project management)
+#+begin_src emacs-lisp
+(setq project-vc-extra-root-markers '(".project"))
+#+end_src
 ** Projectile
 #+begin_src emacs-lisp
 (use-package projectile
