@@ -1401,7 +1401,7 @@ display properties, so the two stack and break alignment — we set
           "Custom function to create journal header."
           (concat
           (pcase org-journal-file-type
-  	(`daily (format-time-string "#+TITLE: %Y_%m_%d\n#+STARTUP: folded\n#+date: %Y-%m-%d\n\n* Standup\n** Yesterday\n** Today\n** Blockers\n\n* Active\n\n* Queued\n")))))
+  	(`daily (format-time-string "#+TITLE: %Y_%m_%d\n#+STARTUP: folded\n#+date: %Y-%m-%d\n\n* Standup\n** Yesterday\n** Today\n** Blockers\n")))))
         (setq org-journal-file-header 'org-journal-file-header-func)
         ;;(setq org-journal-after-header-create-hook #'org-id-get-create)
         )
@@ -1431,7 +1431,7 @@ The setup below relies on the following configuration settings in logseq's .edn:
     :bind
     (("C-c n f" . org-roam-node-find)
      ("C-c n g" . org-roam-graph)
-     ("C-c n i" . org-roam-insert)
+     ("C-c n i" . org-roam-node-insert)
      ("C-c n c" . org-roam-capture)
      ("C-c n t" . org-roam-dailies-find-today))
     :init
