@@ -6,36 +6,76 @@ test.
 
 ## GI test edits
 
-The MCP can't write step edits. Recommendations go to the user, who
-applies them in the GI web UI. Keep edit recommendations precise:
+The GI MCP has no step-update tool, but the GI REST API does — we
+write via curl with explicit per-group user confirmation. The full
+loop (group, verify-against-DOM, propose, confirm, backup, write,
+canary) lives in `selector-fix-workflow.md`. This section covers the
+*selection of a new selector* — what to recommend.
 
+### Selector candidate hierarchy (A/B/C/D)
+
+When proposing a replacement for a broken selector, generate up to
+four candidates and recommend the highest-tier one that uniquely
+matches the right element on the live page.
+
+| Tier | Strategy | When to prefer |
+|---|---|---|
+| **C — Semantic class** | e.g. `.pw-action-group__item--disabled`, `.pw-action-group__item--selected`, `--sold-out`, ARIA-roles | The step's stated intent maps directly to a state class. "Click the OOS size" → `--disabled`. "Verify the selected swatch" → `--selected`. Most robust. |
+| **D — Stable attribute / value** | `label:has(input[value="12"])`, `[data-quickshop-trigger]`, `[role="button"][aria-label="Add to cart"]` | When intent is "this specific value" rather than "this state." Robust as long as the value stays. Prefer `data-*` over presentational classes. |
+| **B — Drop the class-chain noise** | `.pw-size-buttons > label.pw-action-group__item:nth-of-type(N)` | When the test really is positional and there's no semantic alternative. Cleaner than A but still order-fragile. |
+| **A — Minimal swap of the breaking parent only** | `.pw-action-group` → `.pw-size-buttons`, keep the rest | Last resort. Smallest diff, but preserves the brittleness that caused the failure. Use only when C/D/B don't have a unique match. |
+
+Avoid recommending selectors that chain three or more presentational
+classes (`.pw-button.pw-button--secondary.pw-m-b-2.pw-m-r-1`) — those
+break the next time someone reorganizes the SCSS or adds a layout
+class. The fact that the failed selector chained five of them is a
+red flag worth noting in the per-group summary.
+
+### Verifying a candidate against the live DOM
+
+Before recommending a candidate, run it through the chrome-devtools
+MCP. The user's authenticated Chrome session is already on
+shop-qa.primary.com. Template:
+
+```javascript
+() => {
+  const old = '<old selector>';
+  const candidates = ['<C>', '<D>', '<B>', '<A>'];
+  return {
+    oldMatches: document.querySelectorAll(old).length,
+    candidates: candidates.map(s => {
+      const els = document.querySelectorAll(s);
+      const first = els[0];
+      return {
+        selector: s,
+        count: els.length,
+        text: first?.textContent.trim().slice(0, 40) || null,
+        inputValue: first?.querySelector('input[name="size"]')?.value || null,
+        classes: first?.className || null
+      };
+    })
+  };
+}
 ```
-Step 4 (assertElementVisible, target: .quickshop-button)
-  Current target: .quickshop-button
-  Proposed target: [data-quickshop-trigger]
-  Reason: .quickshop-button was renamed to a data attribute in
-          <commit-sha> (sections/product-card.liquid:42). The data
-          attribute is more stable across redesigns.
-```
 
-### Selector hardening idioms
+A candidate is "good" only when:
+- `oldMatches === 0` (the failure is real today, not flaky)
+- `count === 1` for the candidate (no ambiguity)
+- The matched element's text/value/classes match the step's stated
+  intent (a candidate that matches one element but the *wrong* one is
+  worse than no candidate)
 
-When recommending a new selector, in priority order:
+### Imported sub-tests and utils
 
-1. **`data-test-*` / `data-testid` attributes** if the theme defines
-   them on the relevant element. Greatest stability.
-2. **Semantic ARIA roles + accessible names**, e.g.
-   `[role="button"][aria-label="Add to cart"]` — survives class
-   renames and is accessibility-positive.
-3. **`data-*` attributes meant for JS hooks**, e.g.
-   `[data-quickshop-trigger]`, `[data-cart-drawer-open]`. These
-   typically have a reason to exist and are less likely to be deleted
-   than presentational classes.
-4. **Element + nth-child only as a last resort** — fragile to layout
-   changes.
+In GI, "utils" are tests with `importOnly: true`. They live in the
+same `/v1/tests/{id}` namespace and have the same shape as any other
+test. A failing step in a parent test's result frequently lives in an
+imported util — check `extra.source.test` on the step. If the util's
+shared by N parent tests, fixing the util once fixes all N.
 
-Avoid recommending selectors that chain three or more class names —
-they break the next time someone reorganizes the SCSS.
+When recommending an edit, name the actual source location (the util
+ID, not the parent test ID) and list the affected parents so the
+user sees the blast radius.
 
 ### When the assertion is the problem
 

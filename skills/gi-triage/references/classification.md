@@ -1,9 +1,23 @@
 # Failure Classification
 
 The Ghost Inspector result payload (`mcp__ghostinspector__get_test_result`)
-contains, per failing step, an error string and a screenshot URL.
+contains per-step `passing`, `error`, `command`, `target`, `value`,
+`url` (the page URL at the time of the step), `notes`, and
+`extra.source.test` / `extra.source.sequence` (the original
+test+step where the step was authored — useful for finding imported
+utils). There is *one* top-level screenshot at
+`.screenshot.original.defaultUrl` showing the final page state; GI
+does **not** store per-step screenshots. The result also has `console`
+(an array of console messages) and `urls` (visited URLs).
+
+For batches of more than ~3 tests, fetch results via the REST API
+rather than the MCP — see `ci-context.md`. The MCP spills to disk on
+any non-trivial result; jq directly is faster.
+
 Classification is mostly about reading the error string carefully and
-correlating it to recent theme changes.
+correlating it to recent theme changes. Always filter out
+`optional: true` steps before identifying the real blocker — they
+fail without breaking the run and chasing them wastes time.
 
 ## Categories
 
@@ -19,21 +33,28 @@ matches. Either the CSS class/data attribute was renamed, the element
 was moved into a Shadow DOM/iframe, or it's hidden by new CSS.
 
 **How to confirm:**
-- Open the screenshot URL — does the element exist on the rendered
-  page under a different selector? Often yes.
-- Grep the failing selector in `~/Projects/pk-shopify-theme/` (or a
-  stable substring of it). If you get zero matches, the selector is
-  stale; the test needs an update. If you get matches, the markup
-  still uses that class — figure out why it's not visible (display:
-  none, overflow, lazy-loaded).
+- Use the chrome-devtools MCP to open the live page (`url` field from
+  the failing step) in the user's authenticated Chrome session, then
+  `evaluate_script` to run `document.querySelectorAll(<selector>)`.
+  Zero matches confirms the selector is broken right now. Inspect the
+  parent element's children to see what selector *would* match the
+  intended element.
+- Grep the failing selector against `origin/main` of pk-shopify-theme
+  (see `common-fixes.md` for the fetch + grep pattern). If you get
+  zero matches the selector is stale; if you get matches, the markup
+  still uses that class but something structural changed (new wrapper
+  element inserted, sibling order changed, etc.).
+- Check the `extra.source.test` on the failing step — if it's
+  different from the parent test ID, the step is imported from a
+  util. The fix may need to land in the util, which is the unit other
+  parent tests share.
 
 **Fix path:**
-- If selector is stale → produce a GI test edit recommending a more
-  robust replacement. Prefer `data-test-*` attributes if the theme
-  defines them; otherwise prefer semantic selectors over BEM-ish
-  classes.
+- If selector is stale → use the selector-fix workflow in
+  `selector-fix-workflow.md`. Apply via REST API after explicit
+  per-group user confirmation.
 - If markup is broken → it's a theme regression. Locate the
-  responsible commit, name the file/line.
+  responsible commit, name the file/line. Hand to the user.
 
 ### 2. Assertion mismatch
 

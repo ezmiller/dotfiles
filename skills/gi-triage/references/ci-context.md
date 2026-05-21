@@ -56,6 +56,59 @@ test-name lookup failed (it depends on a `/tmp/suite-tests.txt` file
 that isn't always written). Look up the real name with
 `mcp__ghostinspector__get_test`.
 
+## Bulk-inventorying failing-step data via the REST API
+
+When a batch of >3 tests is failing, fetch the failing-step data for
+all of them in one pass via curl + jq rather than via the MCP. The
+MCP's `get_test_result` returns 60–110KB payloads per test that spill
+to disk by default. Curl avoids the spill and lets you build a single
+JSONL file you can group on.
+
+```bash
+KEY="$GHOST_INSPECTOR_API_KEY"
+# IDS=(<list of failing test ids>)
+
+extract_one() {
+  local id=$1
+  local results_json result_id result
+  results_json=$(curl -s --compressed \
+    "https://api.ghostinspector.com/v1/tests/${id}/results/?apiKey=${KEY}&count=5")
+  result_id=$(echo "$results_json" | jq -r '[.data[] | select(.passing == false)] | .[0]._id // empty')
+  [ -z "$result_id" ] && { echo "{\"test\": \"$id\", \"error\": \"no failing result\"}"; return; }
+  result=$(curl -s --compressed \
+    "https://api.ghostinspector.com/v1/results/${result_id}/?apiKey=${KEY}")
+  echo "$result" | jq -c --arg id "$id" --arg result_id "$result_id" '{
+    test_id: $id,
+    result_id: $result_id,
+    name: .data.name,
+    viewport: .data.viewportSize.width,
+    fail: ([.data.steps[] | select(.passing == false and .optional != true)] | .[0] | {
+      seq: .sequence,
+      source_test: .extra.source.test,
+      source_seq: .extra.source.sequence,
+      cmd: .command,
+      notes: (.notes // "" | gsub("\n"; " ")),
+      target: (if (.target | type) == "string" then .target else (.target[0].selector // "?") end),
+      value: (.value // "")
+    })
+  }'
+}
+
+for id in "${IDS[@]}"; do
+  extract_one "$id" &
+  while [ $(jobs -rp | wc -l) -ge 4 ]; do sleep 0.2; done
+done
+wait
+```
+
+Output is one JSON line per test in `/tmp/gi-failures.jsonl`. Each
+line has the failing step's selector, source test/seq (util or self),
+notes, and command — exactly the inputs the selector-fix workflow
+needs to group and act on.
+
+Always use `--compressed` with curl against `api.ghostinspector.com`;
+the API returns gzip and jq will error on the bare bytes.
+
 ## Extracting failing test IDs from a GitHub run
 
 If the user gave you a run URL instead of a Slack paste:

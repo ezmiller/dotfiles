@@ -34,6 +34,12 @@ at a GitHub run, fetch failing test IDs from the run log first (see
 `(ID: <hex>)` and the suite headings tell you which suite each belongs
 to.
 
+**For batches of more than ~3 tests, skip the MCP and bulk-fetch via the
+REST API.** The MCP's `get_test_result` payloads routinely exceed
+~60KB and spill to disk (see `references/ci-context.md` for the
+inventory script). `curl + jq` is faster, fits in context, and lets
+you build a `{test → failing step}` map in one pipeline.
+
 ## What the suites cover
 
 Four suites run against `https://shop-qa.primary.com` at two viewports
@@ -76,8 +82,18 @@ mcp__ghostinspector__list_test_results(test_id=<id>, count=5)
 mcp__ghostinspector__get_test_result(result_id=<id>)
 ```
 
-The result payload contains per-step pass/fail, the error message, a
-screenshot URL for the failing step, and the variables that were live.
+The result payload contains per-step pass/fail, per-step error message,
+the page URL at each step, the variables that were live, and *one*
+top-level screenshot of the final page state at `.screenshot.original.defaultUrl`
+(GI does **not** store per-step screenshots). For each failing step,
+also read `.extra.source.test` and `.extra.source.sequence` — these
+identify where the step actually lives (the parent test itself, or
+an imported util/module test). Many "failing steps" are imported from
+util tests; the real fix lives in the util, not the parent.
+
+Always filter to `optional == false` failing steps when identifying
+the *real* blocker. An optional step (e.g., closing a cookie banner)
+can fail without breaking the run, and chasing those is wasted time.
 
 ### 2. Classify the failure
 
@@ -143,11 +159,17 @@ failed one.
 
 For each test, pick one:
 
-- **Edit the GI test** — if the test's assertion or selector is stale
-  but the app behavior is correct. The MCP does not have a write API
-  for editing steps; you produce a precise change list (step number,
-  current value, proposed value, why) for the user to apply in the GI
-  web UI. Include the test link.
+- **Edit the GI test (or its util)** — if the test's assertion or
+  selector is stale but the app behavior is correct. The GI MCP has
+  no step-update tool, but the GI REST API supports test updates and
+  we use it via curl. Always: (1) group failures by their *source*
+  step (util or self) so you only fix each step once, even when it's
+  shared across many tests; (2) verify the candidate selector in the
+  live page via the chrome-devtools MCP before recommending it; (3)
+  duplicate the test as a backup before any POST; (4) get explicit
+  user confirmation per group before writing; (5) re-run one affected
+  parent test as a canary before moving on. The full step-by-step is
+  in `references/selector-fix-workflow.md`.
 - **Fix the theme** — if the regression is real. Describe the change
   needed in the theme repo. Don't open a PR from inside this skill —
   hand the diagnosis to the user, who will use `work-ticket` if they
@@ -156,11 +178,13 @@ For each test, pick one:
   expired, etc. The fix is usually re-seeding QA, not code. Flag it
   clearly: this is an ops problem, not an engineering one.
 - **Retry to confirm** — when classification is ambiguous, use
-  `mcp__ghostinspector__execute_test(test_id=<id>, viewport=<viewport>)`
-  to re-run against QA. A test that passes on a manual single retry
-  *after* 4 CI retries failed is suspicious — usually means QA was in
-  a transient bad state, or the test itself has order-dependence on
-  the suite.
+  `mcp__ghostinspector__execute_test(test_id=<id>, viewport=<viewport>,
+  immediate=true)` to re-run against QA, then poll the result via the
+  REST API. (Synchronous `execute_test` calls without `immediate=true`
+  time out in the MCP — the GI runner usually takes 60–120s.) A test
+  that passes on a manual single retry *after* 4 CI retries failed is
+  suspicious — usually means QA was in a transient bad state, or the
+  test itself has order-dependence on the suite.
 
 ### 5. Produce the triage report
 
@@ -200,11 +224,11 @@ rather than repeating the verdict per-test.
 
 ## Constraints and gotchas
 
-- **No silent test edits.** The MCP does not include a tool for
-  modifying test steps; even if it did, never auto-edit a GI test —
-  Ethan applies these changes manually in the GI web UI so the diff
-  is visible and reversible. Your job is to produce a precise change
-  list, not to apply it.
+- **No silent test edits.** Test updates go through the GI REST API
+  (the MCP can't write step targets). Before any POST: duplicate as
+  backup, show the user a unified diff, get explicit per-group
+  confirmation, and re-fetch after writing to verify. Never bundle
+  many edits into one POST — one group at a time, canary in between.
 - **Don't open PRs.** Hand off diagnoses; let `work-ticket` and the
   user drive the fix branch.
 - **`shop-qa.primary.com` is the start URL** — the same theme code is
@@ -224,8 +248,15 @@ rather than repeating the verdict per-test.
 - `references/classification.md` — full failure-type taxonomy with
   examples of how each appears in the GI result payload.
 - `references/ci-context.md` — how the daily/PR workflows pick failing
-  IDs, what "consistent failure" really means, and where the IDs live
-  in the GH Actions log if you only got a run URL.
+  IDs, what "consistent failure" really means, where the IDs live in
+  the GH Actions log, and the curl+jq inventory script for bulk
+  fetching failing-step data across many tests.
 - `references/common-fixes.md` — recurring fix patterns: selector
-  hardening idioms in GI, viewport-specific assertions, data-seed
-  expectations for QA.
+  hardening idioms (the A/B/C/D candidate hierarchy), the "new
+  wrapper" trap, viewport-specific assertions, data-seed expectations
+  for QA, retry/verification idioms.
+- `references/selector-fix-workflow.md` — end-to-end loop for fixing
+  a stale-test selector: group by source, verify against live DOM via
+  chrome-devtools MCP, propose candidates, duplicate-as-backup, POST
+  via curl, canary-run. Read this whenever the verdict for a group is
+  "Edit the GI test."
