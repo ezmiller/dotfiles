@@ -31,6 +31,49 @@ break the next time someone reorganizes the SCSS or adds a layout
 class. The fact that the failed selector chained five of them is a
 red flag worth noting in the per-group summary.
 
+### Picking the strategy in practice
+
+- **C only works when the count is 1.** Semantic classes like
+  `--disabled` match every disabled element on the page. On a product
+  with multiple sold-out sizes, `--disabled` would match all of them
+  and `click` would hit the first in DOM order — which may or may
+  not be the size the test originally targeted. Verify count via
+  chrome-devtools before recommending C.
+- **B is the safe fallback when C is ambiguous.** A positional
+  selector with `:nth-of-type(N)` preserves the test's original
+  intent (click the Nth size) and won't surprise downstream
+  assertions that depend on that specific size being selected.
+  Trade-off: it stays as brittle as the original — adding or
+  removing a size variant on the product breaks it.
+- **D when the test variable already names the value.** If the
+  parent test stores `oos_size = "12-18"` and the util is supposed
+  to click that specific size, D (`label:has(input[value="12-18"])`)
+  encodes the intent explicitly. Worth recommending when you see
+  the value in a variable definition upstream.
+- **Mixed C-and-B across the codebase is fine.** You don't have to
+  pick one strategy and apply it everywhere. Each util's intent is
+  different; let the intent drive the strategy. Just call it out
+  in the per-group summary so the user knows what they're getting
+  (a one-line `tier: C` or `tier: B` per group).
+
+### Inventory captures only the first failing step
+
+The skill's bulk-inventory script extracts the first non-optional
+failing step per test result. If a test has multiple steps using
+the same broken pattern, only the earliest one is in the inventory
+— the rest stay hidden until the first is fixed, then they surface
+on the next run. This is the "iceberg" pattern. Two consequences:
+
+- Fixing the inventoried step won't necessarily make the parent
+  test pass end-to-end. It may push the failure to step N+1 of the
+  same parent.
+- Don't try to fix the entire iceberg in one session. The daily
+  CI's retry-and-alert cycle is designed for exactly this kind of
+  multi-phase recovery — let it surface the next layer naturally,
+  and triage that on the next pass. Sweeping the whole test universe
+  to find every `.pw-action-group > label` reference is a recipe
+  for blast-radius regret.
+
 ### Verifying a candidate against the live DOM
 
 Before recommending a candidate, run it through the chrome-devtools

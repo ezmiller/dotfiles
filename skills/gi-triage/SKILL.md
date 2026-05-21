@@ -229,6 +229,23 @@ rather than repeating the verdict per-test.
   backup, show the user a unified diff, get explicit per-group
   confirmation, and re-fetch after writing to verify. Never bundle
   many edits into one POST — one group at a time, canary in between.
+- **Stay incremental, minimize blast radius.** Patch what the inventory
+  surfaced — don't sweep the wider test universe for "stale-looking"
+  selectors that aren't currently failing. The daily CI runs nightly
+  and re-surfaces what still needs attention; multi-phase fixing is
+  normal and preferred over single-session sweeps. A canary that
+  fails on a *different* stale selector than the one you fixed is
+  not a signal to expand scope — log it for the next pass and move
+  on. See `references/selector-fix-workflow.md`'s "Don't expand
+  scope" section.
+- **GI itself is occasionally flaky.** The pk-shopify-theme daily CI
+  retries each test up to 4 times before treating it as a "consistent
+  failure" for exactly this reason. A single canary failure with no
+  obvious selector issue may just be GI flake (transient layout
+  shift, slow third-party script, DNS hiccup). Re-run once before
+  inferring a real regression. The 404-page-doesn't-exist screenshot
+  is a specific subclass — always check the result's top-level
+  screenshot before assuming the failure is selector-related.
 - **Don't open PRs.** Hand off diagnoses; let `work-ticket` and the
   user drive the fix branch.
 - **`shop-qa.primary.com` is the start URL** — the same theme code is

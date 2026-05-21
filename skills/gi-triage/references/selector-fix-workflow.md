@@ -125,10 +125,35 @@ Always include in the proposal:
 - Why this candidate over the others (one sentence).
 - The list of affected tests (so the user sees the blast radius).
 
-Wait for an explicit "go" / "yes" / "apply" — not a clarifying
-question, not a screenshot, not a "looks right." If the user is
-verifying state in the GI web UI, that's verification, not approval.
-Re-ask if ambiguous.
+### Approval is an explicit handshake, not an option number
+
+Wait for an unambiguous "go" / "yes" / "apply" / "ok to apply C".
+Do *not* treat any of the following as approval:
+
+- A single number like `1` or `C` (could be selecting an option,
+  could be answering an earlier question — too ambiguous).
+- A clarifying question ("what does C do?").
+- A screenshot or paste of the current GI editor state (that's
+  verification, not approval).
+- A "looks right" or "that matches" without an explicit run word.
+- Silence after you propose.
+
+If the user picks an option from a numbered menu, treat it as
+*selection of approach*, not authorization to write. Re-ask:
+"Confirmed — applying C to <util-id>?" and wait for the explicit
+yes.
+
+For batch operations (more than one test edit in the same loop),
+the bar is higher. You must show the *full* list of every test that
+will change and ask the verbatim question "ok to run this batch?"
+or equivalent. A single-word reply to an earlier "which option"
+question is not enough — the user has to authorize batch execution
+specifically.
+
+The harness's auto-mode classifier will block writes when the
+authorization chain looks ambiguous, even if the user technically
+said yes earlier. Don't try to slip past it — get the explicit
+re-confirmation instead.
 
 ## Phase 5 — Backup + write
 
@@ -227,16 +252,56 @@ done
 produces a parse error on jq.)
 
 If `passing=true`: the fix propagates. Move on to the next group.
-If `passing=false`: read the new failing step. Either:
-- It's the same step with a still-broken selector → revise candidate
-  (re-do Phase 3 with what you learned).
-- It's a *different* downstream step that's also broken → that's a
-  separate group; finish this one as "fix applied, but parent test
-  still has further issues," log it, move on.
+If `passing=false`: read the new failing step. Categorize:
+
+- **Same step, still-broken selector.** Revise candidate (re-do
+  Phase 3 with what you learned).
+- **Different downstream step, also broken with the same shape
+  (`.pw-action-group > label...`).** This is the iceberg pattern —
+  the test had multiple instances of the same stale selector and
+  only the first one was in the inventory. Don't expand scope to
+  fix it inside this loop. Log it as "fix applied, parent test has
+  additional same-shape issues to address in a follow-up pass," move
+  on. The daily CI will surface it on its next consistent-failure
+  run, and you'll triage it in a separate session.
+- **GI 404 / "page doesn't exist" screenshot.** Check the result's
+  `.screenshot.original.defaultUrl`. If it shows the storefront
+  404 view, the test never reached the page it was supposed to —
+  the failure has nothing to do with selectors. Most likely cause:
+  the product is in a state GI's anonymous post-password session
+  can't access (admin-only preview, B2B-only channel, Markets
+  restriction). Often this is a Shopify visibility config and
+  resolves outside the selector-fix workflow. Log + move on.
+- **One-off flake.** Ghost Inspector itself is occasionally
+  inconsistent — DNS hiccups, transient layout shifts, third-party
+  scripts not loading in time. The pk-shopify-theme daily CI
+  intentionally retries each test up to 4 times before treating it
+  as a "consistent failure" precisely because of this. Treat a
+  single canary failure as informational, not as evidence the
+  selector is wrong. If you re-run it once or twice and it passes,
+  it was flake.
 
 Do not roll back automatically on a single failed canary — the
 backup is preserved if the user wants to revert. Tell the user the
-canary failed and let them decide.
+canary failed, name the failure mode, and let them decide.
+
+### Don't expand scope inside one fix loop
+
+Resist the urge to chase every newly-revealed issue when a canary
+exposes a downstream stale selector. The skill is designed for
+incremental, multi-phase fixing:
+
+1. Today's CI exposes N failures.
+2. We triage those N, patch the first broken step in each.
+3. Tomorrow's CI may expose M < N (or M > N if a new theme change
+   landed).
+4. We triage those next. Each pass narrows the surface.
+
+Trying to "fix everything at once" (e.g., scanning every test in
+the suite for stale selectors and patching them all) maximizes
+blast radius for unclear marginal value. The cost of an extra
+day-long iteration is small; the cost of a bad batch-write is real.
+Stay narrow.
 
 ## Phase 7 — Cleanup (after the whole batch)
 
