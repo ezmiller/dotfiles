@@ -68,15 +68,22 @@ JSONL file you can group on.
 KEY="$GHOST_INSPECTOR_API_KEY"
 # IDS=(<list of failing test ids>)
 
+# Sanitize raw GI API responses through Python first — see "Why
+# the python prefilter is non-optional" below. Pipe everything
+# through this before jq.
+sanitize() {
+  python3 -c "import sys,json; print(json.dumps(json.loads(sys.stdin.read(), strict=False)))"
+}
+
 extract_one() {
   local id=$1
   local results_json result_id result
   results_json=$(curl -s --compressed \
-    "https://api.ghostinspector.com/v1/tests/${id}/results/?apiKey=${KEY}&count=5")
+    "https://api.ghostinspector.com/v1/tests/${id}/results/?apiKey=${KEY}&count=5" | sanitize)
   result_id=$(echo "$results_json" | jq -r '[.data[] | select(.passing == false)] | .[0]._id // empty')
   [ -z "$result_id" ] && { echo "{\"test\": \"$id\", \"error\": \"no failing result\"}"; return; }
   result=$(curl -s --compressed \
-    "https://api.ghostinspector.com/v1/results/${result_id}/?apiKey=${KEY}")
+    "https://api.ghostinspector.com/v1/results/${result_id}/?apiKey=${KEY}" | sanitize)
   echo "$result" | jq -c --arg id "$id" --arg result_id "$result_id" '{
     test_id: $id,
     result_id: $result_id,
@@ -100,6 +107,26 @@ for id in "${IDS[@]}"; do
 done
 wait
 ```
+
+### Why the python prefilter is non-optional
+
+GI API responses occasionally contain raw control characters
+(newlines, tabs) inside string fields — most commonly inside the
+`notes` field of imported util steps. jq's strict JSON parser
+rejects these with:
+
+```
+parse error: Invalid string: control characters from U+0000 through U+001F must be escaped
+```
+
+The failure is intermittent because not every test's result contains
+a problem string. The script worked on 2026-05-21; on 2026-05-22 it
+errored on the same query against different tests. Piping through
+`python3 -c "import sys,json; print(json.dumps(json.loads(sys.stdin.read(), strict=False)))"`
+fixes it: Python's parser is lenient about control characters with
+`strict=False`, and the round-trip through `json.dumps` re-emits
+properly-escaped JSON that jq accepts. Apply this filter to *every*
+curl response from the GI API in this pipeline.
 
 Output is one JSON line per test in `/tmp/gi-failures.jsonl`. Each
 line has the failing step's selector, source test/seq (util or self),

@@ -168,6 +168,49 @@ its name. Note the new test ID — that's your rollback handle. The
 copy is referenced by ID, not by name, so it won't get accidentally
 imported into other tests.
 
+### Write the backup ID to the tracking doc immediately
+
+Before going further, append a row to the session's tracking doc
+mapping `(group, backup_id, source_test_id, source_name)`. **Do
+not rely on the conversation transcript to preserve this** — past
+sessions have nearly lost backup IDs to session-end. The tracking
+doc is the durable record; if the session is interrupted, the only
+way to roll back is by querying GI for all `(Copy)`-suffixed tests
+and matching names back to live IDs (fragile).
+
+A simple table works:
+
+```markdown
+| Group | Backup ID | Source (live) test | Source name |
+|---|---|---|---|
+| G1 | 6a10888d... | 63a0d90a... | [MegaPDP][Util] Go back to default |
+```
+
+### Patching iceberg parent tests: validate one step, then bulk
+
+When the test you're patching has many same-pattern broken steps
+visible in the inventory (the "iceberg" — common in `*_behavior`
+tests), don't bulk-patch all of them in one shot, even with user
+approval. The risk: if the rewrite shape doesn't generalize for some
+subtle reason, you've changed N steps when you only needed to revert
+1 and re-think.
+
+The cheap insurance:
+
+1. Patch only the currently-surfaced first broken step.
+2. Re-canary the test. Expect: that step now passes, the test
+   fails on the *next* same-shape broken step downstream.
+3. If step 1 passed, you've validated the rewrite shape against the
+   actual DOM. Now bulk-patch the remaining known-broken steps in a
+   single POST (using the same backup — the patch from step 1 doesn't
+   invalidate the pre-patch backup, just narrows what you'd roll
+   back to).
+4. Re-canary the test; expect green.
+
+Cost: one extra canary cycle (~60–90s). Today this caught 0 issues
+across 3 iceberg tests, but the safety margin is what makes the
+bulk POST in step 3 acceptable.
+
 Then patch via REST:
 
 ```bash
@@ -235,9 +278,12 @@ mcp__ghostinspector__execute_test(
 the MCP timeout. The call returns a result ID; the test runs in GI
 for 30–180s depending on step count.
 
-Poll for completion:
+Poll for completion. Two viable shapes — the simple `passing` check
+is fine if you write it carefully, the `dateExecutionFinished` shape
+is more robust:
 
 ```bash
+# Simple — works correctly *only* if you read .data.passing directly
 RESULT_ID=<from execute_test response>
 for i in $(seq 1 10); do
   sleep 30
@@ -248,30 +294,87 @@ for i in $(seq 1 10); do
 done
 ```
 
+```bash
+# Robust — separates "is execution done?" from "did it pass?"
+RESULT_ID=<from execute_test response>
+for i in $(seq 1 20); do
+  sleep 15
+  STATE=$(curl -sS --compressed "https://api.ghostinspector.com/v1/results/$RESULT_ID/?apiKey=$KEY" \
+    | python3 -c "import sys,json
+d = json.loads(sys.stdin.read(), strict=False)['data']
+done = d.get('dateExecutionFinished') and d['dateExecutionFinished'] != '1970-01-01T00:00:00.000Z'
+print(f'done={done} passing={d.get(\"passing\")}')")
+  echo "[poll $i @ +$((i*15))s] $STATE"
+  case "$STATE" in *'done=True'*) break;; esac
+done
+```
+
 (Use `--compressed`; the GI REST API returns gzip and bare curl
 produces a parse error on jq.)
 
+**Do NOT add defensive `// "null"` to the passing check.** It's the
+single most common reason poll scripts silently misbehave:
+
+```bash
+# BROKEN — looks defensive but is actually wrong
+jq -r '.data.passing // "null"'
+```
+
+jq's `//` operator treats both `null` *and* `false` as falsy. So
+when `.data.passing` is the boolean `false` (test finished and
+failed), the expression returns the string `"null"`, the bash
+check `[ "$PASS" = "true" ] || [ "$PASS" = "false" ]` never
+matches, and the loop runs out the full timeout while the test has
+actually already failed. The `dateExecutionFinished` shape above
+avoids this trap entirely.
+
 If `passing=true`: the fix propagates. Move on to the next group.
-If `passing=false`: read the new failing step. Categorize:
+If `passing=false`: **before guessing, download the screenshot**:
+
+```bash
+SCREENSHOT_URL=$(curl -sS --compressed "https://api.ghostinspector.com/v1/results/$RESULT_ID/?apiKey=$KEY" \
+  | python3 -c "import sys,json; print(json.loads(sys.stdin.read(), strict=False)['data']['screenshot']['original']['defaultUrl'])")
+curl -sS -L "$SCREENSHOT_URL" -o /tmp/gi-canary-fail.png
+# then use the Read tool on /tmp/gi-canary-fail.png — it's multimodal
+```
+
+The screenshot disambiguates flake vs. env vs. real issue in
+~10 seconds. Skipping this step is the #1 way to end up theorizing
+about hypotheses that the image would immediately settle. Recurring
+surprise: the page is actually a Shopify 404 ("Uh oh! Looks like
+this page doesn't exist") and the failing selector simply doesn't
+exist on the 404 markup.
+
+Then read the new failing step and categorize:
 
 - **Same step, still-broken selector.** Revise candidate (re-do
   Phase 3 with what you learned).
-- **Different downstream step, also broken with the same shape
-  (`.pw-action-group > label...`).** This is the iceberg pattern —
-  the test had multiple instances of the same stale selector and
-  only the first one was in the inventory. Don't expand scope to
-  fix it inside this loop. Log it as "fix applied, parent test has
-  additional same-shape issues to address in a follow-up pass," move
-  on. The daily CI will surface it on its next consistent-failure
-  run, and you'll triage it in a separate session.
-- **GI 404 / "page doesn't exist" screenshot.** Check the result's
-  `.screenshot.original.defaultUrl`. If it shows the storefront
+- **Different downstream step, same-shape selector in the same
+  parent test.** This is the iceberg pattern. If the inventory
+  showed only the first failing step but the test has more known
+  broken steps of the same shape, apply the "validate one step,
+  then bulk" pattern from Phase 5 — patch the remaining steps in
+  one POST, re-canary. The daily-CI deferral is only correct when
+  you genuinely don't know whether the pattern generalizes.
+- **Different util, same-family shape (sibling util cascade).**
+  When the canary fails in a util that *wasn't* in the original
+  inventory but uses the exact same broken pattern as one you
+  just patched (e.g. `:first-of-type` vs `:last-of-type` variants
+  of the same `fieldset > div...` chain): fix it now as a sub-group
+  (G1 → G1b), re-canary, repeat. This is the *only* legitimate
+  scope-expansion inside one fix loop, and it's worth doing because
+  (a) the fix shape is already proven, (b) you have the user's
+  attention, and (c) deferring it just delays the parent test's
+  green state by 24h.
+- **GI 404 / "page doesn't exist" screenshot.** The screenshot
+  download above will surface this. If it shows the storefront
   404 view, the test never reached the page it was supposed to —
   the failure has nothing to do with selectors. Most likely cause:
   the product is in a state GI's anonymous post-password session
   can't access (admin-only preview, B2B-only channel, Markets
-  restriction). Often this is a Shopify visibility config and
-  resolves outside the selector-fix workflow. Log + move on.
+  restriction). Sometimes also a stale util that opens a bare URL
+  Shopify redirects to a 404 (e.g. handle was renamed). Log + move
+  on; resolve outside the selector-fix workflow.
 - **One-off flake.** Ghost Inspector itself is occasionally
   inconsistent — DNS hiccups, transient layout shifts, third-party
   scripts not loading in time. The pk-shopify-theme daily CI
@@ -280,16 +383,23 @@ If `passing=false`: read the new failing step. Categorize:
   single canary failure as informational, not as evidence the
   selector is wrong. If you re-run it once or twice and it passes,
   it was flake.
+- **Two-back-to-back manual canary failures ≠ CI's "consistent
+  failure."** CI's signal comes from 4 retries × 30s gap. Two
+  manual canaries 1–5 min apart can both hit the same short-lived
+  env state (slow QA backend, brief Shopify hiccup, third-party
+  script blip). When two manual canaries agree on a failure mode,
+  the next move is to download the screenshot and look — not to
+  declare the issue persistent.
 
 Do not roll back automatically on a single failed canary — the
 backup is preserved if the user wants to revert. Tell the user the
 canary failed, name the failure mode, and let them decide.
 
-### Don't expand scope inside one fix loop
+### Don't expand scope inside one fix loop — with two exceptions
 
-Resist the urge to chase every newly-revealed issue when a canary
-exposes a downstream stale selector. The skill is designed for
-incremental, multi-phase fixing:
+Default: resist the urge to chase every newly-revealed issue when a
+canary exposes a downstream stale selector. The skill is designed
+for incremental, multi-phase fixing:
 
 1. Today's CI exposes N failures.
 2. We triage those N, patch the first broken step in each.
@@ -299,9 +409,32 @@ incremental, multi-phase fixing:
 
 Trying to "fix everything at once" (e.g., scanning every test in
 the suite for stale selectors and patching them all) maximizes
-blast radius for unclear marginal value. The cost of an extra
-day-long iteration is small; the cost of a bad batch-write is real.
-Stay narrow.
+blast radius for unclear marginal value. Stay narrow by default.
+
+**Two exceptions worth taking:**
+
+1. **Iceberg residue in the same parent test.** If you patched
+   step 1 of a parent test and the inventory showed (or your scan
+   showed) more same-shape broken steps in the same test, finish
+   them in one bulk POST after a validate-step-then-bulk pass
+   (Phase 5). Cost: 1 extra canary cycle. Benefit: saves 1–3 daily
+   CI cycles before the test goes green.
+
+2. **Sibling-util cascade.** If a canary surfaces a util that
+   wasn't in the inventory but uses the same broken pattern as one
+   you just fixed, patch it now as a sub-group and re-canary. Cost:
+   one extra duplicate + POST + ~90s canary. Benefit: same.
+
+What still belongs to next-pass deferral:
+
+- Different parent test with a different selector shape, even if
+  conceptually similar (e.g. a different component's selectors).
+- "Stale-looking" selectors in tests that aren't currently failing.
+- Test cleanup / refactoring not tied to a current failure.
+
+The principle: if the canary literally walked into the breakage and
+the fix is mechanically identical to what you just shipped, finish
+it. Otherwise log and defer.
 
 ## Phase 7 — Cleanup (after the whole batch)
 

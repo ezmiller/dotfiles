@@ -169,8 +169,26 @@ no longer transient — promote to "stabilize this test" work.
 
 If you're unsure between two categories:
 
-1. Open the failing step's screenshot.
+1. **Download the result's `.screenshot.original.defaultUrl` and Read
+   it.** This is not optional when you're guessing — the image
+   collapses several hypothesis branches in seconds.
+
+```bash
+SCREENSHOT_URL=$(curl -sS --compressed "https://api.ghostinspector.com/v1/results/<result_id>/?apiKey=$KEY" \
+  | python3 -c "import sys,json; print(json.loads(sys.stdin.read(), strict=False)['data']['screenshot']['original']['defaultUrl'])")
+curl -sS -L "$SCREENSHOT_URL" -o /tmp/gi-fail.png
+# Use the Read tool on /tmp/gi-fail.png — Read is multimodal and renders the image
+```
+
 2. Ask: "Is the page rendering correctly to a human eye?"
 3. If yes → the test is wrong (category 1 stale selector or 2 stale
    assertion). Recommend a GI test edit.
-4. If no → the theme is wrong. Find the commit.
+4. If no → the theme is wrong (or the page is a 404, see below).
+   Find the commit or product-config issue.
+
+**Watch for the Shopify 404 view ("Uh oh! Looks like this page
+doesn't exist").** This is the most common surprise — a failing
+selector on a 404 page isn't a selector problem. It usually means
+either the test's start URL hits a bare product handle that Shopify
+redirects to a now-broken handle, or QA seed data was changed. The
+fix is product-config / data, not selector.

@@ -19,6 +19,19 @@ Diagnose failing Ghost Inspector tests in pk-shopify-theme, classify each
 failure, and recommend a concrete next step: edit the GI test, change
 theme code, or wait (transient/QA-env issue).
 
+## Where the workflow starts
+
+The triage workflow always begins with **a set of failing tests
+provided by the user**. The most common shape: the user pastes a
+GitHub Actions run URL from the daily E2E workflow
+(`daily_e2e_test_run.yml`) and asks you to figure out what broke.
+Other forms (Slack alert, PR-CI run, bare test IDs) are variations on
+the same input — what matters is that you end up with a concrete list
+of `(test_id, viewport)` pairs to triage.
+
+Your first job is always to parse that input into the failing-test
+list. Don't start classifying or fixing until you have it.
+
 ## Inputs you'll typically receive
 
 - A Slack alert from `#alerts` or `#e2e-testing` listing test IDs and
@@ -246,6 +259,23 @@ rather than repeating the verdict per-test.
   inferring a real regression. The 404-page-doesn't-exist screenshot
   is a specific subclass — always check the result's top-level
   screenshot before assuming the failure is selector-related.
+- **"Consistent failure" means CI's 4-retries-with-30s-gaps, not "I
+  re-ran it twice."** Two back-to-back manual canaries failing the
+  same way is a much weaker signal than CI's consistent-failure
+  guarantee — they can both hit the same short-lived QA env state.
+  When two manual canaries agree on a failure mode, the *next* move
+  is to download the screenshot and look at the page directly
+  (see "Always look at the screenshot first" below), not to declare
+  the issue persistent.
+- **Always look at the screenshot first when a canary fails on a step
+  you didn't patch.** The GI result payload's
+  `.screenshot.original.defaultUrl` is a public S3 PNG. Download it
+  with `curl`, then use the `Read` tool — Read is multimodal and
+  renders the image. In ~10 seconds you can disambiguate between
+  flake, env issue, real 404, or genuine selector breakage. Today's
+  most common surprise: the page is actually a Shopify 404 / "Uh
+  oh!" view, and the failing selector just doesn't exist on that
+  page. Don't keep theorizing without looking.
 - **Don't open PRs.** Hand off diagnoses; let `work-ticket` and the
   user drive the fix branch.
 - **`shop-qa.primary.com` is the start URL** — the same theme code is
