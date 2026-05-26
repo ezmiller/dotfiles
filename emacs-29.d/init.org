@@ -45,9 +45,10 @@
   ;;; Secrets Setup - skip if no ~/secrets.el.gpg file instead warn
   (if (file-exists-p "~/secrets.el.gpg")
       (progn
-        (setq epg-pinentry-mode 'loopback) ;; this line I think allows prompt for passphrase in minibuffer
+        ;; Let epa route through gpg-agent -> pinentry-mac so the
+        ;; passphrase can be saved in the macOS Keychain (no loopback,
+        ;; which would force a minibuffer prompt every session).
         (require 'epa-file)
-        (setq auth-source-debug t)
         (load-library "~/secrets.el.gpg"))
     (warn "No ~/secrets.el.gpg file found, skipping secrets setup"))
 #+end_src
