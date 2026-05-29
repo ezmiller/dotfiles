@@ -6,7 +6,7 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and follow the
 
 ## How to Work & Communicate
 
-- Be concise in your responses. Let the user ask questions. Less is more.
+- Be VERY concise in your responses. Let the user ask questions. Less is more.
 - When asked to work on a complex project, work in plan mode before making changes. Favor gathering full context over responding quickly.
 
 ## Trust Boundaries
@@ -18,6 +18,7 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and follow the
 ## Git
 
 - NEVER push or commit without asking
+- NEVER open a PR without explicit permission
 - NEVER work directly on `main`. Always create a new branch off `main`.
 - Don't create branches off non-`main` branches unless asked.
 - **Branch naming**: When a Jira ticket is known, the branch MUST use
@@ -30,6 +31,9 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and follow the
   `build`, `ci`, `chore`, `revert`. No other prefixes (e.g. `wip:`).
 - Prefer explicit `git add <file>` over `git add .` — other changes
   from the user or other agents may be present.
+- When opening a PR, make it as concise as possible. ALWAYS check for
+  pull request template for github. If not cover general context,
+  proposed solution, and sensible manual testing.
 
 ## Documentation
 
