@@ -23,6 +23,7 @@ These skills can be used with various agent frameworks and AI assistants:
 
 - **financial-aid-application** - In development - Guides users through financial aid application processes
 - **farsika-server** - Manage, troubleshoot, and answer questions about the farsika personal server (S3 backups, Resilio Sync, Tailscale)
+- **update-ynab** - Bring YNAB up to date: pick a budget, categorize/approve transactions, reconcile accounts against bank balances
 
 ## Contributing
 
