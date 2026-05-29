@@ -591,21 +591,15 @@ Enables easy toggle and other things that I've not yet used.
 #+end_src
 
 #+begin_src emacs-lisp
-  (use-package quick-peek)
-  (use-package flycheck-inline
-    :after (flycheck quick-peek)
-    :hook (flycheck-mode-hook . flycheck-inline-mode)
+  (use-package flyover
+    :straight (flyover :type git :host github :repo "konrad1977/flyover")
+    :after flycheck
+    :hook (flycheck-mode . flyover-mode)
     :config
-    (setq flycheck-inline-clear-delay 3)
-    (setq flycheck-inline-display-function
-  	(lambda (msg pos err)
-  	  (let* ((ov (quick-peek-overlay-ensure-at pos))
-  		(contents (quick-peek-overlay-contents ov)))
-  	    (setf (quick-peek-overlay-contents ov)
-  		  (concat contents (when contents "\n") msg))
-  	    (quick-peek-update ov)))
-  	flycheck-inline-clear-function #'quick-peek-hide)
-    )
+    (setq flyover-checkers '(flycheck))
+    (setq flyover-levels '(error warning info))
+    (setq flyover-wrap-messages t)
+    (setq flyover-max-line-length 100))
 #+end_src
 
 * Project Management
