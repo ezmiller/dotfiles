@@ -142,6 +142,15 @@ completed). Or a QA seed product is now out of stock.
 Common offenders: mobile nav drawer, mobile filter UI, sticky CTA,
 mobile-only quickshop overlay.
 
+**Caveat — fake passes from early-exit guards:** Before trusting the
+"passing" viewport, check whether it actually ran the assertions or
+**bailed via a Global Utilities guard** (e.g. step 0
+`[Global Utilities - Exit Test if Not Desktop]`). Desktop-only features
+like quickshop exit early at `375x667` and mark the run passed without
+testing anything — that "pass" carries no signal, so don't read the
+split as responsive divergence. Discount the early-exit viewport
+entirely and triage only the one that ran.
+
 **How to confirm:**
 - Look at the failing step's selector — is it a mobile-only element
   (e.g. `.menu-drawer-toggle`, `.mobile-filters`)?

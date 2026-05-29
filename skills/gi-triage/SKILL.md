@@ -3,14 +3,13 @@ name: gi-triage
 description: >
   Diagnose and propose fixes for failing Ghost Inspector E2E tests in the
   pk-shopify-theme project. Trigger whenever the user mentions Ghost Inspector,
-  GI tests, "e2e failed", "consistent failures", a `app.ghostinspector.com`
-  link, a Ghost Inspector test ID, or pastes the Slack alert from the
-  "alerts" or "e2e-testing" channel about daily E2E test failures. Also
-  trigger for "triage GI", "what broke the e2e tests", "Quickshop test
-  failing", "PDP suite failing", or any phrasing where the user wants to
-  figure out *why* one or more GI tests are red and what to do about it.
-  Use this skill even when the user names only a single failing test —
-  the diagnostic loop is the same.
+  GI tests, a `app.ghostinspector.com` link, a Ghost Inspector test ID, 
+  or pastes the Slack alert from the "alerts" or "e2e-testing" channel 
+  about daily E2E test failures. Also trigger for "triage GI", "what broke
+  the e2e tests", "Quickshop test failing", "PDP suite failing", or any 
+  phrasing where the user wants to figure out *why* one or more GI tests 
+  are red and what to do about it. Use this skill even when the user names 
+  only a single failing test — the diagnostic loop is the same.
 ---
 
 # Ghost Inspector Triage

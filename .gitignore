@@ -24,3 +24,6 @@ vim/.netrwhist
 
 # Emacs multisession persistent variable storage
 emacs-29.d/multisession/
+
+# skill-creator eval scratch output
+skills/*-workspace/
