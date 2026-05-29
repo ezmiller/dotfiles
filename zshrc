@@ -57,3 +57,10 @@ path_append "$HOME/.config/yarn/global/node_modules/.bin"
 # tabtab source for slss package
 # uninstall by removing these lines or running `tabtab uninstall slss`
 [[ -f /Users/emiller/Projects/kv-worker-migrate/node_modules/tabtab/.completions/slss.zsh ]] && . /Users/emiller/Projects/kv-worker-migrate/node_modules/tabtab/.completions/slss.zsh
+
+# bun completions
+[ -s "/Users/ethanmiller/.bun/_bun" ] && source "/Users/ethanmiller/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
