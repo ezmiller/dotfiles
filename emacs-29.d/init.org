@@ -105,10 +105,16 @@ aren't relevant for the user here. See [[https://github.com/protesilaos/dotfiles
   (use-package autorevert
     :config
     (setq auto-revert-interval 2)
-    (setq auto-revert-check-vc-info t)
+    (setq auto-revert-check-vc-info nil) ;; don't poll VC status (blocks on TRAMP)
     (setq global-auto-revert-non-file-buffers t)
     (setq auto-revert-verbose nil)
     (global-auto-revert-mode +1))
+
+  ;; Prevent VC and auto-revert from making remote calls over TRAMP
+  (setq vc-ignore-dir-regexp
+        (format "\\(%s\\)\\|\\(%s\\)"
+                vc-ignore-dir-regexp
+                tramp-file-name-regexp))
   #+end_src
 
 ** Terminal-Specific Setup
@@ -831,7 +837,7 @@ Helps surrounding text with symbols, e.g. quotes.
     :config
     (setq lsp-auto-configure t
           lsp-auto-guess-root t
-          lsp-log-io t ;; speed
+          lsp-log-io nil ;; don't log IO (causes overhead)
           lsp-restart t ;; b/c server dies
           lsp-eslint-enable t
   	lsp-diagnostics-provider :flycheck
@@ -1301,7 +1307,16 @@ display properties, so the two stack and break alignment — we set
 #+begin_src emacs-lisp
   (use-package valign
     :hook ((org-mode . valign-mode)
-           (markdown-mode . valign-mode)))
+           (markdown-mode . valign-mode))
+    :config
+    ;; Disable valign on TRAMP buffers — it fires on every keystroke and blocks
+    (defun em/valign-maybe ()
+      (unless (file-remote-p default-directory)
+        (valign-mode +1)))
+    (remove-hook 'markdown-mode-hook #'valign-mode)
+    (remove-hook 'org-mode-hook #'valign-mode)
+    (add-hook 'markdown-mode-hook #'em/valign-maybe)
+    (add-hook 'org-mode-hook #'em/valign-maybe))
 #+end_src
 
 ** Olivetti writing mode
