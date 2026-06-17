@@ -3,7 +3,7 @@ name: servers
 description: >
   Manage, troubleshoot, and answer questions about Ethan's personal infrastructure nodes on the
   Tailscale VPN. Trigger when the user names a specific node (botserver, farsika, moltbot-aws,
-  ethan-duster, songster), or mentions Tailscale, OpenClaw, Ollama, Resilio Sync, Plex, S3
+  ethan-duster, songster, pixel), or mentions Tailscale, OpenClaw, Ollama, Resilio Sync, Plex, S3
   backups, NixOS, hydroxide, rengine, family-board, or UniFi. Do NOT trigger on bare "server"
   or "server status" when the workspace is pk-shopify-theme — that means the local webpack/
   Shopify CLI dev server and belongs to the `pk-dev-server` skill instead.
@@ -23,6 +23,7 @@ All servers are accessed via **Tailscale mesh VPN**. No public SSH.
 | moltbot-aws | 100.97.168.36 | Amazon Linux 2023 | Legacy EC2 — gateway disabled | Reference only |
 | ethan-duster | 100.126.203.96 | Linux | Media server — Plex | Active |
 | songster | 100.84.34.106 | Raspberry Pi OS | Ubiquiti UniFi controller (parents' house) | Mostly dormant |
+| pixel | 100.115.153.79 | Android (Termux) | Phone — Resilio Sync peer | Active |
 
 ## How to Respond
 
@@ -193,4 +194,26 @@ EOF
 
 - `ssh songster` (Tailscale IP: 100.84.34.106)
 - Mostly dormant — used for managing parents' UniFi Wi-Fi setup
+
+---
+
+## pixel
+
+**Ethan's Pixel phone.** Resilio Sync peer; occasional file-management target.
+
+- `ssh pixel` (Termux sshd, port 8022, configured in ~/.ssh/config; Tailscale IP: 100.115.153.79)
+- **No root** — `/data/data/...` (app configs incl. Resilio's) and `/sdcard/Android/data` are inaccessible; only shared storage is visible
+
+### Resilio shares (`/storage/emulated/0/Sync/`)
+
+| Share | Mac counterpart | Notes |
+|-------|-----------------|-------|
+| `Documents` | `~/Documents` | **Selective sync ON** — pixel `archive/` is intentionally sparse; `inbox/` stays current |
+| `org` | `~/org` | Selective sync off |
+| `.keepass` | — | `kp2.kdbx` password DB |
+| `digital-library` | `~/digital-library` | Selective sync (partial on pixel) |
+| `.eitanveleah`, `Fonts` | — | |
+
+- Scans from **Files by Google** land in `/storage/emulated/0/Files by Google/Scanned` → move to `Sync/Documents/inbox/` for `/process-inbox`
+- Cleaned June 2026: stale duplicate share copies (`/storage/emulated/0/Documents`, `Download/Sync/*`) verified against live copies and deleted — don't recreate
 - May be offline for extended periods (last seen can be weeks)
