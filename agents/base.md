@@ -20,6 +20,11 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and follow the
 - NEVER push, commit, or open PR without explicit permission
 - NEVER work directly on `main` except when explicitly allowed
 - NEVER branch off non-`main` branches unless asked
+- ALWAYS verify the push target before pushing. A branch can track
+  `origin/main` (e.g. after `git checkout -b foo origin/main`), and
+  with `push.default = upstream` a bare `git push` then lands on
+  `main`. Use an explicit refspec (`git push -u origin HEAD:foo`) or
+  run `git push --dry-run` first and read the `-> <ref>` line.
 - Use [Conventional Commits](https://www.conventionalcommits.org).
 - Construct commits carefully. Therefore prefer explicit `git add
   <file>` over `git add .` — other changes from the user or other
