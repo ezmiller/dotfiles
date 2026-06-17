@@ -63,6 +63,7 @@ Always apply tags in this order: **person → organization → category → type
 | `legal` | Legal documents, contracts |
 | `hsa` | Health Savings Account (hybrid finance/medical) |
 | `psychotherapy` | Psychotherapy sessions, invoices, and payments |
+| `keepsake` | Sentimental/memorabilia items kept in the archive (e.g. employer holiday card). Note: kids' artwork/schoolwork goes to `~/Documents/Cy/` or `~/Documents/Alma/` (named `YYYY-MM-DD Description.ext`), and personal creative writing to `~/Documents/History/Writing/` — not the archive. |
 
 ## Document Types
 
