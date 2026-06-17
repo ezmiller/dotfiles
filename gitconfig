@@ -119,3 +119,4 @@
 	defaultBranch = main
 [safe]
 	directory = /Users/ethanmiller/Projects/pk-workers-monorepo/packages/aws/event-lambdas
+	directory = /Users/ethanmiller/Projects/pk-workers-monorepo-worktrees/fix-e2e-flakiness/packages/aws/event-lambdas
