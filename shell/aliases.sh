@@ -136,11 +136,8 @@ alias puburl='curl ipecho.net/plain ; echo'
 
 alias python="python3"
 
-# Primary aliases & functions
-alias ptest='docker-compose exec rails bundle exec rspec ${1}'
-alias prc='docker-compose exec rails bundle exec rails c'
-alias plogs='docker-compose logs --follow rails'
-alias pdb='docker-compose exec dev-db psql -U postgres -h localhost primary_development'
-alias pe="docker-compose exec ${1} ${2}"
-alias preset-sidekiq="docker-compose rm -sf sidekiq && docker-compose up -d sidekiq"
-alias run-pry "docker-compose up -d && docker-compose stop rails && docker-compose run --rm -p3000:3000 rails bash"
+## ?? alias that will send a prompt to claude headless 
+_claude_ask() { claude -p "$*" }
+_claude_ask_continue() { claude -p --continue "$*" }
+alias '??'='noglob _claude_ask'
+alias '???'='noglob _claude_ask_continue'
