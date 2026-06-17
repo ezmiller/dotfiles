@@ -147,7 +147,7 @@ Before touching any code, transition the task in the journal and log the plan. T
   ```
 - Append an initial scope note under the body:
   ```
-  - [YYYY-MM-DD Day] Branch `epd-NNNN-slug`, worktree at `.claude/worktrees/epd-NNNN`.
+  - [YYYY-MM-DD Day] Branch `epd-NNNN-slug`, worktree at `../<repo>-worktrees/epd-NNNN`.
     Approach: <one-sentence summary>. <optional: flagged drift or dependency>.
   ```
 - Announce the write in chat:
@@ -171,9 +171,10 @@ branches (he often has multiple tickets open).
 git fetch origin main
 
 # Create the worktree on a new branch off origin/main.
-# Path convention: .claude/worktrees/<slug>
+# Path convention: ../<repo>-worktrees/<slug> — a sibling directory OUTSIDE the repo,
+# so repo tooling (jest, knip, tsc, grep) never crawls into worktrees.
 # Branch convention: epd-NNNN-short-description (or <prefix>/<slug> if no ticket).
-git worktree add -b <branch> .claude/worktrees/<slug> origin/main
+git worktree add -b <branch> ../$(basename "$PWD")-worktrees/<slug> origin/main
 ```
 
 Then enter the worktree via the `EnterWorktree` tool with `path:` (not `name:`) — pointing
@@ -355,7 +356,7 @@ worktree was made via `git worktree add` (as this skill does), `ExitWorktree act
 rejects the call. Instead:
 
 1. `ExitWorktree action: "keep"` — returns session to the original checkout.
-2. Manually: `git worktree remove .claude/worktrees/<slug>`
+2. Manually: `git worktree remove ../<repo>-worktrees/<slug>`
 3. Delete the local branch: `git branch -d <branch>` (safe-delete; succeeds because origin
    has the merged branch).
 
