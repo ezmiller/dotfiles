@@ -91,7 +91,7 @@ aren't relevant for the user here. See [[https://github.com/protesilaos/dotfiles
   (setq coding-system-for-read 'utf-8)
   (setq coding-system-for-write 'utf-8)
   (setq sentence-end-double-space nil)
-  (setq default-fill-column 80)
+  (setq-default fill-column 80)
   (setq inhibit-startup-message t)
   (setq inhibit-startup-screen t)
   (setq use-short-answers t)
