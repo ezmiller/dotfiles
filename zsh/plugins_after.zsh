@@ -1,5 +1,9 @@
 # External plugins (initialized after)
 
+# Autosuggestions (must be sourced before zsh-syntax-highlighting, which
+# wraps ZLE widgets and needs to be sourced last)
+source ~/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+
 # Syntax highlighting
 
 source ~/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
