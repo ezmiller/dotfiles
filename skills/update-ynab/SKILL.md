@@ -9,7 +9,9 @@ description: >
   transactions", "reconcile [account]", "YNAB cleanup", "let's do the budget",
   or any other request to work on YNAB. Also trigger on general YNAB questions
   ("what's unapproved in my main budget?", "how much did I spend on groceries?")
-  since this skill is the entry point for the YNAB MCP tools.
+  since this skill is the entry point for the YNAB MCP tools. Also covers
+  identifying what an Amazon charge was actually for, via the local order
+  scraper at ~/Projects/amazon-order-scraper.
 user_invocable: true
 metadata:
   short-description: Categorize and reconcile YNAB budget
@@ -28,7 +30,10 @@ Each phase is independent — the user may want to stop after Phase 2, or jump
 straight to Phase 3. Confirm before moving between phases.
 
 All YNAB operations go through the `mcp__ynab__*` tools. Never invent endpoints
-or scrape the web UI; if a tool doesn't exist for what's needed, say so.
+or scrape the YNAB web UI; if a tool doesn't exist for what's needed, say so.
+
+One companion tool sits outside the MCP: the **Amazon order scraper** at
+`~/Projects/amazon-order-scraper` — see 2b-2.
 
 ---
 
@@ -92,6 +97,29 @@ For each payee, classify as:
 - **Unknown**: no useful history → ask the user
 
 Cache the per-payee history lookups within a session — don't refetch.
+
+### 2b-2. Amazon charges → use the order scraper
+
+Amazon payees are the one case where payee history is useless — the same payee
+covers groceries, kids' clothes, tools, and gifts. Pull item detail instead:
+
+```bash
+cd ~/Projects/amazon-order-scraper
+clj -M:run --all-profiles --last-30-days --output /tmp/orders.json
+```
+
+README has the full CLI. Widen the window to cover the queue. `--all-profiles`
+matters — charges land on both accounts (`default`, `leah`). If the session has
+expired, ask Ethan to run `clj -M:run --login` (manual Chrome login, can't be
+automated); meanwhile finish the rest of Phase 2.
+
+Match orders to transactions on amount first, date within ±3 days second. One
+charge ≠ one order — shipments split. `items` contains scrape artifacts ("Ask
+Alexa about this order", delivery notes); drop them.
+
+Show the item names alongside the proposed category in the 2c table so it's
+auditable. Categorize by the dominant item and note the mix; split only if
+asked. Unmatched charges are **unknown**, not a guess.
 
 ### 2c. Present categorizations in a batch
 
