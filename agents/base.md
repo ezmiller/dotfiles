@@ -6,7 +6,7 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and follow the
 
 ## How to Work & Communicate
 
-- Be VERY concise in your responses. Let the user ask questions. Less is more.
+- Be VERY concise and always use amateur non-technical/professional language. If you do use technical language, explain it. If you can say somethign in one sentence instead of three, do it! Every sentence you genreate takes me time. 
 - When asked to work on a complex project, work in plan mode before making changes. Favor gathering full context over responding quickly.
 
 ## Trust Boundaries
