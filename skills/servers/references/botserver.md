@@ -95,12 +95,27 @@ ssh ethan@botserver 'sudo grep -c Mozilla /var/log/caddy/access-openclaw.dashboa
   sudo grep -c "curl/" /var/log/caddy/access-openclaw.dashboard.log'
 ```
 
-- **No `Mozilla` entries** → fails before Caddy: DNS, a stale service worker (these UIs are
-  PWAs and ship `sw.js`), or QUIC. Caddy advertises `Alt-Svc: h3=":443"`, so Chrome tries
-  HTTP/3 on UDP 443 on later visits and a failure there leaves **no** server-side log line.
-  Chrome's `ERR_SOCKET_NOT_CONNECTED` is this shape; a cache-disabled hard reload clears it.
+- **No `Mozilla` entries** → the request never reached Caddy: DNS, a stale service worker
+  (these UIs are PWAs and ship `sw.js`), or QUIC — see the HTTP/3 trap immediately below.
 - **`200`s plus a `101` WebSocket upgrade** → proxy and TLS are fine; the fault is app-level
   auth. Look for a `401`.
+
+> **⚠️ `ERR_SOCKET_NOT_CONNECTED` = the HTTP/3 trap (diagnosed 2026-08-04, now fixed).**
+> Caddy used to stamp `Alt-Svc: h3=":443"; ma=2592000` on every response, but **QUIC has
+> never once completed over this tailnet** — `grep -c "HTTP/3.0"` across all six vhost access
+> logs (~57k requests) returned **0**. Chrome cached that 30-day promise, tried UDP 443 on a
+> later visit, got nothing, and hard-failed. Because the connection never completes there is
+> **no server-side log line at all**, so it masquerades as broken DNS or a missing vhost.
+> It looks *intermittent* because Chrome marks QUIC broken after a failure, uses TCP for a
+> while, then retries.
+> **Fix (in `modules/proxy.nix`):** `globalConfig` restricts `protocols h1 h2`, so no
+> Alt-Svc is advertised and the UDP :443 listener is gone. Each vhost additionally sends
+> `header Alt-Svc clear`, because merely *omitting* the header does **not** evict an
+> already-cached mapping — only the explicit `clear` value does (RFC 7838 §3.1). Those four
+> `clear` lines are removable after 2026-09-03.
+> **Note a hard reload does NOT fix this** — the alt-svc mapping lives in the network stack,
+> not the page cache. Verify with `curl -sD - https://<host>/ | grep -i alt-svc` (expect
+> `clear`, never `h3=`) and `sudo ss -ulnp | grep :443` (expect nothing).
 
 #### OpenClaw Control UI auth
 
