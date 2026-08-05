@@ -4,7 +4,9 @@ description: >
   Manage, troubleshoot, and answer questions about Ethan's personal infrastructure nodes on the
   Tailscale VPN. Trigger when the user names a specific node (botserver, farsika, moltbot-aws,
   ethan-duster, songster, pixel), or mentions Tailscale, OpenClaw, Ollama, Resilio Sync, Plex, S3
-  backups, NixOS, hydroxide, rengine, family-board, or UniFi. Do NOT trigger on bare "server"
+  backups, NixOS, hydroxide, rengine, family-board, hermes, Caddy, AdGuard, or UniFi. Also
+  trigger for the internal friendly links (openclaw.dashboard, hermes.dashboard, family.board)
+  and any "dashboard won't load / link isn't working" report about them. Do NOT trigger on bare "server"
   or "server status" when the workspace is pk-shopify-theme — that means the local webpack/
   Shopify CLI dev server and belongs to the `pk-dev-server` skill instead.
 user_invocable: true
@@ -16,204 +18,49 @@ All servers are accessed via **Tailscale mesh VPN**. No public SSH.
 
 ## Tailscale Network
 
-| Host | Tailscale IP | OS | Role | Status |
-|------|-------------|-----|------|--------|
-| botserver | 100.117.184.4 | NixOS | Primary — OpenClaw, Ollama | Active |
-| farsika | 100.70.53.80 | Linux | Backup server — S3 sync, Resilio | Active |
-| moltbot-aws | 100.97.168.36 | Amazon Linux 2023 | Legacy EC2 — gateway disabled | Reference only |
-| ethan-duster | 100.126.203.96 | Linux | Media server — Plex | Active |
-| songster | 100.84.34.106 | Raspberry Pi OS | Ubiquiti UniFi controller (parents' house) | Mostly dormant |
-| pixel | 100.115.153.79 | Android (Termux) | Phone — Resilio Sync peer | Active |
+| Host | Tailscale IP | OS | Role | Status | Details |
+|------|-------------|-----|------|--------|---------|
+| botserver | 100.117.184.4 | NixOS | Primary — OpenClaw + hermes agent gateways, Ollama | Active | `references/botserver.md` |
+| farsika | 100.70.53.80 | Linux | Backup server — S3 sync, Resilio; **LAN DNS (AdGuard Home)**, Home Assistant | Active | `references/farsika.md` |
+| ethan-duster | 100.126.203.96 | Linux | Media server — Plex, Sunshine, Steam | Active | `references/duster.md` |
+| moltbot-aws | 100.97.168.36 | Amazon Linux 2023 | Legacy EC2 — gateway disabled | Reference only | `references/other-nodes.md` |
+| songster | 100.84.34.106 | Raspberry Pi OS | Ubiquiti UniFi controller (parents' house) | Mostly dormant | `references/other-nodes.md` |
+| pixel | 100.115.153.79 | Android (Termux) | Phone — Resilio Sync peer | Active | `references/other-nodes.md` |
 
 ## How to Respond
 
-1. **SSH in first** — don't guess from docs. Get live state.
-2. **Show actual output** — log lines, service status, disk numbers.
-3. **Be conservative with MCP tools** — limit results, one page at a time.
+1. **Read the relevant reference file first** (see routing below) — each holds hard-won
+   gotchas that will cost a session if skipped. Don't answer from this index alone.
+2. **SSH in second** — don't guess from docs. Get live state.
+3. **Show actual output** — log lines, service status, disk numbers.
+4. **Be conservative with MCP tools** — limit results, one page at a time.
 
----
+## Routing — which reference file to read
 
-## botserver (ThinkCentre M75q Gen 2)
+| If the question involves… | Read |
+|---|---|
+| OpenClaw, KingKong/hope/thoth agents, gateway, agent cron jobs | `references/botserver.md` |
+| hermes / Saul / WhatsApp channel | `references/botserver.md` |
+| the friendly links (`openclaw.dashboard`, `hermes.dashboard`, `family.board`), Caddy, internal CA/TLS, a dashboard that won't load | `references/botserver.md` |
+| egress firewall, `EGRESS_DENIED`, dnsmasq, allow-listing a domain | `references/botserver.md` |
+| NixOS rebuilds, `/etc/nixos`, sops secrets, `gws` (Google Workspace CLI) | `references/botserver.md` |
+| family-board, hydroxide, rengine, Multica | `references/botserver.md` |
+| S3 backups, snapshots, a red backup healthcheck | `references/farsika.md` |
+| **AdGuard / LAN DNS / any whole-house "internet is down"** | `references/farsika.md` |
+| the `org` repo git sync, Resilio, conflict markers, stuck rebase | `references/farsika.md` |
+| Home Assistant | `references/farsika.md` |
+| Plex, Sunshine/Moonlight, Steam, Transmission, duster disk space | `references/duster.md` |
+| UniFi, parents' network, the phone's Resilio shares, legacy EC2 | `references/other-nodes.md` |
 
-**Primary server.** Runs all OpenClaw agents and supporting services.
+## Cross-cutting facts worth knowing up front
 
-### Connection
-- `ssh ethan@192.168.86.36` (LAN) or `ssh ethan@100.117.184.4` (Tailscale) — admin, sudo
-- `ssh openclaw@192.168.86.36` — for user services (systemctl --user). Must SSH directly, `su -` doesn't get a systemd session.
-
-### NixOS Config
-- **Repo:** `~/Projects/botserver-nix` (private, github.com/ezmiller/botserver-nix)
-- **On server:** `/etc/nixos` (git clone of repo)
-- **Apply changes:** `cd /etc/nixos && sudo git pull && sudo nixos-rebuild switch`
-- **Edit secrets:** `sudo sops /etc/nixos/secrets/botserver.yaml`
-
-### OpenClaw (v2026.3.7)
-- **Status:** `ssh openclaw@botserver systemctl --user status openclaw-gateway`
-- **Restart:** `ssh openclaw@botserver systemctl --user restart openclaw-gateway`
-- **Logs:** `ssh openclaw@botserver journalctl --user -u openclaw-gateway --since "1 hour ago" --no-pager`
-- **Config:** `~openclaw/.openclaw/openclaw.json`
-- **Install:** `~openclaw/.local/opt/openclaw` (built from source)
-- **Secrets:** sops-nix decrypts to `/run/secrets/openclaw.env` at boot
-
-#### Agents
-
-| Agent | Channel | Workspace | Model |
-|-------|---------|-----------|-------|
-| main (KingKong) | Telegram + Discord | ~/kingkong | openai-codex/gpt-5.4 |
-| family | WhatsApp | ~/family-bot | openrouter/minimax-m2.5 |
-| hope | Telegram | ~/hope-bot | openrouter/minimax-m2.5 |
-| thoth | Telegram (capture) | ~/thoth-bot | openrouter/minimax-m2.5 |
-
-#### Cron Jobs
-
-| Job | Agent | Schedule | Notes |
-|-----|-------|----------|-------|
-| health-checkin-afternoon | main | 1:30pm ET | Telegram message |
-| health-checkin-evening | main | 9:30pm ET | Telegram message |
-| thoth-daily-feed-check | thoth | 10am ET | RSS feed check |
-| email-check-redfin | main | 8am/8pm ET | ProtonMail via hydroxide |
-
-#### User Services (agent-managed, under openclaw user)
-
-| Service | Port | Runtime | Status command |
-|---------|------|---------|---------------|
-| family-board | 3456 | Node.js | `ssh openclaw@botserver systemctl --user status family-board` |
-| hydroxide | 8081 | Go | `ssh openclaw@botserver systemctl --user status hydroxide` |
-| rengine | 8888 | Babashka | `ssh openclaw@botserver systemctl --user status rengine` |
-
-#### Egress Firewall
-- Default deny outbound + domain/CIDR allowlist
-- **Config:** `/etc/openclaw/egress-allowlist.conf`
-- **Status:** `sudo nft list table inet egress_filter`
-- **Denied connections:** `sudo journalctl -k | grep EGRESS_DENIED`
-- **Disable (emergency):** `sudo systemctl stop openclaw-egress && sudo nft delete table inet egress_filter`
-- **Re-resolve DNS:** `sudo systemctl restart openclaw-egress`
-- DNS re-resolves automatically every 6 hours
-
-#### Health Check
-```bash
-ssh ethan@botserver << 'EOF'
-sudo -u openclaw bash -l -c "systemctl --user status openclaw-gateway --no-pager"
-systemctl status openclaw-egress --no-pager
-tailscale status
-uptime
-df -h /
-free -h
-EOF
-```
-
----
-
-## farsika
-
-**Backup and sync server.** Syncs `~/sync/` (~12GB) to S3 with tiered retention.
-
-### Connection
-- `ssh farsika` (configured in ~/.ssh/config, user `ezmiller`)
-- Tailscale IP: 100.70.53.80
-
-### Services
-
-#### S3 Backup System
-
-| Schedule | Script | Target | Log |
-|----------|--------|--------|-----|
-| Daily 2 AM | `~/bin/sync-backup.sh` | `s3://farsika-sync-backup/current/` | `~/logs/sync-backup.log` |
-| Weekly Sun 5 AM | `~/bin/weekly-snapshot.sh` | `s3://farsika-sync-backup/weekly/YYYY-WNN/` | `~/logs/weekly-snapshot.log` |
-| Quarterly | `~/bin/quarterly-snapshot.sh` | `s3://farsika-sync-backup/YYYY-QN/` | `~/logs/quarterly-snapshot.log` |
-| Yearly Mar 1 | `~/bin/yearly-archive.sh` | `the-vault` bucket (Glacier Deep Archive) | `~/logs/yearly-archive.log` |
-
-**What's backed up:** `~/sync/` containing `org/` (personal notes), `Documents/` (archive), `digital-library/` (books)
-
-#### Resilio Sync
-- Runs as: `rslsync` user
-- Sync directory: `/home/ezmiller/sync/`
-- Status: `systemctl status resilio-sync`
-
-#### Configuration
-- **Config repo:** `~/.farsika-config` (remote: `git@github.com:ezmiller/farsika-config.git`)
-- Scripts in `~/bin/` are symlinks to `~/.farsika-config/bin/`
-- To update: `cd ~/.farsika-config && git pull && ./install.sh`
-
-#### Health Check
-```bash
-ssh farsika << 'EOF'
-systemctl status resilio-sync --no-pager
-tailscale status
-tail -5 ~/logs/sync-backup.log
-df -h /
-uptime
-EOF
-```
-
----
-
-## moltbot-aws (LEGACY)
-
-**EC2 instance — OpenClaw gateway disabled.** Kept for reference. Will be terminated.
-
-- `ssh moltbot@moltbot-aws` (Tailscale)
-- Infra repo: `~/Projects/moltbot-aws-terraform`
-- OpenClaw gateway: **disabled** (`systemctl --user disable openclaw-gateway`)
-- All agents migrated to botserver as of 2026-04-10
-- Pre-migration backup: `~/.openclaw/openclaw.json.pre-kingkong-migration`
-
----
-
-## ethan-duster
-
-**Media server / gaming host.** Plex, Sunshine (Moonlight streaming), Transmission, Steam.
-
-- `ssh ethan@ethan-duster` (Tailscale IP: 100.126.203.96, LAN 192.168.86.216)
-- **OS:** Manjaro Linux (Arch-based) — use `parted`/`wipefs`, not `sgdisk`
-
-### Storage
-
-| Device | Size | FS | Mount | Role |
-|--------|------|-----|-------|------|
-| sda | 119G | — | — | OS SSD (partitioned) |
-| sda3 | 28G | ext4 | `/` | Root — **chronically ~96% full, watch closely** |
-| sda4 | 73G | ext4 | `/home` | User home |
-| sdb1 | 931G | ext4 (label `games`) | `/mnt/games` | **Steam library** (SSD, fast) |
-| sdc1 | 931G | ext3 | `/srv` | Bulk storage (HDD, slow — migrate to ext4 someday) |
-
-- Steam library folder: `/mnt/games/SteamLibrary`
-- fstab uses UUID for `/mnt/games`
-- `put.io` rclone mount appears at `/mnt/putio`
-
-### Services
-- **Plex Media Server**
-- **Sunshine** (game streaming) — see `~/.tracking/duster-sunshine-setup.md` for X11/NVIDIA setup notes
-- **Transmission** (system service, `transmission` user) — Web UI http://192.168.86.216:9091
-
----
-
-## songster
-
-**Raspberry Pi at parents' house.** Runs Ubiquiti UniFi network controller.
-
-- `ssh songster` (Tailscale IP: 100.84.34.106)
-- Mostly dormant — used for managing parents' UniFi Wi-Fi setup
-
----
-
-## pixel
-
-**Ethan's Pixel phone.** Resilio Sync peer; occasional file-management target.
-
-- `ssh pixel` (Termux sshd, port 8022, configured in ~/.ssh/config; Tailscale IP: 100.115.153.79)
-- **No root** — `/data/data/...` (app configs incl. Resilio's) and `/sdcard/Android/data` are inaccessible; only shared storage is visible
-
-### Resilio shares (`/storage/emulated/0/Sync/`)
-
-| Share | Mac counterpart | Notes |
-|-------|-----------------|-------|
-| `Documents` | `~/Documents` | **Selective sync ON** — pixel `archive/` is intentionally sparse; `inbox/` stays current |
-| `org` | `~/org` | Selective sync off |
-| `.keepass` | — | `kp2.kdbx` password DB |
-| `digital-library` | `~/digital-library` | Selective sync (partial on pixel) |
-| `.eitanveleah`, `Fonts` | — | |
-
-- Scans from **Files by Google** land in `/storage/emulated/0/Files by Google/Scanned` → move to `Sync/Documents/inbox/` for `/process-inbox`
-- Cleaned June 2026: stale duplicate share copies (`/storage/emulated/0/Documents`, `Download/Sync/*`) verified against live copies and deleted — don't recreate
-- May be offline for extended periods (last seen can be weeks)
+- **LAN DNS is a single point of failure on farsika.** AdGuard Home there serves DNS to the
+  whole house *and* the tailnet. If several unrelated things break at once, or a device only
+  works after switching it to `1.1.1.1`, suspect AdGuard before anything else.
+- **LAN IPs are DHCP and have drifted.** botserver was `.36`, now `.122` (2026-08-03).
+  Confirm before trusting any LAN IP; Tailscale IPs above are stable.
+- **User services need a direct SSH as that user.** `ssh openclaw@botserver` /
+  `ssh hermes@botserver` for `systemctl --user` — `su -` and `sudo -u` don't get a systemd
+  session.
+- **Two agents write to the `org` repo.** farsika's 3am job and KingKong both push to
+  `main`; collisions have caused multi-day outages. Details in `references/farsika.md`.
