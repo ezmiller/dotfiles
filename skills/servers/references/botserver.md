@@ -16,13 +16,63 @@
 - **Apply changes:** `cd /etc/nixos && sudo git pull && sudo nixos-rebuild switch`
 - **Edit secrets:** `sudo sops /etc/nixos/secrets/botserver.yaml`
 
-### OpenClaw (v2026.3.7)
+### OpenClaw (v2026.7.2-beta.7)
+
+> **On the beta line deliberately** (upgraded 2026-08-08 from 6.11). The "see attached
+> image" placeholder fix landed ONLY in the 7.2 beta — neither `latest` (2026.7.1-2) nor
+> `extended-stable` (2026.6.34) has it. Pin the **exact** version; never track the `beta`
+> dist-tag. Full record: `~/.tracking/openclaw-upgrade-2026.7.2-beta.7.md`.
+>
+> ⚠️ **Node floor.** 2026.7.2-beta.x requires node `>=22.22.3`, and the main nixpkgs pin
+> ships 22.22.2. `nodejs_22` therefore comes from the **`nixpkgs-agents`** pin via the
+> overlay in `flake.nix` (22.23.2). Don't "tidy" it back onto the main pin — the gateway
+> will crash-loop on a version check.
+>
+> ⚠️ **Upgrade ordering.** Run `openclaw gateway install --force` **before**
+> `openclaw doctor --fix`. Doctor restarts the gateway when it finishes, and a stale unit
+> still hardcodes the old node store path → 5 crash-loops and a systemd start-limit hit.
+> Harmless but alarming. Use `--fix`, never `--force` (the latter overwrites the drop-ins).
 - **Status:** `ssh openclaw@botserver systemctl --user status openclaw-gateway`
 - **Restart:** `ssh openclaw@botserver systemctl --user restart openclaw-gateway`
 - **Logs:** `ssh openclaw@botserver journalctl --user -u openclaw-gateway --since "1 hour ago" --no-pager`
 - **Config:** `~openclaw/.openclaw/openclaw.json`
 - **Install:** `~openclaw/.local/opt/openclaw` (built from source)
 - **Secrets:** sops-nix decrypts to `/run/secrets/openclaw.env` at boot
+
+#### Upgrading OpenClaw (procedure proven 2026-08-08, 6.11 → 7.2-beta.7)
+
+Install is **imperative**: git checkout a tag + `pnpm build` → `dist/`. Nix does not pin the
+version. Past write-ups: `~/.tracking/openclaw-upgrade-*.md` — read the most recent one first,
+each upgrade has left a distinct trap behind.
+
+```
+0. Node floor  — check target's engines.node vs `node --version`. If short, bump via the
+                 nixpkgs-agents overlay in flake.nix, NOT the main pin.
+1. Baseline    — `doctor --lint` (NOT --dry-run, doesn't exist) and save the output, so
+                 afterwards you can tell new breakage from pre-existing findings.
+2. Backup      — STOP the gateway first, then `openclaw backup create --output <dir> --verify`.
+                 ⚠️ Always pass --output: the default writes INSIDE the checkout, which
+                 step 4 rebuilds. Also tar `dist dist-runtime` for a rebuild-free rollback.
+3. Checkout    — `git checkout <tag>`; wipe `dist dist-runtime .artifacts/tsgo-cache`
+                 (incremental builds have shipped stale hashed chunks).
+4. Build       — `pnpm install --frozen-lockfile` then `pnpm build` (~7 min). pnpm
+                 self-provisions the version in `packageManager`; no nix change needed.
+5. Unit FIRST  — `openclaw gateway install --force`, THEN `doctor --fix`.
+6. Verify      — version, `models auth list`, channels, EGRESS_DENIED, and the actual
+                 behaviour you upgraded for.
+```
+
+⚠️ **Ordering matters.** `doctor --fix` restarts the gateway when it finishes. If the unit
+still hardcodes the old node store path, every start dies on the version check and systemd
+hits its start-limit after 5 tries — alarming, harmless, and avoided by regenerating the
+unit first. Use `doctor --fix`, **never** `doctor --force` (overwrites custom service config,
+i.e. your drop-ins). `doctor --non-interactive` alone only runs "safe" migrations and will
+just tell you to run `--fix`.
+
+⚠️ **Agent DB migrations are a hard gate, not advice.** New versions refuse to use agent
+SQLite stores until persisted media is migrated
+(`OpenClawAgentDatabaseMediaMigrationRequiredError: ... uses schema version 1`). Until
+`--fix` runs, config validation fails hard on legacy keys and most doctor checks are skipped.
 
 #### Agents
 
@@ -48,7 +98,7 @@
 
 | Service | Port | Runtime | Status command |
 |---------|------|---------|---------------|
-| family-board | 3456 | Node.js | `ssh openclaw@botserver systemctl --user status family-board` |
+| family-board | 3456 | Node.js | ⚠️ **NOT a systemd unit** — `systemctl --user status family-board` says "unit could not be found" while the app is serving fine. Check with `curl -sI http://127.0.0.1:3456/` instead (corrected 2026-08-08). |
 | hydroxide | 8081 | Go | `ssh openclaw@botserver systemctl --user status hydroxide` |
 | rengine | 8888 | Babashka | `ssh openclaw@botserver systemctl --user status rengine` |
 
@@ -166,6 +216,54 @@ Shared by both the openclaw and hermes agents (scopes: Docs, Sheets, Tasks, Cale
   redirect URL (with `?code=…&scope=…`), and `curl` it **on botserver** while `gws auth`
   is still waiting — the callback server returns "Success" and the flow completes.
 
+### Multica (self-hosted tracker + agent daemon)
+
+Two halves: the **server** (three containers, `modules/multica.nix`) and the **daemon**
+(`multicad` user, `modules/multicad.nix` + `home/multicad.nix`) that runs Claude/Codex
+agents. Three things are pinned *independently* — know which one you're looking at:
+
+| Thing | Pinned in | As of 2026-08-07 |
+|---|---|---|
+| `claude-code`, `codex` | `nixpkgs-agents` flake input + overlay in `flake.nix` | 2.1.222 / 0.146.0 |
+| `multica` CLI | `version` + sha256 in `modules/multicad.nix` | 0.3.17 |
+| server containers | `version` in `modules/multica.nix` | 0.3.17 |
+
+> **⚠️ The dashboard's "Update" button can never work here (cost a detour 2026-08-07).**
+> Runtime → Diagnostics shows `CLI Version: 0.3.17 → v0.4.21` with an Update button. It
+> always errors, and there is nothing to fix: every binary it wants to replace lives in the
+> **read-only Nix store**, and nixpkgs builds the `claude` wrapper with
+> `DISABLE_AUTOUPDATER=1` besides. Also note that panel means the **`multica` CLI** — *not*
+> Claude Code. Misreading it sends you upgrading the wrong package.
+
+**Bumping the agent CLIs** — `nix flake update nixpkgs-agents`, **never** a bare
+`nix flake update` (that moves the whole system off its main pin: Caddy, dnsmasq, Docker,
+Postgres). Then rebuild, then restart the daemon so it re-registers versions:
+
+```bash
+# check nothing is mid-run first — the restart kills in-flight sessions
+ssh ethan@botserver 'pgrep -u multicad -a -f "claude|codex" | grep -v "daemon start"'
+ssh ethan@botserver 'sudo -u multicad XDG_RUNTIME_DIR=/run/user/$(id -u multicad) \
+  systemctl --user restart multica-daemon'
+# confirm: look for `agent version detected … name=claude version="…"`
+```
+
+Daemon logs are drowned in `heartbeat:` lines — always `grep -v "heartbeat:"` first.
+
+**The CLI and the server must move together.** Never bump the CLI alone; that skews it
+against the backend. Staged procedure (snapshot → bump → verify migrations → smoke test)
+lives in the repo at `docs/multica-upgrade-2026.5.md`. The 0.3.17 → 0.4.21 jump was
+**deliberately deferred 2026-08-07**: ~115 migrations with a visibly messy history
+(prefix collisions, renumberings, a self-host backfill blocker), against no exploitable
+issues on a private tailnet-only instance. Only real cost of waiting: Opus 5 is missing
+from the runtime catalog (upstream added it in v0.4.11).
+
+**⚠️ Known-broken: PK repo cache fetches.** `pk-shopify-theme`, `pk-workers-monorepo` and
+`pk-skills` are registered with **HTTPS** URLs, but `multicad` only holds an SSH key
+(`~/.ssh/id_ed25519_ezmiller`). Every fetch dies with `could not read Username for
+'https://github.com'` and the daemon logs `agent will see possibly stale code` — agents
+then work against an old checkout with no visible failure. Ongoing since ≥2026-08-04.
+Fix: SSH URLs in the workspace config, or `url.<ssh>.insteadOf` in multicad's gitconfig.
+
 ### hermes (agent gateway)
 
 Separate agent gateway under its own **`hermes`** user (uid 1003) — a different codebase
@@ -228,7 +326,11 @@ from OpenClaw. Runs the **WhatsApp** agent (**Saul**) that replaced the retired 
 #### Health Check
 ```bash
 ssh ethan@botserver << 'EOF'
-sudo -u openclaw bash -l -c "systemctl --user status openclaw-gateway --no-pager"
+# NOTE: `sudo -u openclaw bash -l -c "systemctl --user ..."` (the old form here) does NOT
+# work — no systemd session. Pass XDG_RUNTIME_DIR explicitly instead (uid 1001=openclaw,
+# 1003=hermes), or just `ssh openclaw@botserver` directly. Corrected 2026-08-08.
+sudo -u openclaw XDG_RUNTIME_DIR=/run/user/1001 systemctl --user status openclaw-gateway --no-pager
+sudo -u hermes   XDG_RUNTIME_DIR=/run/user/1003 systemctl --user is-active hermes-gateway.service
 systemctl status openclaw-egress --no-pager
 tailscale status
 uptime

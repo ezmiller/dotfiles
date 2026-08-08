@@ -61,6 +61,15 @@ All servers are accessed via **Tailscale mesh VPN**. No public SSH.
   Confirm before trusting any LAN IP; Tailscale IPs above are stable.
 - **User services need a direct SSH as that user.** `ssh openclaw@botserver` /
   `ssh hermes@botserver` for `systemctl --user` — `su -` and `sudo -u` don't get a systemd
-  session.
+  session. (Exception: `sudo -u <user> XDG_RUNTIME_DIR=/run/user/<uid> systemctl --user …`
+  *does* work from the `ethan` account when you only need to read state — uid 1001 =
+  openclaw, 1002 = multicad, 1003 = hermes.)
+- **Run anything slow under `nohup`, then poll.** Long foreground SSH commands (backups,
+  builds, `nixos-rebuild`, migrations) get their connection dropped, and the drop surfaces
+  as **exit 255 with completely empty output** — indistinguishable from the command itself
+  failing. On 2026-08-08 a *successful* `openclaw backup create` looked like a failure
+  twice this way. Launch with `nohup <cmd> > /tmp/<name>.log 2>&1 &`, poll with short
+  separate calls, and before believing a failure check `uptime` (did it reboot?), load
+  average, and whether the output artifact exists and passes its own integrity check.
 - **Two agents write to the `org` repo.** farsika's 3am job and KingKong both push to
   `main`; collisions have caused multi-day outages. Details in `references/farsika.md`.
