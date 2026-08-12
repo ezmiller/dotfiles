@@ -1622,7 +1622,39 @@ This only works if libvterm is installed, e.g. with Brew
     (vterm-toggle-fullscreen-p nil)
     (vterm-kill-buffer-on-exit t)
     (vterm-max-scrollback 10000)
-    (vterm-mouse-mode t))
+    :config
+    ;; Mouse wheel scrolling via tmux.
+    ;;
+    ;; vterm has no `vterm-mouse-mode' (that setting was a no-op): it
+    ;; never forwards wheel events to the terminal, so the mouse wheel
+    ;; just scrolled Emacs' own view of the vterm scrollback.  Instead,
+    ;; when this vterm is attached to tmux (see `my/vterm-jack-in'),
+    ;; inject an SGR mouse escape sequence into the pty.  tmux parses
+    ;; these natively: wheel-up enters copy-mode and scrolls tmux's own
+    ;; scrollback (which, unlike vterm's, survives session reattach).
+    ;; Without tmux, fall back to normal Emacs buffer scrolling.
+    (defun my/vterm-send-mouse-wheel (event button)
+      "Send wheel EVENT to tmux as an SGR mouse escape (BUTTON 64=up, 65=down)."
+      (interactive "e")
+      (if (bound-and-true-p my/vterm-tmux-attached-p)
+          (pcase-let ((`(,col . ,row)
+                       (or (posn-col-row (event-start event)) '(0 . 0))))
+            (vterm-send-string
+             (format "\e[<%d;%d;%dM" button (max 1 (1+ col)) (max 1 (1+ row)))))
+        (mwheel-scroll event)))
+
+    (defun my/vterm-send-wheel-up (event)
+      "Mouse wheel-up: scroll via tmux when attached, else `mwheel-scroll'."
+      (interactive "e")
+      (my/vterm-send-mouse-wheel event 64))
+
+    (defun my/vterm-send-wheel-down (event)
+      "Mouse wheel-down: scroll via tmux when attached, else `mwheel-scroll'."
+      (interactive "e")
+      (my/vterm-send-mouse-wheel event 65))
+
+    (define-key vterm-mode-map [wheel-up] #'my/vterm-send-wheel-up)
+    (define-key vterm-mode-map [wheel-down] #'my/vterm-send-wheel-down))
 #+end_src
 
 ** Custom vTerm jack-in
