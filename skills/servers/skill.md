@@ -24,7 +24,7 @@ All servers are accessed via **Tailscale mesh VPN**. No public SSH.
 | farsika | 100.70.53.80 | Linux | Backup server — S3 sync, Resilio; **LAN DNS (AdGuard Home)**, Home Assistant | Active | `references/farsika.md` |
 | ethan-duster | 100.126.203.96 | Linux | Media server — Plex, Sunshine, Steam | Active | `references/duster.md` |
 | moltbot-aws | 100.97.168.36 | Amazon Linux 2023 | Legacy EC2 — gateway disabled | Reference only | `references/other-nodes.md` |
-| songster | 100.84.34.106 | Raspberry Pi OS | Ubiquiti UniFi controller (parents' house) | Mostly dormant | `references/other-nodes.md` |
+| songster | 100.64.228.27 | NixOS | UniFi controller for the parents' network | Active — built, awaiting cutover | `references/songster.md` |
 | pixel | 100.115.153.79 | Android (Termux) | Phone — Resilio Sync peer | Active | `references/other-nodes.md` |
 
 ## How to Respond
@@ -50,7 +50,8 @@ All servers are accessed via **Tailscale mesh VPN**. No public SSH.
 | the `org` repo git sync, Resilio, conflict markers, stuck rebase | `references/farsika.md` |
 | Home Assistant | `references/farsika.md` |
 | Plex, Sunshine/Moonlight, Steam, Transmission, duster disk space | `references/duster.md` |
-| UniFi, parents' network, the phone's Resilio shares, legacy EC2 | `references/other-nodes.md` |
+| UniFi, the parents' network, songster (**either** of them), AMT / vPro remote recovery | `references/songster.md` |
+| the phone's Resilio shares, legacy EC2 | `references/other-nodes.md` |
 
 ## Cross-cutting facts worth knowing up front
 
@@ -59,6 +60,12 @@ All servers are accessed via **Tailscale mesh VPN**. No public SSH.
   works after switching it to `1.1.1.1`, suspect AdGuard before anything else.
 - **LAN IPs are DHCP and have drifted.** botserver was `.36`, now `.122` (2026-08-03).
   Confirm before trusting any LAN IP; Tailscale IPs above are stable.
+- **Two machines are called songster**, and three sites use `192.168.1.0/24` with a
+  device at `.112`. Always confirm *which* machine answered before acting — check the
+  SSH banner or hostname, not the address. See `references/songster.md`.
+- **A Tailscale key expiring silently removes a node from the tailnet.** It cost 173 days
+  of songster being unreachable. Disable key expiry on every unattended node, and
+  re-check it after deleting or re-registering one — the setting does not survive that.
 - **User services need a direct SSH as that user.** `ssh openclaw@botserver` /
   `ssh hermes@botserver` for `systemctl --user` — `su -` and `sudo -u` don't get a systemd
   session. (Exception: `sudo -u <user> XDG_RUNTIME_DIR=/run/user/<uid> systemctl --user …`

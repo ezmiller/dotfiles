@@ -1,4 +1,4 @@
-# Other nodes — moltbot-aws, songster, pixel
+# Other nodes — moltbot-aws, pixel
 
 ## moltbot-aws (LEGACY)
 
@@ -10,12 +10,12 @@
 - All agents migrated to botserver as of 2026-04-10
 - Pre-migration backup: `~/.openclaw/openclaw.json.pre-kingkong-migration`
 
-## songster
+## songster — moved to `references/songster.md`
 
-**Raspberry Pi at parents' house.** Runs Ubiquiti UniFi network controller.
-
-- `ssh songster` (Tailscale IP: 100.84.34.106)
-- Mostly dormant — used for managing parents' UniFi Wi-Fi setup
+It outgrew this file. It is now a ThinkCentre M920q on NixOS, and the old
+Raspberry Pi still exists and is still serving the parents' network, so there are
+**two** machines by that name. The old Tailscale IP (`100.84.34.106`) is dead and
+that node was deleted; the new one is `100.64.228.27`.
 
 ## pixel
 
