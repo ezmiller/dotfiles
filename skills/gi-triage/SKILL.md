@@ -182,10 +182,23 @@ For each test, pick one:
   user confirmation per group before writing; (5) re-run one affected
   parent test as a canary before moving on. The full step-by-step is
   in `references/selector-fix-workflow.md`.
-- **Fix the theme** — if the regression is real. Describe the change
-  needed in the theme repo. Don't open a PR from inside this skill —
-  hand the diagnosis to the user, who will use `work-ticket` if they
-  decide to fix it.
+- **Fix the theme** — two sub-cases:
+  - *Real product regression* → describe the change needed and hand the
+    diagnosis to the user (they'll use `work-ticket`). Don't fix a real
+    regression from inside this skill.
+  - *E2E hardening (add a `gi-` hook)* → when a selector broke only
+    because it chased a typography/layout class (the app is correct),
+    the durable fix is a small theme PR that adds a stable `gi-<entity>`
+    hook to the element, then repoints the GI test/variable at it
+    (name the hook by the **entity**, e.g. `gi-line-item-price__sale`,
+    not by style like `__strikethrough`). This is a normal part of
+    triage. **Branch naming:** create the worktree/branch **up front**
+    as `gi-triage-<YYYY-MM-DD>-<slug>` — the triage's alert date, no
+    slashes (CI derives a Docker tag from the branch name) — so every
+    PR from one triage shares an obvious lineage. Do NOT rename the
+    branch after opening the PR: GitHub's branch-rename **closes** the
+    open PR instead of retargeting it (bit us twice), forcing a
+    recreate. See `references/selector-fix-workflow.md`.
 - **QA-environment / data fix** — if a seed product is gone, a discount
   expired, etc. The fix is usually re-seeding QA, not code. Flag it
   clearly: this is an ops problem, not an engineering one.
@@ -275,8 +288,12 @@ rather than repeating the verdict per-test.
   most common surprise: the page is actually a Shopify 404 / "Uh
   oh!" view, and the failing selector just doesn't exist on that
   page. Don't keep theorizing without looking.
-- **Don't open PRs.** Hand off diagnoses; let `work-ticket` and the
-  user drive the fix branch.
+- **Don't open PRs for real regressions** — hand those diagnoses off and
+  let `work-ticket` and the user drive the fix branch. The one exception
+  is a small **E2E hardening** PR that adds a stable `gi-` hook (see
+  "Fix the theme" above): those are opened from within the triage, on a
+  branch named `gi-triage-<YYYY-MM-DD>-<slug>` created up front (never
+  renamed later — the rename closes the PR).
 - **`shop-qa.primary.com` is the start URL** — the same theme code is
   on QA and staging, so failures here usually reflect what just
   merged to `main` (which deploys to QA on merge). Cross-reference
