@@ -119,8 +119,9 @@ When edits ARE requested:
 
 ### Morning Briefing
 
-**Trigger phrases:** "brief me", "morning briefing", "what's my day", "prep today's journal",
-"what carried over", "what should I work on today"
+**Trigger phrases:** "brief me", "morning briefing", "morning review", "what's my day",
+"prep today's journal", "what carried over", "what should I work on today", "reconcile my
+work", "check overnight work", "what did the agents do"
 
 This is the primary daily-use workflow. Your job is to ensure today's file exists (creating
 it with carryover if needed), then do an intelligent second pass: read what carried over,
@@ -212,6 +213,95 @@ at yesterday's file and collect signals in priority order:
 Collect these signals — you'll use them to write a brief "what happened yesterday" summary
 in Step 3, and then incorporate them into the standup draft after Ethan adds his input.
 
+**Step 2.5: Reconcile work across systems, then audit the journal (automatic)**
+
+The journal is Ethan's **central work tracker** — the goal here is to keep it **accurate and
+complete**, not just to report activity. His work is spread across systems that don't fully
+agree, so reconcile all of them and surface every gap:
+
+| Source | Role | What it records |
+|--------|------|-----------------|
+| **The journal** | **The only complete record** | Everything Ethan works — including non-ticketed work (Helpdesk, vendor/support like Whiplash, investigations, docs) that exists *nowhere else*. |
+| **Jira** | Authoritative on **status** | Tickets assigned to him. Wins when a ticket's status disagrees with Multica — but is **not** a complete list of his work. |
+| **Multica** (`primarykids`) | Subset | The slice he's actively agent-working. May lag or diverge from Jira. |
+| **GitHub** (the repos below) | What landed | Merged/open PRs — catches ticketed and non-ticketed code work. |
+
+**Reconciliation runs one direction: systems → journal.** The external systems are *inputs*
+that (a) confirm or correct journal items that carry an `EPD`/`PW` key, and (b) surface keyed
+work not yet tracked. They are **never** the source of truth for *what work exists*.
+
+> **⚠️ Never flag, downgrade, or propose removing a journal item just because it has no Jira,
+> Multica, or GitHub counterpart.** Ethan works tickets outside Jira and does plenty of
+> untracked work; a journal-only entry is normal and legitimate, not a discrepancy. Only flag
+> a journal item when a system *actively contradicts* it (e.g. journal `DONE` but Jira
+> `In Review`) — not merely for absence.
+
+**Consolidate, don't report.** Dedupe work seen in multiple systems into **one unit** so it's
+never double-counted, then compare each unit to the journal and flag what's wrong or missing.
+
+**The join key is the Jira `EPD-XXXX` key** (some are `PW-XXXX`). It appears everywhere:
+Jira issue key, multica `metadata.jira_key`, GitHub PR titles/branches (`EPD-2597 — …`), and
+journal headlines. Match on it (PR number as secondary link). A unit with no EPD key (RFDs,
+chores, planning spikes) links by PR number or title.
+
+Gather all three (multica + gh are local; Jira via MCP — no SSH):
+
+```bash
+# 1. Multica board — the whole primarykids workspace, not a filtered slice.
+multica issue list --limit 100 --output json
+#    Keep: identifier (PRI-N), title, status, assignee_type, updated_at,
+#    metadata.jira_key, metadata.pr_url, metadata.pr_number.
+#    IGNORE noise: onboarding/tutorial rows (PRI-1..~PRI-10, "N. …" titles),
+#    TEST/harness rows, EPD-999x, and status "cancelled".
+
+# 2. YOUR GitHub work (--author @me = Ethan's manual PRs AND his agents', which
+#    push under his account; teammates excluded). Hardcoded repo list:
+gh search prs --author @me \
+  --repo PrimaryKids/pk-shopify-theme \
+  --repo PrimaryKids/pk-workers-monorepo \
+  --repo PrimaryKids/pk-skills \
+  --repo PrimaryKids/pk-web-inventory \
+  --repo PrimaryKids/rfd \
+  --updated ">=$(date -v-4d +%Y-%m-%d)" \
+  --json repository,number,title,url,state,isDraft,createdAt,updatedAt,closedAt
+#    `state`: "merged" | "open" | "closed". (macOS date; on Linux use `date -d`.)
+#    To confirm a specific merge: gh pr view <n> --repo PrimaryKids/<repo> --json state.
+```
+
+For Jira, use the MCP tool (see the "Jira Cross-Reference" recipe):
+`jira_search(jql="assignee = currentUser() AND sprint in openSprints()", fields="key,summary,status,updated")`.
+Note Jira uses custom statuses — map by **category**: `To Do`/`Backlog` → `TODO`,
+`In Progress`/`Blocked` → `STARTED`/`BLOCKED`, `In Review` → `REVIEW`, `Done`/`Nope` → `DONE`
+(closed; "Nope" = closed-no-action). **When Multica and Jira disagree on a ticket's status,
+Jira is authoritative.**
+
+**State evidence** (strongest first): Jira status → GitHub merge state → Multica status. A PR
+**merged** means `DONE`. A PR **open** means in progress. You still have **no visibility into
+Slack or any external hand-off channel** — never infer, assume, or mention one; `REVIEW` is
+Ethan's to set (or comes from Jira `In Review`), not something you invent from an open PR.
+
+**Map Multica epics onto existing journal structure.** Don't scatter tickets into `Queued`.
+Multica groups work under parent epics (e.g. the curated-pages epic → the journal's
+`STARTED EPD-2548 Curated Page Updates` block). Add related tickets as sub-items under the
+matching existing heading, and update its `[n/m]` statistics cookie.
+
+Consolidate into one deduped, EPD-keyed list and classify each unit:
+
+- ✅ **Confirmed** — present in the journal and the sources agree. Accurate.
+- 🔴 **Mismatch** — journal state contradicts authority (PR merged / Jira Done but journal not
+  `DONE`; journal `DONE` but Jira `In Review` and no merged PR; Multica `todo` but Jira closed).
+- 🟠 **Done, not in journal** — merged PR or Jira/Multica-done unit with no journal entry.
+- 🟣 **In Jira, not in Multica or journal** — assigned/in-progress work done straight off Jira
+  (no ticket in Multica, maybe no PR) → the completeness gap Multica alone can't catch.
+- 🟡 **Planned/in-flight, not tracked** — Multica/Jira tickets (todo/in-progress) absent from
+  the journal → candidates to add under the right epic heading.
+- 🔵 **No ticket** — a PR/RFD with no EPD key → direct/manual work; still audit the journal.
+
+**Never auto-write to the journal.** Surface findings; Ethan decides what enters his tracker
+(see the output section and guardrail in Step 3). When he approves edits, add a short note +
+`LOGBOOK` line citing the evidence (PR #, PRI-N, or "Jira: <status>") so each change is
+traceable the next morning.
+
 **Step 3: Produce the briefing output**
 
 The goal is a short, conversational output that orients Ethan and then opens a dialogue
@@ -246,14 +336,48 @@ with no progress), just note the count: "N stale — deal with at EOD."
 
 ---
 
+**🤖 Overnight reconciliation** *(from Step 2.5 — review only, NOT the work log)*
+
+A single deduped, EPD-keyed list of work units, each tagged with its audit classification.
+Lead with journal-accuracy findings (🔴 first — those are the point); confirmed items can be
+a count. Group planned items under their epic so the list stays scannable.
+
+```
+🔴 Mismatch (2)
+  • EPD-2549  journal DONE  →  Jira "In Review", PR #3377 cancelled   (reopen → REVIEW?)
+  • EPD-2590  journal TODO  →  PR #3419 merged, Jira Done            (mark DONE?)
+🟠 Done, not in journal (1)
+  • EPD-2593  PR #3423 merged                                        (add as DONE?)
+🟣 In Jira, not in Multica/journal (1)
+  • EPD-2539  Jira In Progress, worked off Jira, no PR yet           (track here?)
+🟡 Planned, not tracked — Curated epic EPD-2548 (3)
+  • EPD-2551 Quickshop · EPD-2553 content blocks · EPD-2306 size filters
+🔵 No ticket (1)
+  • rfd #8  RFD 5 draft, no EPD key                                  (in journal? if not, add)
+✅ Confirmed: 7 (journal + sources agree)
+```
+
+⚠️ **These are findings, not entries.** Nothing here goes into the journal automatically.
+This section exists so Ethan can line the work up against his tracker and decide what to
+record, add, or fix. If Step 2.5 found nothing to reconcile, say so in one line and move on.
+
+---
+
 **Then ask — before drafting anything:**
 
-End with a single open question:
+End with a single open question. If Step 2.5 surfaced any 🔴/🟠/🔵 findings, fold the
+reconciliation into it so it drives action:
 
 > "Anything to add about yesterday, or what's your main focus today?"
 
+or, when there are findings:
+
+> "Want to pull any of those reconciliation items into your Active/Queued list or fix a
+> state — and what's your main focus today?"
+
 Wait for Ethan's response. He might clarify what he actually worked on, name a priority,
-mention a blocker, or say "nothing, just draft it." All of that shapes the standup.
+mention a blocker, ask to reconcile a specific item, or say "nothing, just draft it." All of
+that shapes the standup. Only apply journal changes he explicitly confirms.
 
 ---
 
