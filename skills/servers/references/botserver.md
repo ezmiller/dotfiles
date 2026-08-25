@@ -39,6 +39,58 @@
 - **Install:** `~openclaw/.local/opt/openclaw` (built from source)
 - **Secrets:** sops-nix decrypts to `/run/secrets/openclaw.env` at boot
 
+#### "I switched the model but it says it fell back" (diagnosed 2026-08-11)
+
+Four separate things cause this and they look identical from chat. Check in this order.
+
+**1. Is the config you edited even the one in effect?** `agents.entries.<agent>.model`
+**overrides** `agents.defaults.model`. All three agents (`main`, `hope`, `thoth`) had their
+own identical blocks, so editing `defaults` did nothing for five days. Check both:
+
+```
+jq -c '.agents.defaults.model' ~/.openclaw/openclaw.json
+jq -r '.agents.entries | to_entries[] | "\(.key): \((.value.model // "inherits")|tojson)"' ~/.openclaw/openclaw.json
+```
+
+**2. Is the auth profile blocked?** This is the one that hides. OpenClaw records provider
+rate limits locally and refuses the model **without calling the provider** until the block
+expires — instantly, with no 401/429 in the log, so it looks like a config fault:
+
+```
+node -e 'const{DatabaseSync}=require("node:sqlite");
+const db=new DatabaseSync(process.env.HOME+"/.openclaw/agents/main/agent/openclaw-agent.sqlite",{readOnly:true});
+console.log(db.prepare("SELECT state_json FROM auth_profile_state WHERE state_key=?").get("primary").state_json)'
+```
+
+Look for `usageStats.<profile>.blockedUntil` and `blockedReason`. `subscription_limit` is
+**normal** on the cheaper Codex plan and the block can last days — Aug 7 → Aug 12 once.
+The tell in the journal is a `candidate_failed` with `detail=Auth profile … is temporarily
+unavailable` and a sub-second duration. Re-authorising in the dashboard clears `usageStats`
+outright rather than waiting.
+
+**3. Is the model routed through the Codex app-server?** If so it needs *three* things this
+box does not have by default, and it fails before the network every time:
+
+- `tools.exec.mode` must not be `deny` or `allowlist` — that is a hard mode check
+  (`assertCodexAppServerAllowedForOpenClawExecMode`), the allowlist contents are never read
+- `agents/main/agent/codex-home/auth.json` must exist — it does not, since 2026-07-03
+- **IPv6 egress must work — it does not.** No v6 default route, but DNS returns AAAA.
+  Node's fetch falls back to v4 ("sticky IPv4-only dispatcher" in the logs); the Rust
+  app-server does not, and dies with `ENETUNREACH` on `wss://chatgpt.com/…`
+  **This is a host-level fault, not a Codex one** — see the box-wide note below.
+
+Models on the plain transport (`openai-transport … /backend-api/codex/responses`) need none
+of this. Prefer them unless you specifically want app-server behaviour.
+
+**4. Did onboarding change things you did not ask it to?** Re-authorising via the dashboard
+on 2026-08-11 also wrote `plugins.enabled = false` (a global kill switch — every channel
+reported "unconfigured" while the tokens sat untouched in the file) and rewrote
+`agents.defaults.model.primary`. After any `onboard`, diff against a backup.
+
+**A trailing comma makes the gateway silently run the previous config.** Hand-edits to
+`openclaw.json` should be followed by `jq . openclaw.json > /dev/null`. Invalid JSON does
+not crash anything; it just means what you think you changed is not live.
+
 #### Upgrading OpenClaw (procedure proven 2026-08-08, 6.11 → 7.2-beta.7)
 
 Install is **imperative**: git checkout a tag + `pnpm build` → `dist/`. Nix does not pin the
@@ -74,13 +126,39 @@ SQLite stores until persisted media is migrated
 (`OpenClawAgentDatabaseMediaMigrationRequiredError: ... uses schema version 1`). Until
 `--fix` runs, config validation fails hard on legacy keys and most doctor checks are skipped.
 
+#### No IPv6 route (host-level — bites more than Codex)
+
+botserver has IPv6 *addresses* but **no IPv6 default route**, so nothing off the LAN is
+reachable over v6. IPv6 is not disabled (`disable_ipv6 = 0`); `accept_ra = 0` on `enp1s0`
+and nothing in `.nix` sets it. Node 22's Happy Eyeballs never checks the routing table, so
+it tries AAAA anyway → `ENETUNREACH` / connect timeout. Usually v4 wins the race; when it
+doesn't, the request just fails.
+
+Known victims: the Codex app-server (above), and **Telegram slash-command replies**
+(2026-08-18) — those go to the DM, which needs fresh connections, while group sends
+survive on warm pooled v4 ones. OpenClaw's sticky-IPv4 workaround fixes it until its
+**recovery probe re-enables v6**, which is why the symptom comes and goes.
+
+⚠️ `curl -6` fails in 12ms here and will fool you into ruling IPv6 out — undici behaves
+differently. Trust the `codes=…ENETUNREACH` in the fetch-fallback log line instead, which
+needs `diagnostics.flags = ["telegram.http"]`.
+
+⚠️ Writing **any** `diagnostics` key to `openclaw.json` forces a gateway restart — the
+hot-reload watcher treats it as restart-requiring. Do not use it to capture live state.
+
+Full write-up, fixes on deck, and an upstream bug: `~/.tracking/botserver-ipv6-telegram.md`.
+
 #### Agents
 
-| Agent | Channel | Workspace | Model |
-|-------|---------|-----------|-------|
-| main (KingKong) | Telegram + Discord | ~/kingkong | gpt-5.4 (fallback minimax-m2.7) |
-| hope | Telegram | ~/hope-bot | gpt-5.4 (fallback minimax-m2.7) |
-| thoth | Telegram (capture) | ~/thoth-bot | gpt-5.4 (fallback minimax-m2.7) |
+| Agent | Channel | Workspace |
+|-------|---------|-----------|
+| main (KingKong) | Telegram + Discord | ~/kingkong |
+| hope | Telegram | ~/hope-bot |
+| thoth | Telegram (capture) | ~/thoth-bot |
+
+> **Don't record the models here.** Ethan changes the fallback chain often (minimax,
+> deepseek, others). Read it live instead — `jq '.agents.defaults.model'` plus the
+> per-agent `.agents.entries[].model` overrides, per the four-step check above.
 
 > The **WhatsApp** channel here is **disabled** (`channels.whatsapp.enabled=false`); the
 > old `family` WhatsApp agent was retired 2026-07-20 and now runs under **hermes** (below).
