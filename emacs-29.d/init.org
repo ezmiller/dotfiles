@@ -226,6 +226,32 @@ When running in terminal mode (emacs -nw), enable mouse support and clipboard in
     (if (file-exists-p filename)
         (insert (concat "[[file:" filename "]]"))))
 #+end_src
+
+*** Paste Image from Clipboard
+Paste an image already on the system clipboard (e.g. from a browser
+"copy image" or a screenshot tool) into a timestamped file next to
+the buffer, then insert a link. Uses the correct syntax for the
+buffer's mode: Markdown ~![]()~ or Org ~[[file:]]~. Requires
+~pngpaste~ (~brew install pngpaste~).
+
+#+begin_src emacs-lisp
+  (defun my/paste-image ()
+    "Save the image on the system clipboard into a timestamped file in
+  the same directory as the current buffer's file and insert a link
+  to it, using Markdown or Org syntax depending on the major mode."
+    (interactive)
+    (unless (executable-find "pngpaste")
+      (user-error "pngpaste not found; install with `brew install pngpaste'"))
+    (let* ((dir (concat (file-name-nondirectory (buffer-file-name)) "_imgs/"))
+           (filename (concat dir (format-time-string "%Y%m%d_%H%M%S") ".png")))
+      (unless (file-exists-p dir)
+        (make-directory dir t))
+      (if (zerop (call-process "pngpaste" nil nil nil filename))
+          (insert (if (derived-mode-p 'markdown-mode)
+                      (format "![](%s)" filename)
+                    (format "[[file:%s]]" filename)))
+        (user-error "No image found on clipboard"))))
+#+end_src
 *** Revert Some Buffers
 Like ~save-some-buffers~, but for reverting. Prompts for each file-visiting
 buffer whose file has changed on disk, with ~y/n/!~ choices.
@@ -841,6 +867,9 @@ Helps surrounding text with symbols, e.g. quotes.
           lsp-restart t ;; b/c server dies
           lsp-eslint-enable t
   	lsp-diagnostics-provider :flycheck
+          ;; Use the project's own node_modules/typescript instead of
+          ;; lsp-mode's bundled copy, so IDE diagnostics match `tsc`/CI.
+          lsp-clients-typescript-prefer-use-project-ts-server t
           ))
 
   (use-package lsp-ui
@@ -1168,6 +1197,11 @@ We'll use scss-mode for both CSS and SCSS files.
   (use-package flycheck-rust
     :after (rust-mode flycheck)
     :hook (flycheck-mode . flycheck-rust-setup))
+#+end_src
+** Nix
+#+begin_src emacs-lisp
+  (use-package nix-mode
+    :mode "\\.nix\\'")
 #+end_src
 * Org Mode
 ** Load & configure org
@@ -1595,6 +1629,26 @@ Run =C-c C-c= on a block to generate the image — it will display inline automa
     mermaid.run();
   });
 </script>"))
+#+end_src
+
+** Grip (GitHub-flavored preview)
+Instant GitHub-flavored Markdown/Org preview. Uses [[https://github.com/chrishrb/go-grip][go-grip]],
+which renders locally (no GitHub API, no rate limits) and supports
+mermaid diagrams. Toggle with =C-c C-c g= in a markdown buffer.
+
+#+begin_src emacs-lisp
+  (use-package grip-mode
+    :after markdown-mode
+    :init
+    ;; `go install` drops go-grip in ~/go/bin, which isn't on the shell
+    ;; PATH, so make it discoverable to Emacs explicitly.
+    (let ((go-bin (expand-file-name "~/go/bin")))
+      (add-to-list 'exec-path go-bin)
+      (setenv "PATH" (concat go-bin path-separator (getenv "PATH"))))
+    :config
+    (setq grip-command 'go-grip)
+    :bind (:map markdown-mode-command-map
+           ("g" . grip-mode)))
 #+end_src
 
 * vTerm (Terminal)
