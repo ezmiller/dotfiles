@@ -5,7 +5,9 @@
 ### Connection
 - `ssh farsika` (configured in ~/.ssh/config, user `ezmiller`)
 - Tailscale IP: 100.70.53.80
-- LAN IP: 192.168.86.26 (DHCP). The `Host farsika` SSH alias has **no `HostName`**, so it resolves the bare name via Tailscale MagicDNS — if Tailscale or the LAN DNS is down, `ssh farsika` fails to resolve; fall back to `ssh ezmiller@192.168.86.26` (LAN) or the Tailscale IP.
+- LAN IP: **192.168.86.26, a fixed IP** reserved on popcorn (the NY apartment's UDR7) as of 2026-09-10. It is no longer DHCP-assigned, and it must not change: popcorn hands this exact address to every device as its DNS server, so if farsika moves, DNS dies for the whole apartment.
+- `~/.ssh/config` now pins `HostName 100.70.53.80`, so `ssh farsika` no longer depends on MagicDNS resolving. (An earlier version of this file said the alias had no `HostName` — it does.) If the tailnet is down, fall back to `ssh ezmiller@192.168.86.26` on the LAN.
+- **Physically at the NY apartment (520 Lincoln Pl. Apt 6D), not Vashon.** "The home LAN" in this file means the apartment's `192.168.86.0/24`.
 
 ### Services
 
@@ -38,7 +40,8 @@
 - Status: `systemctl status resilio-sync`
 
 #### AdGuard Home (LAN DNS) — critical, whole-house dependency
-- **This is the DNS server for the home LAN.** If AdGuard is down, every device on the network loses DNS (symptom: things "work" only after switching a device to `1.1.1.1`).
+- **This is the DNS server for the apartment LAN.** If AdGuard is down, every device on the network loses DNS (symptom: things "work" only after switching a device to `1.1.1.1`).
+- **How devices are pointed here:** popcorn hands out `192.168.86.26` directly as the DHCP DNS server — clients query AdGuard themselves rather than going through the gateway. The old Google Wifi router instead forwarded to AdGuard as its *upstream*; that arrangement is gone, and popcorn's own upstream is deliberately left unfiltered (its only DNS consumer is itself). Consequence: **AdGuard's protections do not depend on any router setting**, but they also do not cover a device that ignores DHCP and hardcodes its own DNS. Closing that would take a firewall rule on popcorn blocking outbound port 53 to anything but farsika; not done as of 2026-09-10.
 - Service: `systemctl status AdGuardHome` (`/etc/systemd/system/AdGuardHome.service`, runs `/opt/AdGuardHome/AdGuardHome -s run`)
 - Config: `/opt/AdGuardHome/AdGuardHome.yaml` (edit + `sudo systemctl restart AdGuardHome`)
 - Listens on `:53` at **three** addresses (`dns.bind_hosts`): LAN `192.168.86.26`, Tailscale v4 `100.70.53.80`, Tailscale v6 `fd7a:115c:a1e0::7732:3550` — serves DNS to both LAN and tailnet.

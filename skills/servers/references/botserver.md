@@ -372,9 +372,19 @@ from OpenClaw. Runs the **WhatsApp** agent (**Saul**) that replaced the retired 
   no 6h re-resolve, no manual CIDR widening — IP rotation self-heals.
 - **The allowlist = the domain list** in `modules/dnsmasq.nix` (`egressDomains`).
   To allow a new domain: add it there, `nixos-rebuild switch`.
-- **dnsmasq upstream:** LAN router `192.168.86.1` (→ farsika AdGuard for logging
-  + blocklist), failover to Quad9 `9.9.9.10` (strict-order). `.ts.net` → MagicDNS
-  `100.100.100.100`. Tailscale `accept-dns` is OFF (dnsmasq owns resolv.conf).
+- **dnsmasq upstream:** farsika's AdGuard on its LAN address `192.168.86.26`
+  (blocklist + query log + the `.dashboard`/`.board` rewrites), failover to Quad9
+  `9.9.9.10` (strict-order). `.ts.net` → MagicDNS `100.100.100.100`. Tailscale
+  `accept-dns` is OFF (dnsmasq owns resolv.conf).
+  ⚠️ This pointed at the **LAN router** `192.168.86.1` until PR #149 (2026-09-10),
+  back when the old Google Wifi box forwarded to AdGuard as its upstream. The
+  router was replaced by a UDR7 ("popcorn") on 2026-09-09 and a new gateway does
+  **not** inherit that forwarding — so the router path silently stopped reaching
+  AdGuard: filtering and query logging gone, and the three friendly names failed
+  to resolve on this host at all (each lookup hanging ~20s before Quad9 answered
+  NXDOMAIN). Nothing was *down*; public names kept working via the fallback,
+  which is exactly why it went unnoticed. Use farsika's **LAN** address, not its
+  tailnet address `100.70.53.80` (known AdGuard bind fragility).
 - **Static CIDRs** (things with no clean domain to inject): tailscale CGNAT,
   github SSH, vercel, plus the broad **WhatsApp/Meta** CIDRs (v4 incl. `57.144.0.0/14`
   + v6) — WhatsApp rotation is too opaque to inject, so it stays on broad CIDRs (the
@@ -395,8 +405,18 @@ from OpenClaw. Runs the **WhatsApp** agent (**Saul**) that replaced the retired 
   (`192.168.86.1:67`).
   Also note the log rule is rate-limited, so what you see is a **sample**, not
   the volume — check the `counter` on the drop rule for real totals.
-- **Containers** use `--dns=192.168.86.1` (router), NOT the host dnsmasq — see
-  the docker-dns memory. Full design + rationale:
+- **Containers resolve via the host dnsmasq** on the multica bridge gateway
+  (`--dns=172.18.0.1`), NOT the router. Both the backend and — since PR #149
+  (2026-09-10) — the frontend. Resolving *through* dnsmasq is load-bearing, not a
+  convenience: dnsmasq's nftset bindings inject each answer's IPs into the egress
+  allowlist, so a container resolving anywhere else gets addresses the filter then
+  rejects — a working lookup and a dead connection.
+  ⚠️ Pointing a container at the router is what broke Multica for ~3 weeks: farsika
+  went down ~2026-08-15, and because the containers bypassed dnsmasq they never saw
+  its Quad9 failover, so the backend could not resolve `api.resend.com` and sign-in
+  emails stopped silently. The backend was fixed then; the **frontend was missed**
+  and kept `--dns=192.168.86.1` (with a comment claiming parity with the backend)
+  until #149. Full design + rationale:
   `~/.tracking/botserver-egress-dns-allowlist.md`.
 - **Disable (emergency):** `sudo systemctl stop openclaw-egress && sudo nft delete table inet egress_filter`
 - **Rollback the DNS rework:** `sudo tailscale set --accept-dns=true && sudo nixos-rebuild switch --rollback`
