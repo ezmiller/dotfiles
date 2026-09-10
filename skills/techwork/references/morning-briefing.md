@@ -250,6 +250,29 @@ record, add, or fix. If Step 2.5 found nothing to reconcile, say so in one line 
 
 ---
 
+**Interview on key & stuck work — before the open question:**
+
+Before asking the open question, briefly interview Ethan about his key work items, **especially
+the stuck ones**. This is the moment to get items unstuck and to keep the tracker accurate — the
+answers feed straight back into **updating individual journal items** (state, notes, blockers)
+and into the **standup draft** in Step 4.
+
+Pull the interview candidates, stuck first:
+- **BLOCKED** tasks (any).
+- **STARTED** tasks that are stale (carried 7+ days with no LOGBOOK/body change).
+- Anything Ethan flagged as a blocker in yesterday's EOD or standup.
+- Then the top 1–2 Active items, if there's appetite.
+
+Ask about them **one at a time**, tightly — e.g. "EPD-2549 has sat 8 days — what's it waiting
+on, and is it still blocked?" or "Still stuck on X, or did that move?" For each answer:
+- If the state changed (unblocked, finished, dropped), update that item's journal heading —
+  change the TODO keyword, add a one-line note, and append a `LOGBOOK` line with the reason.
+- If a real blocker surfaced, capture it verbatim so it can flow into `** Blockers` in the standup.
+- Only write changes Ethan explicitly confirms (same guardrail as Step 2.5).
+
+Keep it to a few questions — this is a memory jog and a nudge, not an inquisition. If nothing is
+stuck, say so and skip straight to the open question.
+
 **Then ask — before drafting anything:**
 
 End with a single open question. If Step 2.5 surfaced any 🔴/🟠/🔵 findings, fold the
