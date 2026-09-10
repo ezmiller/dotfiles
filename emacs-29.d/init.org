@@ -1248,10 +1248,10 @@ The theme must be reloaded after setting the values.
     ;; levels. Tuned for Iosevka Aile (sans-serif) — sans-bold reads
     ;; heavier than serif-bold at the same scale, so weights and sizes
     ;; are pulled in compared to a Palatino-era setup.
-    (setq modus-themes-headings '((1 . (variable-pitch regular 1.20))
-  				(2 . (variable-pitch regular 1.15))
-  				(3 . (variable-pitch regular  1.1))
-  				(4 . (variable-pitch regular  1.05))
+    (setq modus-themes-headings '((1 . (variable-pitch regular 1.10))
+  				(2 . (variable-pitch regular 1.075))
+  				(3 . (variable-pitch regular 1.05))
+  				(4 . (variable-pitch regular 1.025))
                                   (t . (regular 1.0))))
     (modus-themes-load-theme 'modus-vivendi-tinted))
 #+end_src
