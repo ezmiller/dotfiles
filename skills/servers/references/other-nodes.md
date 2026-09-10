@@ -1,14 +1,24 @@
 # Other nodes — moltbot-aws, pixel
 
-## moltbot-aws (LEGACY)
+## moltbot-aws — RETIRED / TERMINATED (2026-09-08)
 
-**EC2 instance — OpenClaw gateway disabled.** Kept for reference. Will be terminated.
+**Gone. Do not try to SSH to it.** The EC2 instance was terminated on 2026-09-08
+after sitting stopped for ~5 months. The `Host moltbot-aws` block in
+`~/.ssh/config` is commented out; the Tailscale node (`100.97.168.36`) is stale
+and should be deleted from the tailnet admin console if it still appears.
 
-- `ssh moltbot@moltbot-aws` (Tailscale)
-- Infra repo: `~/Projects/moltbot-aws-terraform`
-- OpenClaw gateway: **disabled** (`systemctl --user disable openclaw-gateway`)
-- All agents migrated to botserver as of 2026-04-10
-- Pre-migration backup: `~/.openclaw/openclaw.json.pre-kingkong-migration`
+- Instance was `i-0bc24ceba3628caaf` (t3.medium, us-east-1), stopped since ~2026-04
+- **Final disk snapshot: `snap-0794268763c822c34`** (30 GiB, tagged
+  `moltbot-aws-final`) — the only surviving copy of that box. Restore it as a
+  volume and attach it to a throwaway instance if anything is ever needed back.
+  Delete the snapshot once you are sure nothing is.
+- Infra repo (still on disk): `~/Projects/moltbot-aws-terraform` — its state no
+  longer matches reality, since the instance was terminated by hand, not by
+  `terraform destroy`.
+- All agents had already migrated to botserver as of 2026-04-10
+- The pre-migration backup that used to live at
+  `~/.openclaw/openclaw.json.pre-kingkong-migration` now only exists inside the
+  snapshot above.
 
 ## songster — moved to `references/songster.md`
 
