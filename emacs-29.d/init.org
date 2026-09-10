@@ -1441,12 +1441,37 @@ display properties, so the two stack and break alignment — we set
               (setq org-journal-time-prefix "* ")
               (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"STARTED\"|TODO=\"REVIEW\"|TODO=\"BLOCKED\"")
         (setq org-journal-find-file #'find-file-other-window)
+
+        ;; The Standup block is intentionally NOT part of the file header.
+        ;; The header is written at the TOP of a new file, but carryover
+        ;; sections (Active, Queued, Follow-ups) are appended at the BOTTOM.
+        ;; To make Standup land LAST (after those trackers) we flag the file
+        ;; when the header is created, then append the Standup block right
+        ;; after carryover runs. See `em/org-journal--append-standup'.
+        (defvar em/org-journal--needs-standup nil
+          "Non-nil when a freshly created journal file still needs its Standup block.")
+
         (defun org-journal-file-header-func (time)
-          "Custom function to create journal header."
+          "Create journal header keywords and flag the file for a Standup block."
           (concat
-          (pcase org-journal-file-type
-  	(`daily (format-time-string "#+TITLE: %Y_%m_%d\n#+STARTUP: folded\n#+date: %Y-%m-%d\n\n* Standup\n** Yesterday\n** Today\n** Blockers\n")))))
+           (pcase org-journal-file-type
+             (`daily
+              (setq em/org-journal--needs-standup t)
+              (format-time-string "#+TITLE: %Y_%m_%d\n#+STARTUP: folded\n#+date: %Y-%m-%d\n")))))
         (setq org-journal-file-header 'org-journal-file-header-func)
+
+        (defun em/org-journal--append-standup (&rest _)
+          "Append the daily Standup block at the end of a newly created journal.
+Runs after carryover so Standup lands after the Active/Queued/Follow-ups
+trackers.  Guarded by `em/org-journal--needs-standup' so it fires exactly
+once, on file creation."
+          (when em/org-journal--needs-standup
+            (setq em/org-journal--needs-standup nil)
+            (save-excursion
+              (goto-char (point-max))
+              (unless (bolp) (insert "\n"))
+              (insert "* 11:00 Standup\n** Yesterday\n** Today\n** Blockers\n** Notes\n"))))
+        (advice-add 'org-journal--carryover :after #'em/org-journal--append-standup)
         ;;(setq org-journal-after-header-create-hook #'org-id-get-create)
         )
 #+end_src
