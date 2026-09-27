@@ -63,6 +63,17 @@ not in repos:
   #+filetags: :tracking:ai-generated:
   #+tags: tracking, ai-generated
   ```
+- Write org syntax, not Markdown habits:
+  | Markdown        | Org                               |
+  |-----------------|-----------------------------------|
+  | `# H1` / `## H2`| `* H1` / `** H2`                  |
+  | `**bold**`      | `*bold*`                          |
+  | `*italic*`      | `/italic/`                        |
+  | `` `code` ``    | `=code=` or `~code~`              |
+  | `[text](url)`   | `[[url][text]]`                   |
+  | link to a page  | `[[file:other_page.org][text]]`   |
+  | ```` ```sh ```` | `#+begin_src sh` … `#+end_src`    |
+  | `- [ ] task`    | `- [ ] task` (same)               |
 - No nested lists — Logseq renders them as raw text. Use sub-headings.
 - Only create or edit your own tracking pages. Never edit journals or
   other pages in the notes repo.
