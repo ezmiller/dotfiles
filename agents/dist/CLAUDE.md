@@ -67,6 +67,9 @@ not in repos:
 - Only create or edit your own tracking pages. Never edit journals or
   other pages in the notes repo.
 - Non-doc outputs (CSVs, scripts) stay in `~/.tracking/`.
+- Never link code, comments, or skills to a tracking page — not every
+  reader can reach the notes repo. If code needs to explain *why*,
+  write that part up as a repo doc in `docs/` and link that instead.
 - botserver's copy is a git checkout other agents push to: `git pull
   --rebase`, `git add` only your page, commit, push. If the pull
   conflicts, stop and ask.
