@@ -37,10 +37,39 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and follow the
 
 - Doc sources (Markdown/reST/ADR) go in `docs/` and link from the root
   `README`; don't commit generated outputs.
-- When not in a repo, use `~/.tracking/`.
-- Create a tracking doc for feature planning or complex debugging — not
-for simple tasks. Place in `docs/` (in-repo) or `~/.tracking/` (no
-repo). Tracking docs capture process; memory captures conclusions.
+
+## Tracking Docs
+
+Create a tracking doc for feature planning or complex debugging — not
+for simple tasks. Tracking docs capture process; memory captures
+conclusions. They live in the techwork notes graph (Logseq/org-roam),
+not in repos:
+
+- Location: `techwork/pages/` in the org repo
+  - Mac: `~/org/techwork/pages/`
+  - botserver: `/srv/commons/repos/org-notes/techwork/pages/`
+- Filename: `tracking___<scope>___<topic>.org`. `<scope>` is the repo
+  name, or `general` outside a repo; `<topic>` is snake_case. Logseq
+  shows it as `tracking/<scope>/<topic>`.
+- Org format (not Markdown), starting with this header. Use a fresh
+  `:ID:` from `uuidgen` and `hostname -s` for the machine:
+  ```
+  :PROPERTIES:
+  :ID:       <uuid>
+  :AUTHOR:   <agent>@<machine>
+  :REPO:     <scope>
+  :END:
+  #+title: tracking/<scope>/<topic words>
+  #+filetags: :tracking:ai-generated:
+  #+tags: tracking, ai-generated
+  ```
+- No nested lists — Logseq renders them as raw text. Use sub-headings.
+- Only create or edit your own tracking pages. Never edit journals or
+  other pages in the notes repo.
+- Non-doc outputs (CSVs, scripts) stay in `~/.tracking/`.
+- botserver's copy is a git checkout other agents push to: `git pull
+  --rebase`, `git add` only your page, commit, push. If the pull
+  conflicts, stop and ask.
 
 ## MCP Tool Usage
 
