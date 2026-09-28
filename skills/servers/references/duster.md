@@ -23,3 +23,9 @@
 - **Plex Media Server**
 - **Sunshine** (game streaming) — see `~/.tracking/duster-sunshine-setup.md` for X11/NVIDIA setup notes
 - **Transmission** (system service, `transmission` user) — Web UI http://192.168.86.216:9091
+
+### Gotchas
+- **SSH:** the Mac can't resolve `ethan-duster` (MagicDNS off) and known_hosts keys it by name → use `ssh -o HostKeyAlias=ethan-duster ethan@100.126.203.96` (or the `duster` alias in ~/.ssh/config).
+- **Restarting Steam remotely:** relaunching from SSH with just `DISPLAY`/`XAUTHORITY` attaches Steam to the SSH session and the screen **flickers** in Big Picture. Relaunch with the KDE desktop's full environment instead (`startplasma-x11` session 1):
+  `xargs -0 -a /proc/$(pgrep -x plasmashell)/environ sh -c 'exec env -i "$@" setsid nohup ~/.local/share/Steam/steam.sh steam://open/bigpicture >/dev/null 2>&1 &' sh`
+- **Custom Proton (GE-Proton):** unpack into `~/.local/share/Steam/compatibilitytools.d/`; Steam only sees it after a full restart. GE-Proton10-34 installed 2026-09-26 for MLB Rivals. Its GameGuard error 380 was really AdGuard parental control blocking qpyou.cn (see farsika.md), not Proton.
