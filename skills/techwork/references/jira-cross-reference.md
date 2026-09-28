@@ -39,29 +39,39 @@ Map org states to Jira statuses:
 
 **Output format:**
 
+Pair every ticket ID with its summary — never show one bare (see "Always pair a ticket ID
+with a short description" in `SKILL.md`). Pull the summary from the Jira `fields` you already
+fetched.
+
 ```
 ## Jira Sync Check (5 tickets)
 
 ✅ In sync (3)
-- EPD-2466: STARTED locally, "In Progress" in Jira
-- EPD-2481: STARTED locally, "In Progress" in Jira  
-- EPD-2482: TODO locally, "To Do" in Jira
+- EPD-2466 (Convert collectionQuery to GraphQL): STARTED locally, "In Progress" in Jira
+- EPD-2481 (Pre-header logo, 1-column layout): STARTED locally, "In Progress" in Jira
+- EPD-2482 (Full-width tablet/mobile nav): TODO locally, "To Do" in Jira
 
 ⚠️ Diverged (2)
-- EPD-2378: DONE locally but "In Progress" in Jira
+- EPD-2378 (Discount code error messaging): DONE locally but "In Progress" in Jira
   → Maybe update Jira? Or reopen locally?
-- EPD-2400: TODO locally but "Done" in Jira
+- EPD-2400 (Add INP metric): TODO locally but "Done" in Jira
   → Maybe mark DONE locally?
 ```
 
 **What to do with divergence:**
 - **Local ahead of Jira** — remind Ethan to update Jira (or offer to add a comment)
-- **Jira ahead of local** — suggest marking the local task DONE
+- **Jira ahead of local** (e.g. Jira shows `Done`) — **don't take that at face value.**
+  Jira statuses are unpredictable (automations, bulk edits, stale syncs can flip a status
+  without real work happening). Before suggesting Ethan mark the local task DONE, check
+  git (`gh search prs`/`gh pr view`) for a merged PR that backs it up. If git doesn't
+  confirm it, surface it as "Jira says Done but I can't find a merged PR — worth
+  double-checking" rather than as settled fact.
 - **Ambiguous** — just surface it, let Ethan decide
 
 **Don't auto-fix.** Always surface the divergence and let Ethan choose what to do. Jira
-is the system of record for the team; local journal is personal working memory. They serve
-different purposes and occasional drift is normal.
+is the system of record for the team, but its status field alone is not reliable enough to
+assert as fact — git is the tiebreaker. Local journal is personal working memory. They
+serve different purposes and occasional drift is normal.
 
 **Bonus: tickets in Jira but not in journal**
 

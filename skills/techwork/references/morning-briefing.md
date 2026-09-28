@@ -66,6 +66,10 @@ was already organized, not a fresh carryover), skip this step silently.
 
 To find yesterday's file, list the journal directory and take the file immediately before
 today's. Don't assume it's exactly one calendar day ago — weekends and holidays create gaps.
+**Ethan doesn't work Fridays (standing day off).** So a Thursday→Monday gap (no Friday file)
+is normal, not a signal that something went unlogged — don't flag it or ask about it. When
+referring to that file in the briefing, call it "your last entry (Thursday)" rather than
+"yesterday" if there's a gap.
 
 **Read both files in full** — don't use `tail`, `line_offset`, or any partial read. Today's
 file is the carryover dump: tasks accumulate at the top as they're carried over from older
@@ -158,13 +162,31 @@ For Jira, use the MCP tool (see `references/jira-cross-reference.md`):
 `jira_search(jql="assignee = currentUser() AND sprint in openSprints()", fields="key,summary,status,updated")`.
 Note Jira uses custom statuses — map by **category**: `To Do`/`Backlog` → `TODO`,
 `In Progress`/`Blocked` → `STARTED`/`BLOCKED`, `In Review` → `REVIEW`, `Done`/`Nope` → `DONE`
-(closed; "Nope" = closed-no-action). **When Multica and Jira disagree on a ticket's status,
-Jira is authoritative.**
+(closed; "Nope" = closed-no-action).
 
-**State evidence** (strongest first): Jira status → GitHub merge state → Multica status. A PR
-**merged** means `DONE`. A PR **open** means in progress. You still have **no visibility into
-Slack or any external hand-off channel** — never infer, assume, or mention one; `REVIEW` is
-Ethan's to set (or comes from Jira `In Review`), not something you invent from an open PR.
+**⚠️ Jira statuses are unpredictable — never treat one as authoritative on its own.**
+Automations, bulk edits, board hygiene sweeps, and stale syncs can flip or misreport a
+ticket's status without matching reality (e.g. a ticket showing `Done` with a fresh
+`updated` timestamp that Ethan never touched). This applies even when `jira_get_issue`
+confirms the same status directly — a matching re-fetch doesn't make it true, it just
+means Jira is internally consistent with itself.
+
+**State evidence** (strongest first): **GitHub merge/PR state → Jira status → Multica
+status.** Git is ground truth. A PR **merged** means `DONE`. A PR **open** means in
+progress. Before reporting any ticket as newly `DONE`, newly `REVIEW`, or reopened based
+on Jira, confirm it against git (`gh search prs`, `gh pr view`, commit history) — if there's
+no corresponding PR/commit activity, say so and ask rather than asserting the Jira status
+as fact. When Multica and Jira disagree and neither is confirmed by git, prefer Jira's
+category over Multica's, but still flag it as unconfirmed rather than authoritative.
+
+You still have **no visibility into Slack or any external hand-off channel** — never infer,
+assume, or mention one; `REVIEW` is Ethan's to set (or comes from Jira `In Review` *and*
+a matching open PR), not something you invent from Jira alone.
+
+**Never assert a PR's existence or state from a Jira label alone** (e.g. "Jira says In Review,
+so a PR is probably open"). If a claim depends on PR/commit state, look it up
+(`gh search prs`/`gh pr view`) before writing it down. If you didn't check, don't say it —
+either verify or state it as an open question, not a fact.
 
 **Map Multica epics onto existing journal structure.** Don't scatter tickets into `Queued`.
 Multica groups work under parent epics (e.g. the curated-pages epic → the journal's
@@ -217,9 +239,10 @@ Two compact lists — headline only, no task body detail:
 🔴 **Active** — STARTED tasks and any TODO touched in the last 3 days
 🟡 **Queued** — carried-over TODOs with no recent activity
 
-One line each. Ethan can ask to expand any item. If there are stale items (carried 7+ days
-with no progress), just note the count: "N stale — deal with at EOD." (Full triage lives in
-`references/staleness-triage.md`.)
+One line each, using the full journal headline (which already includes a description, e.g.
+"EPD-2548 Curated Page Updates") — never just the bare ticket ID. Ethan can ask to expand any
+item. If there are stale items (carried 7+ days with no progress), just note the count: "N
+stale — deal with at EOD." (Full triage lives in `references/staleness-triage.md`.)
 
 ---
 
@@ -229,18 +252,23 @@ A single deduped, EPD-keyed list of work units, each tagged with its audit class
 Lead with journal-accuracy findings (🔴 first — those are the point); confirmed items can be
 a count. Group planned items under their epic so the list stays scannable.
 
+**Every ID gets a short description in parentheses right after it — never a bare `EPD-XXXX`**
+(see "Always pair a ticket ID with a short description" in `SKILL.md`). Pull the description
+from whichever source you already queried: the Jira summary, the Multica title, or the
+journal heading.
+
 ```
 🔴 Mismatch (2)
-  • EPD-2549  journal DONE  →  Jira "In Review", PR #3377 cancelled   (reopen → REVIEW?)
-  • EPD-2590  journal TODO  →  PR #3419 merged, Jira Done            (mark DONE?)
+  • EPD-2549 (hide OOS filter)        journal DONE  →  Jira "In Review", PR #3377 cancelled   (reopen → REVIEW?)
+  • EPD-2590 (sticky nav alignment)   journal TODO  →  PR #3419 merged, Jira Done             (mark DONE?)
 🟠 Done, not in journal (1)
-  • EPD-2593  PR #3423 merged                                        (add as DONE?)
+  • EPD-2593 (shop_by_collection image linking bug)  PR #3423 merged                          (add as DONE?)
 🟣 In Jira, not in Multica/journal (1)
-  • EPD-2539  Jira In Progress, worked off Jira, no PR yet           (track here?)
-🟡 Planned, not tracked — Curated epic EPD-2548 (3)
-  • EPD-2551 Quickshop · EPD-2553 content blocks · EPD-2306 size filters
+  • EPD-2539 (Loop change-of-address)  Jira In Progress, worked off Jira, no PR yet            (track here?)
+🟡 Planned, not tracked — Curated epic EPD-2548 (Curated Page Updates) (3)
+  • EPD-2551 (Quickshop) · EPD-2553 (content blocks) · EPD-2306 (size filters)
 🔵 No ticket (1)
-  • rfd #8  RFD 5 draft, no EPD key                                  (in journal? if not, add)
+  • rfd #8 (RFD 5 draft), no EPD key                                                          (in journal? if not, add)
 ✅ Confirmed: 7 (journal + sources agree)
 ```
 
@@ -263,8 +291,10 @@ Pull the interview candidates, stuck first:
 - Anything Ethan flagged as a blocker in yesterday's EOD or standup.
 - Then the top 1–2 Active items, if there's appetite.
 
-Ask about them **one at a time**, tightly — e.g. "EPD-2549 has sat 8 days — what's it waiting
-on, and is it still blocked?" or "Still stuck on X, or did that move?" For each answer:
+Ask about them **one at a time**, tightly, and always name what the ticket actually is —
+e.g. "EPD-2549 (the hide-OOS filter) has sat 8 days — what's it waiting on, and is it still
+blocked?" or "Still stuck on the SchemaApp handoff, or did that move?" Never ask about a bare
+ticket ID. For each answer:
 - If the state changed (unblocked, finished, dropped), update that item's journal heading —
   change the TODO keyword, add a one-line note, and append a `LOGBOOK` line with the reason.
 - If a real blocker surfaced, capture it verbatim so it can flow into `** Blockers` in the standup.

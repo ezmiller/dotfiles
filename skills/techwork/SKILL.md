@@ -70,6 +70,19 @@ Tickets follow the pattern `EPD-XXXX` (e.g., `EPD-2466`); some are `PW-XXXX`. Th
 When the user asks about a ticket number, search for it in multiple forms: `EPD-2466`,
 `EPD_2466`, `epd-2466`, and `epd_2466`.
 
+**Always pair a ticket ID with a short description — never show one bare.** Ethan doesn't
+keep ticket numbers memorized; `EPD-2614` on its own means nothing to him. Every time a
+ticket ID appears in output — task snapshots, reconciliation findings, staleness lists,
+interview questions, standup drafts, Jira sync checks — attach a few words of context
+right next to it: the journal heading text, the Jira summary, or the Multica title,
+whichever you already have on hand. Look it up before writing the line rather than
+expecting Ethan to recall it or asking him what it is.
+
+- Bad: `EPD-2614  journal TODO  →  Jira "In Progress"`
+- Good: `EPD-2614 (reconcile PENDING refunds)  journal TODO  →  Jira "In Progress"`
+
+This applies in every recipe below, not just the morning briefing.
+
 ## Key Projects & Systems (Primary.com context)
 
 These are recurring topics in the notes. When the user asks about one, search both journals
