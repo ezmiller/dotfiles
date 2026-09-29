@@ -10,7 +10,7 @@ Contents:
 - Step 1 — Read the files
 - Step 2 — Gather standup context
 - Step 2.5 — Reconcile work across systems, then audit the journal
-- Step 3 — Produce the briefing output
+- Step 3 — Produce the briefing output (summary, then interview, then standup)
 - Step 4 — Draft the standup
 
 **Step 0: Ensure today's journal file exists**
@@ -278,46 +278,49 @@ record, add, or fix. If Step 2.5 found nothing to reconcile, say so in one line 
 
 ---
 
-**Interview on key & stuck work — before the open question:**
+**Interview every major project — before the open question:**
 
-Before asking the open question, briefly interview Ethan about his key work items, **especially
-the stuck ones**. This is the moment to get items unstuck and to keep the tracker accurate — the
-answers feed straight back into **updating individual journal items** (state, notes, blockers)
-and into the **standup draft** in Step 4.
+Walk through every major active and blocked project — not just the stuck ones — asking what's
+going on. This is where journal items get updated and where the standup draft in Step 4 gets
+its real content.
 
-Pull the interview candidates, stuck first:
-- **BLOCKED** tasks (any).
-- **STARTED** tasks that are stale (carried 7+ days with no LOGBOOK/body change).
-- Anything Ethan flagged as a blocker in yesterday's EOD or standup.
-- Then the top 1–2 Active items, if there's appetite.
+A **major project** is a `STARTED`/`BLOCKED` heading with real history — a subtree, dated
+notes, or something that's spanned more than a day or two (e.g. the Curated Pages epic, CTS
+merged-PDP support, the Short-ship refund resilience epic, SchemaApp, Bazaar Voice, Whiplash,
+Loop change-of-address). Skip bare one-line `TODO`s with no history — the task snapshot
+already covered those.
 
-Ask about them **one at a time**, tightly, and always name what the ticket actually is —
-e.g. "EPD-2549 (the hide-OOS filter) has sat 8 days — what's it waiting on, and is it still
-blocked?" or "Still stuck on the SchemaApp handoff, or did that move?" Never ask about a bare
-ticket ID. For each answer:
-- If the state changed (unblocked, finished, dropped), update that item's journal heading —
-  change the TODO keyword, add a one-line note, and append a `LOGBOOK` line with the reason.
-- If a real blocker surfaced, capture it verbatim so it can flow into `** Blockers` in the standup.
-- Only write changes Ethan explicitly confirms (same guardrail as Step 2.5).
+**Order: `* Follow-ups` first, then `* Active` (ticketed/code work).** Within each, go one
+project at a time, in journal order.
 
-Keep it to a few questions — this is a memory jog and a nudge, not an inquisition. If nothing is
-stuck, say so and skip straight to the open question.
+Ask one open question per project, always naming what it is — e.g. "What's the latest on the
+Loop change-of-address fix?" or "Where's the Curated Pages epic at?" Never ask about a bare
+ticket ID.
+
+For each answer:
+- State change (unblocked, finished, new info) → update that heading now: change the
+  TODO/STARTED/BLOCKED/DONE keyword, append a dated note in Ethan's voice, add a `LOGBOOK`
+  line. Only write changes he explicitly confirms (same guardrail as Step 2.5).
+- New blocker → capture verbatim for `** Blockers` in the standup.
+- Nothing new → move on immediately.
+
+One question per project, a follow-up only if the answer implies a change — this is a
+check-in across everything live, not an inquisition.
 
 **Then ask — before drafting anything:**
 
-End with a single open question. If Step 2.5 surfaced any 🔴/🟠/🔵 findings, fold the
-reconciliation into it so it drives action:
+Once every major project has been covered, close with a single open question. If Step 2.5
+surfaced any 🔴/🟠/🔵 findings not already resolved in the walk-through, fold them in:
 
-> "Anything to add about yesterday, or what's your main focus today?"
+> "Anything else to add, or what's your main focus today?"
 
-or, when there are findings:
+or, when unresolved findings remain:
 
-> "Want to pull any of those reconciliation items into your Active/Queued list or fix a
-> state — and what's your main focus today?"
+> "Want to pull any of those remaining reconciliation items into your Active/Queued list or
+> fix a state — and what's your main focus today?"
 
-Wait for Ethan's response. He might clarify what he actually worked on, name a priority,
-mention a blocker, ask to reconcile a specific item, or say "nothing, just draft it." All of
-that shapes the standup. Only apply journal changes he explicitly confirms.
+Wait for Ethan's response. He might name a priority, mention a new blocker, or say "nothing,
+just draft it." Only apply journal changes he explicitly confirms.
 
 ---
 
