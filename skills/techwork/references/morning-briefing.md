@@ -278,11 +278,11 @@ record, add, or fix. If Step 2.5 found nothing to reconcile, say so in one line 
 
 ---
 
-**Interview every major project — before the open question:**
+**Interview every major project (and code review) — before the open question:**
 
-Walk through every major active and blocked project — not just the stuck ones — asking what's
-going on. This is where journal items get updated and where the standup draft in Step 4 gets
-its real content.
+Walk through every major active and blocked project, plus everything awaiting code review —
+not just the stuck ones — asking what's going on. This is where journal items get updated and
+where the standup draft in Step 4 gets its real content.
 
 A **major project** is a `STARTED`/`BLOCKED` heading with real history — a subtree, dated
 notes, or something that's spanned more than a day or two (e.g. the Curated Pages epic, CTS
@@ -290,12 +290,17 @@ merged-PDP support, the Short-ship refund resilience epic, SchemaApp, Bazaar Voi
 Loop change-of-address). Skip bare one-line `TODO`s with no history — the task snapshot
 already covered those.
 
-**Order: `* Follow-ups` first, then `* Active` (ticketed/code work).** Within each, go one
-project at a time, in journal order.
+**Order: `* Follow-ups` first, then `* Active` (ticketed/code work), then `* Code Review`.**
+Within each, go one project (or, for Code Review, one PR) at a time, in journal order.
 
 Ask one open question per project, always naming what it is — e.g. "What's the latest on the
 Loop change-of-address fix?" or "Where's the Curated Pages epic at?" Never ask about a bare
 ticket ID.
+
+**Code Review is different: cover every item, not just "major" ones.** Those entries are
+single-line TODOs by nature (a bare PR link, no subtree), so the major-project filter above
+doesn't apply — ask about each one, e.g. "Did you get a look at #3510 (the gift bag fallback
+PR)?" Reviewed/merged → mark DONE; still pending → leave as TODO and note any feedback given.
 
 For each answer:
 - State change (unblocked, finished, new info) → update that heading now: change the
