@@ -1100,7 +1100,9 @@ Then we install each app seprately.
           :hook ((clojure-mode . (lambda ()
       		     (add-hook 'before-save-hook 'cider-format-buffer nil t))))
           :config
-          (setq cider-repl-pop-to-buffer-on-connect nil))
+          (setq cider-repl-pop-to-buffer-on-connect nil)
+          ;; C-c C-c inside (comment ...) evaluates the form at point, not the whole block
+          (setq clojure-toplevel-inside-comment-form t))
 
     (use-package rainbow-delimiters
       :defer t
