@@ -372,6 +372,22 @@ from OpenClaw. Runs the **WhatsApp** agent (**Saul**) that replaced the retired 
   comma-separated phone numbers + LIDs). Restart the gateway after editing either.
 - **Egress:** WhatsApp/Meta reachability rides the retained broad WhatsApp CIDRs (see
   Egress note); hermes also needs `models.dev` — both restored after the Phase-4 tighten.
+- **Model accounts rotate (credential pool, added 2026-10-02):** `openai-codex` holds TWO
+  ChatGPT logins — main (priority 0) and `eitanveleah` (priority 1). When one hits its
+  limit, hermes moves to the next. Fallback after that is OpenRouter (`minimax/minimax-m3`).
+  The dashboard can't show or edit this; use the CLI (keep `~` inside the quotes):
+  - See state: `ssh hermes@botserver '~/.hermes/venvs/hermes/bin/hermes auth list'` —
+    shows `rate-limited … (Xd left)` per account; `←` marks the one in use.
+  - Also `auth reset|remove openai-codex [label]`. `auth status` only says logged in/out.
+  - **Add an account:** `auth add openai-codex --type oauth --label <name> --no-browser`
+    is a device-code login. Run it under `PYTHONUNBUFFERED=1 nohup … > /tmp/x.log &`
+    and read the code from the log (without the env var the log stays empty), then
+    restart the gateway. Don't `pkill -f "hermes auth add"` over ssh — it kills the
+    ssh shell itself (exit 255).
+- **"Saul is silent" first check:** gateway logs for `429 … quota exhausted`. The ChatGPT
+  usage page's *5-hour* bar can read 100% while the *weekly* bar is 0% — the weekly one
+  is what's blocking. `openai-api` showing "logged out" is irrelevant (unused API-key
+  provider).
 
 #### Egress Firewall (DNS-driven allowlist, reworked 2026-07-21)
 - Default deny outbound at nft L3; the allowlist is now **DNS-driven**: a local
