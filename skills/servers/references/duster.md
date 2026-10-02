@@ -21,7 +21,7 @@
 
 ### Services
 - **Plex Media Server**
-- **Sunshine** (game streaming) — see `~/.tracking/duster-sunshine-setup.md` for X11/NVIDIA setup notes
+- **Sunshine** (game streaming) — see `~/org/techwork/tracking/general/duster_sunshine_setup.org` for X11/NVIDIA setup notes
 - **Transmission** (system service, `transmission` user) — Web UI http://192.168.86.216:9091
 
 ### Gotchas

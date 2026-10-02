@@ -42,15 +42,14 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and follow the
 
 Create a tracking doc for feature planning or complex debugging — not
 for simple tasks. Tracking docs capture process; memory captures
-conclusions. They live in the techwork notes graph (Logseq/org-roam),
-not in repos:
+conclusions. They live in Ethan's org notes (org-mode/org-roam), not in
+repos:
 
-- Location: `techwork/pages/` in the org repo
-  - Mac: `~/org/techwork/pages/`
-  - botserver: `/srv/commons/repos/org-notes/techwork/pages/`
-- Filename: `tracking___<scope>___<topic>.org`. `<scope>` is the repo
-  name, or `general` outside a repo; `<topic>` is snake_case. Logseq
-  shows it as `tracking/<scope>/<topic>`.
+- Location: `techwork/tracking/<scope>/<topic>.org` in the org notes
+  - Mac: `~/org/techwork/tracking/`
+  - botserver: `/srv/commons/org/techwork/tracking/`
+- `<scope>` is the repo name, or `general` outside a repo; `<topic>` is
+  snake_case.
 - Org format (not Markdown), starting with this header. Use a fresh
   `:ID:` from `uuidgen` and `hostname -s` for the machine:
   ```
@@ -61,7 +60,6 @@ not in repos:
   :END:
   #+title: tracking/<scope>/<topic words>
   #+filetags: :tracking:ai-generated:
-  #+tags: tracking, ai-generated
   ```
 - Write org syntax, not Markdown habits:
   | Markdown        | Org                               |
@@ -71,19 +69,17 @@ not in repos:
   | `*italic*`      | `/italic/`                        |
   | `` `code` ``    | `=code=` or `~code~`              |
   | `[text](url)`   | `[[url][text]]`                   |
-  | link to a page  | `[[file:other_page.org][text]]`   |
+  | link to a page  | `[[file:../general/topic.org][text]]` (relative) |
   | ```` ```sh ```` | `#+begin_src sh` … `#+end_src`    |
   | `- [ ] task`    | `- [ ] task` (same)               |
-- No nested lists — Logseq renders them as raw text. Use sub-headings.
 - Only create or edit your own tracking pages. Never edit journals or
   other pages in the notes repo.
 - Non-doc outputs (CSVs, scripts) stay in `~/.tracking/`.
 - Never link code, comments, or skills to a tracking page — not every
   reader can reach the notes repo. If code needs to explain *why*,
   write that part up as a repo doc in `docs/` and link that instead.
-- botserver's copy is a git checkout other agents push to: `git pull
-  --rebase`, `git add` only your page, commit, push. If the pull
-  conflicts, stop and ask.
+- Never run git in the org notes on any machine. They sync by Resilio,
+  and farsika is the only machine that commits them — just save the file.
 
 ## MCP Tool Usage
 

@@ -21,7 +21,7 @@
 > **On the beta line deliberately** (upgraded 2026-08-08 from 6.11). The "see attached
 > image" placeholder fix landed ONLY in the 7.2 beta — neither `latest` (2026.7.1-2) nor
 > `extended-stable` (2026.6.34) has it. Pin the **exact** version; never track the `beta`
-> dist-tag. Full record: `~/.tracking/openclaw-upgrade-2026.7.2-beta.7.md`.
+> dist-tag. Full record: `~/org/techwork/tracking/general/openclaw_upgrade_2026_7_2_beta_7.org`.
 >
 > ⚠️ **Node floor.** 2026.7.2-beta.x requires node `>=22.22.3`, and the main nixpkgs pin
 > ships 22.22.2. `nodejs_22` therefore comes from the **`nixpkgs-agents`** pin via the
@@ -94,7 +94,7 @@ not crash anything; it just means what you think you changed is not live.
 #### Upgrading OpenClaw (procedure proven 2026-08-08, 6.11 → 7.2-beta.7)
 
 Install is **imperative**: git checkout a tag + `pnpm build` → `dist/`. Nix does not pin the
-version. Past write-ups: `~/.tracking/openclaw-upgrade-*.md` — read the most recent one first,
+version. Past write-ups: `~/org/techwork/tracking/{general,botserver-nix}/openclaw_upgrade_*.org` — read the most recent one first,
 each upgrade has left a distinct trap behind.
 
 ```
@@ -146,7 +146,7 @@ needs `diagnostics.flags = ["telegram.http"]`.
 ⚠️ Writing **any** `diagnostics` key to `openclaw.json` forces a gateway restart — the
 hot-reload watcher treats it as restart-requiring. Do not use it to capture live state.
 
-Full write-up, fixes on deck, and an upstream bug: `~/.tracking/botserver-ipv6-telegram.md`.
+Full write-up, fixes on deck, and an upstream bug: `~/org/techwork/tracking/general/botserver_ipv6_telegram.org`.
 
 #### Agents
 
@@ -162,6 +162,15 @@ Full write-up, fixes on deck, and an upstream bug: `~/.tracking/botserver-ipv6-t
 
 > The **WhatsApp** channel here is **disabled** (`channels.whatsapp.enabled=false`); the
 > old `family` WhatsApp agent was retired 2026-07-20 and now runs under **hermes** (below).
+
+#### Adding a Telegram group
+
+Groups are allow-listed by chat ID in `channels.telegram.groups` (`{"requireMention": false}`
+like the others); it hot-reloads, no restart. Find the ID in the gateway journal — log
+payloads are redacted, but look for `Group migrated: "<name>" <old> → <new>`. ⚠️ Enabling
+topics or making someone admin upgrades the group to a supergroup and **changes its ID** —
+use the new `-100…` one. ⚠️ `jq … > /tmp/x && mv` leaves the file `644`; `openclaw.json`
+holds bot tokens, so `chmod 600` it afterwards (added 2026-09-28).
 
 #### Cron Jobs
 
@@ -417,7 +426,7 @@ from OpenClaw. Runs the **WhatsApp** agent (**Saul**) that replaced the retired 
   emails stopped silently. The backend was fixed then; the **frontend was missed**
   and kept `--dns=192.168.86.1` (with a comment claiming parity with the backend)
   until #149. Full design + rationale:
-  `~/.tracking/botserver-egress-dns-allowlist.md`.
+  `~/org/techwork/tracking/botserver-nix/botserver_egress_dns_allowlist.org`.
 - **Disable (emergency):** `sudo systemctl stop openclaw-egress && sudo nft delete table inet egress_filter`
 - **Rollback the DNS rework:** `sudo tailscale set --accept-dns=true && sudo nixos-rebuild switch --rollback`
 
