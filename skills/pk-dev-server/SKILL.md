@@ -18,10 +18,10 @@ description: >
 
 The dev environment requires **two concurrent terminals**:
 
-| Terminal | Command | Purpose |
-|----------|---------|---------|
-| 1 | `yarn serve` | webpack-dev-server (HMR, asset compilation) |
-| 2 | `shopify theme dev` | Syncs theme files to Shopify, provides preview URL |
+| Terminal | Command             | Purpose                                            |
+| -------- | ------------------- | -------------------------------------------------- |
+| 1        | `yarn serve`        | webpack-dev-server (HMR, asset compilation)        |
+| 2        | `shopify theme dev` | Syncs theme files to Shopify, provides preview URL |
 
 Both must be running simultaneously. The preview URL comes from terminal 2.
 
@@ -99,11 +99,13 @@ macOS-compatible pattern (no `timeout` command on macOS):
 ```
 
 **Interpret the output:**
+
 - Contains `Syncing theme` or `http://127.0.0.1:9292` → **already authenticated**, kill the probe's leftover process (`pkill -f "shopify theme dev"`), then proceed to Step 2
 - Contains `Log in` or `browser` or `https://accounts.shopify.com` → **auth required**, kill the probe, skip Step 1a, and proceed to Step 2. The background process in Step 3 will prompt for auth in its log — have the user authenticate through that instead to avoid double auth.
 - Contains `command not found` or the probe itself errors → **stop and tell the user** something is wrong with the environment; do not keep trying variants
 
 > **Important:** The probe starts a real process that binds port 9292. Always kill it before Step 3:
+>
 > ```bash
 > pkill -f "shopify theme dev" 2>/dev/null; sleep 1
 > ```
@@ -155,6 +157,7 @@ perl -pe 's/\x1b\[[0-9;?]*[mGKHJlh]//g; s/\r//g' /tmp/pk-theme-dev.log \
 ```
 
 The user needs these URLs every time — don't skip this step even if everything looks healthy. Look for:
+
 - `http://127.0.0.1:9292` — local preview
 - `https://connors-bone-yard.myshopify.com/?preview_theme_id=...` — Shopify preview
 
