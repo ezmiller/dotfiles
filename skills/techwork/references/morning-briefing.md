@@ -1,8 +1,22 @@
 # Morning Briefing
 
-The primary daily-use workflow. Ensure today's file exists (creating it with carryover if
+The primary daily-use workflow (runs at any hour — don't say "morning"). Ensure today's file exists (creating it with carryover if
 needed), then do an intelligent second pass: read what carried over, look at yesterday, and
 give Ethan something useful.
+
+**Three phases.** (1) *Gather* everything since the last entry in parallel — journal, Jira,
+Multica, GitHub, Wispr meetings, and Kingkong (`references/engineering-manager.md`) — as tagged
+claims. (2) *Verify* state claims against the strongest source (git > Jira > Multica/Kingkong;
+GitHub is fetched once in phase 1 and reused as the tiebreaker), then *interview* Ethan only on
+what the sources can't settle. (3) *Reconcile*: propose journal edits with evidence, apply only
+what he approves, then draft the standup. Slack isn't readable yet.
+
+**Style.** Ethan finds long lists hard to read. Interview one question at a time; any list is
+~5 items max (else give a count and ask). Do the verifying before asking so questions are
+informed. Skip questions the journal or an earlier answer already settles, and explain any
+agent jargon (e.g. Kingkong's "re-brief") in plain words. Wispr call notes are auto-summaries
+and can get action-item owners wrong — confirm who owns each. Show anything new since the last
+entry (a ticket Ethan created this morning, a PR he opened) as a proposal to add.
 
 Contents:
 - Step 0 — Ensure today's journal file exists
@@ -18,24 +32,30 @@ Contents:
 Check whether today's file exists before reading anything. Construct today's filename using
 the current date: `~/org/techwork/journals/YYYY_MM_DD.org`.
 
-Use `emacs__eval-elisp` to check, create, and save in one shot:
+Use `emacs__eval-elisp` to check, create, and save in one shot (it checks for an unsaved
+buffer too — the file can exist only in Emacs, and a second `org-journal-new-entry` adds a
+duplicate time heading):
 
 ```elisp
 (let* ((today (format-time-string "%Y_%m_%d"))
        (journal-dir (expand-file-name "journals/" org-roam-directory))
        (today-file (expand-file-name (concat today ".org") journal-dir)))
-  (if (file-exists-p today-file)
-      :already-exists
-    (org-journal-new-entry nil)
-    (save-buffer)
-    :created))
+  (cond ((file-exists-p today-file) :already-exists)
+        ((get-file-buffer today-file)
+         (with-current-buffer (get-file-buffer today-file) (save-buffer))
+         :already-exists)
+        (t (org-journal-new-entry nil) (save-buffer) :created)))
 ```
+
+Carryover **moves** items out of the previous file into today's. Never restore or edit
+carried items in a past journal — write them into today's file.
 
 - If it returns `:already-exists` — proceed silently to Step 0.5.
 - If it returns `:created` — org-journal has created the file, carried over all
   TODO/STARTED/REVIEW/BLOCKED items, and saved it to disk. Proceed to Step 0.5.
-- If the elisp call errors or the file still doesn't exist on disk after `:created`,
-  ask Ethan to save the buffer manually (`C-x C-s`) and confirm before continuing.
+- If the elisp call errors, times out (a minibuffer prompt can hang it — don't retry), or the
+  file still doesn't exist after `:created`, ask Ethan to press `C-g` / save (`C-x C-s`) in
+  Emacs and confirm. Gather in the meantime; don't wait.
 
 Don't mention this step to Ethan unless something went wrong. It should be invisible.
 
@@ -59,6 +79,10 @@ under the appropriate section. Preserve the heading level (`**`).
 
 If today's file already has items correctly nested under `* Active` or `* Queued` (i.e. it
 was already organized, not a fresh carryover), skip this step silently.
+
+**Section check.** Carryover has silently dropped whole sections before (`* Queued` and
+`* Follow-ups` vanished for two weeks). Compare today's top-level headings with the last
+journal that had them; if any are missing, say so and offer to restore the non-DONE items.
 
 **Step 1: Read the files**
 - Today: `journals/YYYY_MM_DD.org` (created by org-journal with carryover)
@@ -134,7 +158,9 @@ Jira issue key, multica `metadata.jira_key`, GitHub PR titles/branches (`EPD-259
 journal headlines. Match on it (PR number as secondary link). A unit with no EPD key (RFDs,
 chores, planning spikes) links by PR number or title.
 
-Gather all three (multica + gh are local; Jira via MCP — no SSH):
+Gather all of these in parallel (multica + gh are local; Jira via MCP; Kingkong over SSH per
+`references/engineering-manager.md` — it supplements the raw Multica pull with decisions and
+chain-level state):
 
 ```bash
 # 1. Multica board — the whole primarykids workspace, not a filtered slice.
@@ -188,10 +214,28 @@ so a PR is probably open"). If a claim depends on PR/commit state, look it up
 (`gh search prs`/`gh pr view`) before writing it down. If you didn't check, don't say it —
 either verify or state it as an open question, not a fact.
 
+**An open PR does not mean it was sent for colleague review.** Ethan often has PRs open that
+nobody has been asked to review yet. Never say a PR is "in review" or "waiting on review"
+because it's open. Check `gh pr view <n> --repo PrimaryKids/<repo> --json reviewRequests,reviews,isDraft`:
+no `reviewRequests` and no `reviews` → "open, review not requested". If you still can't tell
+(e.g. review was asked for in Slack, which you can't see), ask. Slack access isn't available
+yet; adding it would help here.
+
 **Map Multica epics onto existing journal structure.** Don't scatter tickets into `Queued`.
 Multica groups work under parent epics (e.g. the curated-pages epic → the journal's
 `STARTED EPD-2548 Curated Page Updates` block). Add related tickets as sub-items under the
 matching existing heading, and update its `[n/m]` statistics cookie.
+
+**Jira epics are the unit, not loose tickets.** Every epic Ethan owns or works must be one
+journal heading with its children under it. Query epics
+(`issuetype = Epic AND statusCategory != Done AND (assignee = currentUser() OR reporter = currentUser())`),
+then their children (`parent in (...)`), and diff both against the journal: missing epics,
+missing children, stale child statuses.
+
+**Read the history before explaining it.** Before saying why a PR/ticket closed or stalled,
+read the PR body and comments (`gh pr view --json body,comments`) and the Multica comment
+thread (`multica issue comment list`). Statuses and titles alone mislead. `multica issue list`
+caps at 100 — page with `--offset`.
 
 Consolidate into one deduped, EPD-keyed list and classify each unit:
 
@@ -210,10 +254,26 @@ Consolidate into one deduped, EPD-keyed list and classify each unit:
 `LOGBOOK` line citing the evidence (PR #, PRI-N, or "Jira: <status>") so each change is
 traceable the next morning.
 
+**Make journal edits one `eca__edit_file` call at a time — never in parallel.** Concurrent
+edits to the same file collide and some fail ("file changed since it was read"). After a batch
+of edits, grep the file to confirm every one landed, and redo any that didn't.
+
+**Follow-through outside the journal (only with explicit approval).** When a journal item
+becomes DONE or dropped, Jira and GitHub may now be out of date (e.g. Jira still "In Review",
+PR still open). Mention it and offer to fix it, but **never transition a Jira ticket, comment
+on it, or close a PR unless Ethan explicitly says to.** When approved: call
+`jira_get_transitions` first — EPD tickets name the transitions with a suffix, e.g.
+`Done (2)` and `Nope (2)`; PW tickets use `Done` and `Won't Do`; Multica's Nope is
+`cancelled` (`multica issue status <id> cancelled --no-start`). Use **Nope** for dropped/no-action work, **Done** for finished
+work, and add a short comment saying why — with `jira_add_comment`, since the transition
+tool's `comment` argument is silently dropped. Show Ethan the comment text first. Don't close PRs yourself unless asked; give him
+the link if he wants to do it.
+
 **Step 3: Produce the briefing output**
 
 The goal is a short, conversational output that orients Ethan and then opens a dialogue
-before drafting the standup. Think of it as: *here's what I found, here's where things
+before drafting the standup. Keep every list to ~5 items; fold the rest into the interview
+rather than a report. Think of it as: *here's what I found, here's where things
 stand — what do you want to add?* The standup comes after that exchange, not before.
 
 Output in this order:
@@ -236,8 +296,10 @@ If there was an EOD section or a standup "Today" list, those are the highest-sig
 
 Two compact lists — headline only, no task body detail:
 
-🔴 **Active** — STARTED tasks and any TODO touched in the last 3 days
-🟡 **Queued** — carried-over TODOs with no recent activity
+🔴 **Active** — **every** open heading under `* Active` (STARTED, BLOCKED, REVIEW, and TODO),
+including old ones. Never drop an Active item for looking stale — flag it instead, e.g.
+"(no activity since 9/8)". Ethan has had important items fall off this way (the 429 work).
+🟡 **Queued** — carried-over TODOs under `* Queued` with no recent activity
 
 One line each, using the full journal headline (which already includes a description, e.g.
 "EPD-2548 Curated Page Updates") — never just the bare ticket ID. Ethan can ask to expand any
@@ -252,21 +314,21 @@ A single deduped, EPD-keyed list of work units, each tagged with its audit class
 Lead with journal-accuracy findings (🔴 first — those are the point); confirmed items can be
 a count. Group planned items under their epic so the list stays scannable.
 
-**Every ID gets a short description in parentheses right after it — never a bare `EPD-XXXX`**
-(see "Always pair a ticket ID with a short description" in `SKILL.md`). Pull the description
+**Lead with the description, ID in parentheses after — never a bare `EPD-XXXX`**
+(see "Lead with the plain description" in `SKILL.md`). Pull the description
 from whichever source you already queried: the Jira summary, the Multica title, or the
 journal heading.
 
 ```
 🔴 Mismatch (2)
-  • EPD-2549 (hide OOS filter)        journal DONE  →  Jira "In Review", PR #3377 cancelled   (reopen → REVIEW?)
-  • EPD-2590 (sticky nav alignment)   journal TODO  →  PR #3419 merged, Jira Done             (mark DONE?)
+  • Hide OOS filter (EPD-2549)        journal DONE  →  Jira "In Review", PR #3377 cancelled   (reopen → REVIEW?)
+  • Sticky nav alignment (EPD-2590)   journal TODO  →  PR #3419 merged, Jira Done             (mark DONE?)
 🟠 Done, not in journal (1)
-  • EPD-2593 (shop_by_collection image linking bug)  PR #3423 merged                          (add as DONE?)
+  • shop_by_collection image linking bug (EPD-2593)  PR #3423 merged                          (add as DONE?)
 🟣 In Jira, not in Multica/journal (1)
-  • EPD-2539 (Loop change-of-address)  Jira In Progress, worked off Jira, no PR yet            (track here?)
-🟡 Planned, not tracked — Curated epic EPD-2548 (Curated Page Updates) (3)
-  • EPD-2551 (Quickshop) · EPD-2553 (content blocks) · EPD-2306 (size filters)
+  • Loop change-of-address (EPD-2539)  Jira In Progress, worked off Jira, no PR yet            (track here?)
+🟡 Planned, not tracked — Curated Page Updates epic (EPD-2548) (3)
+  • Quickshop (EPD-2551) · content blocks (EPD-2553) · size filters (EPD-2306)
 🔵 No ticket (1)
   • rfd #8 (RFD 5 draft), no EPD key                                                          (in journal? if not, add)
 ✅ Confirmed: 7 (journal + sources agree)
@@ -295,7 +357,9 @@ Within each, go one project (or, for Code Review, one PR) at a time, in journal 
 
 Ask one open question per project, always naming what it is — e.g. "What's the latest on the
 Loop change-of-address fix?" or "Where's the Curated Pages epic at?" Never ask about a bare
-ticket ID.
+ticket ID — plain description first, ID in parens (or omitted). Ask one question at a time
+(or a numbered list when batching leftovers). For an epic, don't ask about each unstarted
+child — treat them as not yet reached.
 
 **Code Review is different: cover every item, not just "major" ones.** Those entries are
 single-line TODOs by nature (a bare PR link, no subtree), so the major-project filter above

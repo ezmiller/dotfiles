@@ -70,18 +70,22 @@ Tickets follow the pattern `EPD-XXXX` (e.g., `EPD-2466`); some are `PW-XXXX`. Th
 When the user asks about a ticket number, search for it in multiple forms: `EPD-2466`,
 `EPD_2466`, `epd-2466`, and `epd_2466`.
 
-**Always pair a ticket ID with a short description — never show one bare.** Ethan doesn't
-keep ticket numbers memorized; `EPD-2614` on its own means nothing to him. Every time a
-ticket ID appears in output — task snapshots, reconciliation findings, staleness lists,
-interview questions, standup drafts, Jira sync checks — attach a few words of context
-right next to it: the journal heading text, the Jira summary, or the Multica title,
-whichever you already have on hand. Look it up before writing the line rather than
+**Lead with the plain description; put the ticket ID in parentheses after it — never show a
+bare ID.** Ethan doesn't keep ticket numbers memorized; `EPD-2614` on its own means nothing
+to him. Every time a ticket appears in output — task snapshots, reconciliation findings,
+staleness lists, interview questions, standup drafts, Jira sync checks — name it by what it
+is first, then the ID in parens: the journal heading text, the Jira summary, or the Multica
+title, whichever you already have on hand. Look it up before writing the line rather than
 expecting Ethan to recall it or asking him what it is.
 
-- Bad: `EPD-2614  journal TODO  →  Jira "In Progress"`
-- Good: `EPD-2614 (reconcile PENDING refunds)  journal TODO  →  Jira "In Progress"`
+In **questions**, use the plain description and the ID in parens (or omit the ID) —
+"What's the latest on the Loop change-of-address fix (EPD-2539)?" never "What's up with EPD-2539?"
 
-This applies in every recipe below, not just the morning briefing.
+- Bad: `EPD-2614  journal TODO  →  Jira "In Progress"`
+- Good: `Reconcile PENDING refunds (EPD-2614)  journal TODO  →  Jira "In Progress"`
+
+This applies in every recipe below, not just the morning briefing — and to PRs (title, then
+`#N`) and Multica/other tracker IDs (`PRI-N`, `PW-N`), not just Jira keys.
 
 ## Key Projects & Systems (Primary.com context)
 
@@ -170,3 +174,5 @@ before writing.
 - Org-roam IDs appear as `:PROPERTIES: :ID: <uuid> :END:` — treat these as stable identifiers
 - `[[id:uuid][Title]]` links are org-roam links; treat them like page references
 - The `org-roam.db` is a SQLite database — don't read it, use file-based grep instead
+- Journals are often open in Emacs. Edit with `eca__edit_file`, one call at a time; don't
+  rewrite a journal with a script (the buffer goes stale and reverting can hang on a prompt).
