@@ -60,7 +60,7 @@ notes, or something spanning more than a day or two. Skip bare one-line `TODO`s 
 history (the staleness check in Step 3 covers those).
 
 **One project at a time, one open question each, always naming what it is** — never a bare
-ticket ID (see "Always pair a ticket ID with a short description" in `SKILL.md`).
+ticket ID (see "Lead with the plain description" in `SKILL.md`: description first, ID in parens).
 
 - Open: "What happened with the Loop change-of-address fix today?"
 - When evidence exists, use it to make the question concrete: "PR #3510 (gift bag fallback)

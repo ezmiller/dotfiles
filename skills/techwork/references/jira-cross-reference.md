@@ -40,7 +40,7 @@ Map org states to Jira statuses:
 **Output format:**
 
 Pair every ticket ID with its summary — never show one bare (see "Always pair a ticket ID
-with a short description" in `SKILL.md`). Pull the summary from the Jira `fields` you already
+with a short description" in `SKILL.md`; it's now "Lead with the plain description": description first, ID in parens). Pull the summary from the Jira `fields` you already
 fetched.
 
 ```
