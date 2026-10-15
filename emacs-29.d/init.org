@@ -1627,35 +1627,36 @@ Run =C-c C-c= on a block to generate the image — it will display inline automa
 #+end_src
 * Markdown Mode
 #+begin_src emacs-lisp
-  (use-package markdown-mode
-    :mode (("README\\.md\\'" . gfm-mode)
-           ("\\.md\\'" . markdown-mode)
-           ("\\.markdown\\'" . markdown-mode))
-    :custom
-    ;; Use pandoc with GitHub Flavored Markdown to preserve code block classes
-    (markdown-command "pandoc -f gfm -t html")
-    (markdown-fontify-code-blocks-natively t)
-    :config
-    ;; Enable markdown-mode for GitHub Flavored Markdown
-    (setq markdown-enable-math t)
-    (setq markdown-enable-wiki-links t)
+    (use-package markdown-mode
+      :mode (("README\\.md\\'" . gfm-mode)
+             ("\\.md\\'" . markdown-mode)
+             ("\\.markdown\\'" . markdown-mode))
+      :custom
+      ;; Use pandoc with GitHub Flavored Markdown to preserve code block classes
+      (markdown-command "pandoc -f gfm -t html")
+      (markdown-fontify-code-blocks-natively t)
+      :config
+      ;; Enable markdown-mode for GitHub Flavored Markdown
+      (setq markdown-enable-math t)
+      (setq markdown-enable-wiki-links t)
+      (setq markdown-open-command "open")
+      
+      ;; Add mermaid.js support for HTML preview
+      (setq markdown-xhtml-header-content
+            "<script type=\"module\">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
     
-    ;; Add mermaid.js support for HTML preview
-    (setq markdown-xhtml-header-content
-          "<script type=\"module\">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-  
-  // Process mermaid blocks that are wrapped in code tags (from pandoc)
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('pre.mermaid > code').forEach((codeBlock) => {
-      const pre = codeBlock.parentElement;
-      pre.textContent = codeBlock.textContent;
-      pre.classList.add('mermaid');
+    // Process mermaid blocks that are wrapped in code tags (from pandoc)
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('pre.mermaid > code').forEach((codeBlock) => {
+        const pre = codeBlock.parentElement;
+        pre.textContent = codeBlock.textContent;
+        pre.classList.add('mermaid');
+      });
+      mermaid.initialize({ startOnLoad: true });
+      mermaid.run();
     });
-    mermaid.initialize({ startOnLoad: true });
-    mermaid.run();
-  });
-</script>"))
+  </script>"))
 #+end_src
 
 ** Grip (GitHub-flavored preview)
@@ -1834,7 +1835,18 @@ related terminal.
       (declare (interactive-only t))
       (interactive)
       (let ((denote-prompts (denote-add-prompts '(date))))
-        (call-interactively #'denote-rename-file))))
+        (call-interactively #'denote-rename-file)))
+
+    ;; Denote hooks itself into every markdown link and errors on anything
+    ;; that isn't a denote: link (e.g. web links in ECA chat). Only let it
+    ;; handle its own links so the rest open in the browser as normal.
+    (defun my/denote-markdown-follow-only-denote (link)
+      (when (string-prefix-p "denote:" link)
+        (denote-link-open-at-point)
+        t))
+    (with-eval-after-load 'markdown-mode
+      (remove-hook 'markdown-follow-link-functions #'denote-link-markdown-follow)
+      (add-hook 'markdown-follow-link-functions #'my/denote-markdown-follow-only-denote)))
 #+end_src
 *** Consult Denote Integration
 #+begin_src emacs-lisp
