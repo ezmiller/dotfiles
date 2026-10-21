@@ -25,6 +25,10 @@ brew "jq"
 # socat - networking utility for socket connections
 brew "socat"
 
+# sops + age - edit encrypted secrets (botserver-nix secrets/botserver.yaml)
+brew "sops"
+brew "age"
+
 # A useeful tool for learning about cli commands
 # https://github.com/tldr-pages/tldr
 brew "tldr"
