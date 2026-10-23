@@ -1102,7 +1102,9 @@ Then we install each app seprately.
           :config
           (setq cider-repl-pop-to-buffer-on-connect nil)
           ;; C-c C-c inside (comment ...) evaluates the form at point, not the whole block
-          (setq clojure-toplevel-inside-comment-form t))
+          (setq clojure-toplevel-inside-comment-form t)
+          ;; Print last sexp result as a comment below it
+          (define-key cider-mode-map (kbd "C-c ;") 'cider-pprint-eval-last-sexp-to-comment))
 
     (use-package rainbow-delimiters
       :defer t
