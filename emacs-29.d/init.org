@@ -962,6 +962,13 @@ The Emacs MCP ecosystem has several implementations with different approaches. S
                :files ("*.el" "tools/*.el" "mcp-wrapper.py" "mcp-wrapper.sh"))
     :config
     (setq mcp-server-security-prompt-for-permissions t)
+    ;; Auto-approve the minibuffer prompts (I almost always say yes).
+    ;; Still prompt when the target looks like a sensitive file (~/.ssh, .authinfo, etc).
+    (defun em/mcp-auto-approve (orig-fn operation data)
+      (if (mcp-server-security--is-sensitive-file data)
+          (funcall orig-fn operation data)
+        'yes))
+    (advice-add 'mcp-server-security--prompt-permission :around #'em/mcp-auto-approve)
     (add-hook 'emacs-startup-hook #'mcp-server-start-unix))
 #+end_src
 
