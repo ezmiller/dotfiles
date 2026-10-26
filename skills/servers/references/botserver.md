@@ -309,11 +309,11 @@ Two halves: the **server** (three containers, `modules/multica.nix`) and the **d
 (`multicad` user, `modules/multicad.nix` + `home/multicad.nix`) that runs Claude/Codex
 agents. Three things are pinned *independently* — know which one you're looking at:
 
-| Thing | Pinned in | As of 2026-08-07 |
+| Thing | Pinned in | As of 2026-10-25 |
 |---|---|---|
-| `claude-code`, `codex` | `nixpkgs-agents` flake input + overlay in `flake.nix` | 2.1.222 / 0.146.0 |
-| `multica` CLI | `version` + sha256 in `modules/multicad.nix` | 0.3.17 |
-| server containers | `version` in `modules/multica.nix` | 0.3.17 |
+| `claude-code`, `codex` | `nixpkgs-agents` flake input + overlay in `flake.nix` | 2.1.280 / 0.156.1 |
+| `multica` CLI | `version` + sha256 in `modules/multicad.nix` | 0.7.0 |
+| server containers | `version` in `modules/multica.nix` | 0.7.0 |
 
 > **⚠️ The dashboard's "Update" button can never work here (cost a detour 2026-08-07).**
 > Runtime → Diagnostics shows `CLI Version: 0.3.17 → v0.4.21` with an Update button. It
@@ -334,15 +334,16 @@ ssh ethan@botserver 'sudo -u multicad XDG_RUNTIME_DIR=/run/user/$(id -u multicad
 # confirm: look for `agent version detected … name=claude version="…"`
 ```
 
-Daemon logs are drowned in `heartbeat:` lines — always `grep -v "heartbeat:"` first.
+Daemon logs live in `~multicad/.multica/daemon.log` (rotated `.gz` beside it), **not** the
+journal — the journal only shows sudo lines. They are drowned in `heartbeat:` lines, so
+always `grep -v "heartbeat:"` first.
 
 **The CLI and the server must move together.** Never bump the CLI alone; that skews it
 against the backend. Staged procedure (snapshot → bump → verify migrations → smoke test)
-lives in the repo at `docs/multica-upgrade-2026.5.md`. The 0.3.17 → 0.4.21 jump was
-**deliberately deferred 2026-08-07**: ~115 migrations with a visibly messy history
-(prefix collisions, renumberings, a self-host backfill blocker), against no exploitable
-issues on a private tailnet-only instance. Only real cost of waiting: Opus 5 is missing
-from the runtime catalog (upstream added it in v0.4.11).
+lives in the repo; the newest runbook is `docs/multica-upgrade-2026.10.md` (0.5.1 →
+0.7.0 on 2026-10-25, three server steps, all clean). Read it first. The usual trigger for
+an upgrade is the desktop app self-updating past the server — it breaks when it calls
+endpoints the older server lacks.
 
 **⚠️ Known-broken: PK repo cache fetches.** `pk-shopify-theme`, `pk-workers-monorepo` and
 `pk-skills` are registered with **HTTPS** URLs, but `multicad` only holds an SSH key
