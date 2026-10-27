@@ -371,6 +371,7 @@ from OpenClaw. Runs the **WhatsApp** agent (**Saul**) that replaced the retired 
 - **WhatsApp allowlist lives in TWO spots — keep them in sync:** `.env`
   `WHATSAPP_ALLOWED_USERS` and `config.yaml` `whatsapp.allow_from` (both are
   comma-separated phone numbers + LIDs). Restart the gateway after editing either.
+- **Group is mention-only** (`require_mention` + `mention_patterns`). ⚠️ `.env` overrides YAML — keep the group out of `WHATSAPP_FREE_RESPONSE_CHATS` there.
 - **Egress:** WhatsApp/Meta reachability rides the retained broad WhatsApp CIDRs (see
   Egress note); hermes also needs `models.dev` — both restored after the Phase-4 tighten.
 - **Model accounts rotate (credential pool, added 2026-10-02):** `openai-codex` holds TWO
