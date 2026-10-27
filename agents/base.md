@@ -74,7 +74,6 @@ repos:
   | `- [ ] task`    | `- [ ] task` (same)               |
 - Only create or edit your own tracking pages. Never edit journals or
   other pages in the notes repo.
-- Non-doc outputs (CSVs, scripts) stay in `~/.tracking/`.
 - Never link code, comments, or skills to a tracking page — not every
   reader can reach the notes repo. If code needs to explain *why*,
   write that part up as a repo doc in `docs/` and link that instead.
