@@ -10,6 +10,6 @@ ssh <host> 'sudo -u <db-owner> python3 - --db <path> --from YYYY-MM-DD --to YYYY
 
 It prints one line per user message: `ISO-time<TAB>topic<TAB>first 120 chars`, skipping system noise (watch notices, memory flushes, heartbeats). Pipe that to `scripts/stretches.py`.
 
-Lines like "[review-page] … Ethan acted on this packet's review page" are written by the system but record the user's own actions: keep them.
+Lines like "[review-page] … <user> acted on this packet's review page" are written by the system but record the user's own actions: keep them.
 
 The settings give the `--keys` patterns. Scope by topic first (the settings list which topics belong to the project). Then drop individual off-topic lines by judgment — an in-scope topic still gets stray messages, and a general topic gets some in-scope ones. Edit the script's output before piping it to `stretches.py`.
