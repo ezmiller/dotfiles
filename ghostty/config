@@ -4,8 +4,8 @@ macos-option-as-alt = left
 window-padding-x = 5
 window-padding-y = 5
 
-# Scrollback (increased for long agent outputs)
-scrollback-limit = 100000
+# Scrollback: 1.4 default is 50 MB (compressed), plenty for long agent outputs.
+# Note: the limit is in bytes; use scrollback-limit-lines to cap by line count.
 
 # Font settings
 font-family = "Hack"
@@ -50,12 +50,13 @@ shell-integration = detect
 shell-integration-features = cursor,sudo,title
 
 # Clipboard behavior
-copy-on-select = true
+copy-on-select = both
 clipboard-paste-protection = false
 clipboard-read = allow
 
 # Image pasting in Claude Code: Use Ctrl+V (not Cmd+V) to paste images.
-# Ghostty doesn't yet support OSC 5252 for image clipboard data.
+# Ghostty 1.4 added the Kitty clipboard protocol (OSC 5522), so Cmd+V may
+# work once Claude Code supports it too.
 # Tracking: https://github.com/ghostty-org/ghostty/discussions/10099
 #           https://github.com/ghostty-org/ghostty/discussions/8275
 
