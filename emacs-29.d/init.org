@@ -1483,6 +1483,16 @@ once, on file creation."
               (unless (bolp) (insert "\n"))
               (insert "* 11:00 Standup\n** Yesterday\n** Today\n** Blockers\n** Notes\n"))))
         (advice-add 'org-journal--carryover :after #'em/org-journal--append-standup)
+
+        (defun em/org-journal--save-after-carryover (&rest _)
+          "Save the journal buffer right after carryover.
+org-journal saves the previous day's file after removing the carried
+items, but never the new file.  Until it is saved, the carried items
+exist only in memory."
+          (when (buffer-file-name) (save-buffer)))
+        ;; Added after the standup advice, so it runs after the Standup block
+        ;; is appended and the saved file is complete.
+        (advice-add 'org-journal--carryover :after #'em/org-journal--save-after-carryover)
         ;;(setq org-journal-after-header-create-hook #'org-id-get-create)
         )
 #+end_src
