@@ -37,6 +37,21 @@ One companion tool sits outside the MCP: the **Amazon order scraper** at
 
 ---
 
+## Before starting: read the reconciliation log
+
+Ethan keeps a running log of these sessions at
+`~/org/self/tracking/finances/ynab_reconciliation_log.org` (org-mode). Read it
+first. Its **Standing context** section explains how money moves between the
+budgets (Personal → Joint, Leah's LLC money in Amex Business Checking, which
+card autopays from where), his conventions, and recurring payees that are easy
+to misidentify. The newest entry under **Sessions** ends with open items to
+carry forward — mention any that are still relevant before diving in.
+
+The log lives in Ethan's personal notes: never quote or share it outside the
+session, and never run git in `~/org`.
+
+---
+
 ## Phase 1: Pick the budget
 
 YNAB MCP defaults to `YNAB_BUDGET_ID` when no `budgetId` is passed, but Ethan
@@ -224,6 +239,19 @@ After each account, ask whether to continue with the next one or stop.
 
 ---
 
+## Wrap up: add a session entry to the log
+
+Before ending, add a new dated entry at the top of the **Sessions** section of
+`~/org/self/tracking/finances/ynab_reconciliation_log.org`, following the
+format of earlier entries: what was asked, what changed in YNAB (budget +
+key amounts), anything learned, and an **Open items (carry forward)** checklist.
+Tick off earlier open items that this session resolved. If you learned
+something that will matter every time (a new money flow, convention, or a
+recurring payee that's easy to misread), update **Standing context** instead
+of burying it in the session entry. Write org syntax, not Markdown.
+
+---
+
 ## General guidance
 
 - **Surface budget and account context** in every reply. "Updating Household
@@ -236,6 +264,16 @@ After each account, ask whether to continue with the next one or stop.
 - **Money values are in dollars** in this MCP (not milliunits). `-10.99` is a
   $10.99 outflow.
 - **Dates are ISO** (`2026-05-16`).
+- **`ynab_get_transactions` only looks back ~12 months** unless you pass
+  `sinceDate`. Pass an early date when you need full history (e.g. a category
+  or account balance going back years).
+- **Re-pointing a transfer needs `payeeId`.** Setting `payeeName` on a
+  transfer is silently ignored; look up the transfer payee (or a normal
+  payee) with `ynab_list_payees` and pass its ID.
+- **Transfers YNAB guessed wrong** (bank shows money going to savings or
+  Joint, YNAB shows a transfer into checking) leave a fake uncleared
+  transaction in the other account. Confirm the real path and the bank
+  balance with Ethan before fixing; deleting a duplicate needs his explicit OK.
 
 ## What this skill is NOT for
 
