@@ -356,7 +356,10 @@ Fix: SSH URLs in the workspace config, or `url.<ssh>.insteadOf` in multicad's gi
 
 Separate agent gateway under its own **`hermes`** user (uid 1003) — a different codebase
 from OpenClaw. Runs the **WhatsApp** agent (**Saul**) that replaced the retired openclaw
-`family` bot. Model: `openai-codex/gpt-5.4`.
+`family` bot. Model: `openai-codex/gpt-5.6-luna`. **Hermes v0.23.0 stable since 2026-11-08** —
+`hermes` is the launcher `~/src/hermes-agent/.hermes/bin/hermes` (pinned Python in `~/.hermes/tools`;
+old venv retired). Run CLI as `ssh hermes@botserver 'SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt ~/src/hermes-agent/.hermes/bin/hermes …'`.
+Upgrades: botserver-nix `docs/hermes-upgrade-2026-11.md` — never a bare `hermes update` without reading it.
 
 - **Connection:** `ssh hermes@botserver` directly for `systemctl --user` (same rule as
   openclaw — `su -`/`sudo -u` don't get a systemd session). `ethan` (sudo) can read state
@@ -371,14 +374,18 @@ from OpenClaw. Runs the **WhatsApp** agent (**Saul**) that replaced the retired 
 - **WhatsApp allowlist lives in TWO spots — keep them in sync:** `.env`
   `WHATSAPP_ALLOWED_USERS` and `config.yaml` `whatsapp.allow_from` (both are
   comma-separated phone numbers + LIDs). Restart the gateway after editing either.
-- **Group is mention-only** (`require_mention` + `mention_patterns`). ⚠️ `.env` overrides YAML — keep the group out of `WHATSAPP_FREE_RESPONSE_CHATS` there.
+- **Groups:** `whatsapp.group_allow_from` ends in `,*` (wildcard since 2026-11-01), so any group
+  works; strangers are kept out because the *sender* must be in `WHATSAPP_ALLOWED_USERS`. Family
+  groups live in the "The Family Game" Community (formerly "Wacky World"). When Saul speaks in a
+  group is decided by `SOUL.md` ("In the group chat", replies `NO_REPLY` to stay silent), not by
+  config. ⚠️ `.env` overrides YAML for `WHATSAPP_FREE_RESPONSE_CHATS`.
 - **Egress:** WhatsApp/Meta reachability rides the retained broad WhatsApp CIDRs (see
   Egress note); hermes also needs `models.dev` — both restored after the Phase-4 tighten.
-- **Model accounts rotate (credential pool, added 2026-10-02):** `openai-codex` holds TWO
-  ChatGPT logins — main (priority 0) and `eitanveleah` (priority 1). When one hits its
+- **Model accounts rotate (credential pool, added 2026-10-02):** `openai-codex` holds THREE
+  ChatGPT logins (Nov 2026: `premium` priority 0, `openai-codex-oauth-1`, `eitanveleah`). When one hits its
   limit, hermes moves to the next. Fallback after that is OpenRouter (`minimax/minimax-m3`).
   The dashboard can't show or edit this; use the CLI (keep `~` inside the quotes):
-  - See state: `ssh hermes@botserver '~/.hermes/venvs/hermes/bin/hermes auth list'` —
+  - See state: `ssh hermes@botserver 'SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt ~/src/hermes-agent/.hermes/bin/hermes auth list'` —
     shows `rate-limited … (Xd left)` per account; `←` marks the one in use.
   - Also `auth reset|remove openai-codex [label]`. `auth status` only says logged in/out.
   - **Add an account:** `auth add openai-codex --type oauth --label <name> --no-browser`
@@ -386,6 +393,23 @@ from OpenClaw. Runs the **WhatsApp** agent (**Saul**) that replaced the retired 
     and read the code from the log (without the env var the log stays empty), then
     restart the gateway. Don't `pkill -f "hermes auth add"` over ssh — it kills the
     ssh shell itself (exit 255).
+- **v0.23 tuning (2026-11-08, backup `config.yaml.bak-20261108-v023-tuning`):**
+  - `curator.stale_after_days: 30` / `archive_after_days: 90` — v0.23 dropped the defaults to
+    14/30, which would archive seasonal skills (fantasy baseball) over the winter.
+  - `curator.consolidate: true` — weekly LLM skill merging (needs ≥v0.23; v0.21.1 had a bug).
+    Undo a run: `hermes curator rollback`. Preview: `hermes curator run --consolidate --dry-run`.
+  - `connections` removed from the whatsapp toolset (`hermes tools disable --platform whatsapp
+    connections`) — the update added it; it auto-creates a Nous account and needs blocked hosts.
+  - `auth.adopt_external_logins: false` — use only the pool above, never stray Codex logins.
+  - `cron.catch_up_missed: false` — after downtime, skip missed runs instead of firing late.
+  - Watch: `web.keyless_rescue`/`keyless_fallback` are on — a failed Brave call may retry on
+    Exa/Parallel/Firecrawl/Keenable (only Exa is allow-listed). Turn off if `EGRESS_DENIED` shows them.
+- **Useful v0.23 commands:** `hermes sessions refresh-prompts` (apply SOUL.md/skill edits to the
+  ongoing WhatsApp chats without `/new`) · `hermes cron run|cancel <job>` · `hermes curator
+  status|pin|lock|list-archived|restore` (lock also blocks Saul's own learning — not used) ·
+  `hermes doctor` · `hermes send --mention`. The old `browser_*` tools are gone (only
+  `browser_exec`); no family skill used them.
+- **Known gap:** `cua-driver` (computer-use) won't install — needs `libX11`, absent under nix-ld.
 - **"Saul is silent" first check:** gateway logs for `429 … quota exhausted`. The ChatGPT
   usage page's *5-hour* bar can read 100% while the *weekly* bar is 0% — the weekly one
   is what's blocking. `openai-api` showing "logged out" is irrelevant (unused API-key
