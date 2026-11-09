@@ -44,6 +44,8 @@
     ~/.vim:
     ~/.zsh:
     ~/.zshrc:
+    ~/.agents/.skill-lock.json:
+      path: skills/installed-lock.json
     ~/.config/ghostty/config:
       path: ghostty/config
 
@@ -54,3 +56,4 @@
   - [git submodule sync --recursive, Synchronize submodule remote Urls]
   - [git submodule update --init --recursive, Initialize/Update submodules]
   - [brew bundle, Installing package from Brewfile]
+  - [bin/restore-skills, Restoring skills.sh skills from lock file]
