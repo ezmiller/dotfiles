@@ -59,6 +59,8 @@
     ~/.claude/CLAUDE.md:
       path: agents/dist/CLAUDE.md
     # Claude Code skills
+    ~/.agents/.skill-lock.json:
+      path: skills/installed-lock.json
     ~/.claude/skills/api-upgrade:
       path: pk-skills/skills/api-upgrade
     ~/.claude/skills/financial-aid-application:
