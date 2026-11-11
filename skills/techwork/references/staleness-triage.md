@@ -13,7 +13,7 @@ of the morning briefing (light mention) and as a standalone cleanup exercise.
 
 **Progress signals (task is NOT stale if any are true):**
 - LOGBOOK entry with timestamp in last 7 days
-- Body text changed between journal files (new bullets, prose, links)
+- Body text or `Log` subtree changed between journal files (new bullets, prose, links)
 - State change (e.g., TODO → STARTED) in last 7 days
 - Mentioned in a standup "Today" or "Yesterday" section in last 3 days
 - Has a sub-task that was marked DONE recently

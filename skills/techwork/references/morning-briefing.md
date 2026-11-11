@@ -118,8 +118,8 @@ at yesterday's file and collect signals in priority order:
 3. **State changes and LOGBOOK entries** — tasks that moved from TODO → STARTED, or
    STARTED → DONE yesterday (check LOGBOOK timestamps). These signal actual work happened.
 
-4. **Inline notes added to tasks** — body text under STARTED tasks (bullets, decisions,
-   blockers). Shows what was actively being worked on even if no state change.
+4. **Inline notes added to tasks** — the `Log` child heading under STARTED tasks (and, on
+   older items, loose body text): bullets, decisions, blockers. Shows what was actively being worked on even if no state change.
 
 5. **Meeting or 1:1 notes** — headings that look like meetings imply context that may be
    relevant to what's next.
@@ -368,8 +368,8 @@ PR)?" Reviewed/merged → mark DONE; still pending → leave as TODO and note an
 
 For each answer:
 - State change (unblocked, finished, new info) → update that heading now: change the
-  TODO/STARTED/BLOCKED/DONE keyword, append a dated note in Ethan's voice, add a `LOGBOOK`
-  line. Only write changes he explicitly confirms (same guardrail as Step 2.5).
+  TODO/STARTED/BLOCKED/DONE keyword, add a dated note in Ethan's voice at the top of the item's `*** Log` child heading
+  (create it if missing; see "Notes on an item" in `SKILL.md`), add a `LOGBOOK` line. Only write changes he explicitly confirms (same guardrail as Step 2.5).
 - New blocker → capture verbatim for `** Blockers` in the standup.
 - Nothing new → move on immediately.
 

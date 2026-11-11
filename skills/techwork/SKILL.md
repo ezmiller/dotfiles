@@ -60,6 +60,40 @@ Journal files use org-mode syntax:
 - `[YYYY-MM-DD Day HH:MM]` — timestamps
 - `* HH:MM Heading` — time-marked headings (e.g., `* 11:00 Standup`, `* 09:22`)
 
+### Notes on an item: the `Log` child heading
+
+Dated notes about a task or project go in a **`Log` child heading**, never loose in the task's
+body. Loose notes pile up above the item's TODO children and push them off-screen; a `Log`
+heading folds to one line so the TODOs stay visible.
+
+```org
+** STARTED [#A] Project title :tag:
+One to three lines of description, links to tracking docs/artifacts. Stays in the body.
+*** Log
+- [2026-11-10 Tue] Newest note first.
+- [2026-11-09 Mon] Older note.
+**** [2026-07-24 Fri] Long dated write-up that needs its own heading (one level below Log)
+*** TODO First real child task
+*** DONE Another child task
+:LOGBOOK:
+- State "DONE" from "TODO" [2026-10-27 Tue]
+:END:
+```
+
+Rules:
+- **Body** (directly under the item's headline) = short description + links only. No dated notes.
+- **`*** Log`** is the first child (one level below the item), plain heading — no TODO keyword.
+  Create it the first time a note is added to an item. Notes are `- [YYYY-MM-DD Day] text`
+  bullets, **newest first**. A note long enough to want a heading goes under Log, one level
+  deeper (`****`).
+- **Child tasks** (`TODO`/`STARTED`/`DONE`) always come *after* the `Log` subtree, at the same
+  level as `Log`. Never put a task heading inside Log.
+- `LOGBOOK` drawers stay on the heading they describe — don't move them into Log.
+- Bare one-line `TODO`s with no history don't need a `Log`.
+- Don't mass-migrate old items. Convert an item to this shape when you next write a note on it.
+- To read an item's history, read its `Log` subtree (and, on older items, any dated bullets in
+  the body).
+
 ## JIRA Ticket Conventions
 
 Tickets follow the pattern `EPD-XXXX` (e.g., `EPD-2466`); some are `PW-XXXX`. They appear:
@@ -128,7 +162,7 @@ Ethan explicitly asks you to edit a specific file or section.
 When edits ARE requested:
 - Preserve his voice, style, and formatting
 - Prefer small, incremental changes
-- For journal entries: append under the relevant heading (or today's date heading if new)
+- For journal entries: add under the relevant item's `Log` child heading (or today's date heading if new)
 - For pages: edit the specific section, not the whole file
 - Ask before making structural changes
 
@@ -159,9 +193,10 @@ using today's date. Read it and summarize open tasks (TODO/STARTED) and any nota
 **What did I work on recently?** — Read the last 3-5 journal files (sorted by date
 descending). Summarize STARTED/DONE items and any standup notes or 1:1 notes.
 
-**Adding to today's journal** — When asked to log something, append a new `* TODO` or dated
-note under today's journal heading. Use the user's phrasing and org-mode conventions. Confirm
-before writing.
+**Adding to today's journal** — When asked to log something, append a new `* TODO` or, for a note
+on an existing item, a dated bullet at the top of that item's `*** Log` child heading (create
+it if missing — see "Notes on an item" above). Use the user's phrasing and org-mode
+conventions. Confirm before writing.
 
 **Status of a project/system** —
 1. Check relevant page under `pages/`

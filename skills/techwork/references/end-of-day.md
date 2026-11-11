@@ -150,7 +150,8 @@ one" or "skip #3, change #2's note." Apply exactly what he approved:
 
 - Update task states (TODO → DONE, etc.)
 - Add LOGBOOK entries with timestamps
-- Append notes under task bodies
+- Add notes as dated bullets (newest first) at the top of each item's `*** Log` child heading,
+  creating it if missing — never loose in the task body (see "Notes on an item" in `SKILL.md`)
 - Add new entries for previously unlogged work
 - Mark stale tasks he chose to close as `DONE` with a "Deprioritized, closing" note
 - Write the `* EOD Notes` section
