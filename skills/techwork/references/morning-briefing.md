@@ -102,6 +102,11 @@ cause you to miss DONE tasks, stale items, or carried-over work that Ethan has a
 closed out today.
 
 **Step 2: Gather standup context**
+**Speed:** the read tool truncates large output (a ~570-line journal got cut after ~330 lines,
+forcing a second read). Get the line count first (`wc -l`), then read today's file in chunks of
+~150 lines **in parallel in one step** — still in full, but without a truncate-and-reread. Read
+yesterday's file in the same step.
+
 
 Ethan will write his own standup — your job is to surface what he needs to remember. Look
 at yesterday's file and collect signals in priority order:
@@ -158,9 +163,13 @@ Jira issue key, multica `metadata.jira_key`, GitHub PR titles/branches (`EPD-259
 journal headlines. Match on it (PR number as secondary link). A unit with no EPD key (RFDs,
 chores, planning spikes) links by PR number or title.
 
-Gather all of these in parallel (multica + gh are local; Jira via MCP; Kingkong over SSH per
-`references/engineering-manager.md` — it supplements the raw Multica pull with decisions and
-chain-level state):
+Gather all of these in parallel, in one step (multica + gh are local; Jira via MCP). Kingkong
+is two things per `references/engineering-manager.md`: **`kk-board` run directly** (about half
+a second, gives board state by epic with Jira keys), and the **agent asked a narrow question,
+detached, with its output saved to a file** (about 1.5 minutes; start it in this same step and
+read the file later). Never ask the agent for ticket lists — that is what made it take 5 minutes.
+**If the agent returns nothing, that must be the first line of the briefing** (see Step 3);
+never let a missing Kingkong section go unmentioned.
 
 ```bash
 # 1. Multica board — the whole primarykids workspace, not a filtered slice.
@@ -201,6 +210,9 @@ means Jira is internally consistent with itself.
 status.** Git is ground truth. A PR **merged** means `DONE`. A PR **open** means in
 progress. Before reporting any ticket as newly `DONE`, newly `REVIEW`, or reopened based
 on Jira, confirm it against git (`gh search prs`, `gh pr view`, commit history) — if there's
+**Always pass a narrow `fields` list and never request `description`**: pulling descriptions for
+a single epic's children returned ~25k tokens of text nobody needed. For children use
+`fields="summary,status,assignee,updated"`.
 no corresponding PR/commit activity, say so and ask rather than asserting the Jira status
 as fact. When Multica and Jira disagree and neither is confirmed by git, prefer Jira's
 category over Multica's, but still flag it as unconfirmed rather than authoritative.
@@ -291,6 +303,12 @@ If there was an EOD section or a standup "Today" list, those are the highest-sig
 — lead with them. If there's nothing useful, say so briefly.
 
 ---
+**Failed sources come first.** Before anything else, if any gather source failed or returned
+nothing (Kingkong, Jira, `gh`, `multica`, Wispr), open with one line per failure, e.g.
+"⚠️ Kingkong gave no answer (output was lost / timed out). His conversation-only decisions and
+'waiting on you' items are missing from everything below." Say what is missing and offer a
+re-run. A failure mentioned only in passing, or inferred later, is a skill violation.
+
 
 **📋 Task snapshot**
 
