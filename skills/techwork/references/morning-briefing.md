@@ -25,6 +25,7 @@ Contents:
 - Step 2 — Gather standup context
 - Step 2.5 — Reconcile work across systems, then audit the journal
 - Step 3 — Produce the briefing output (summary, then interview, then standup)
+- Step 3.5 — Roadmap check (dated, per-day timeline)
 - Step 4 — Draft the standup
 
 **Step 0: Ensure today's journal file exists**
@@ -101,12 +102,12 @@ journals, so the beginning of the file is just as important as the end. A partia
 cause you to miss DONE tasks, stale items, or carried-over work that Ethan has already
 closed out today.
 
-**Step 2: Gather standup context**
 **Speed:** the read tool truncates large output (a ~570-line journal got cut after ~330 lines,
 forcing a second read). Get the line count first (`wc -l`), then read today's file in chunks of
 ~150 lines **in parallel in one step** — still in full, but without a truncate-and-reread. Read
 yesterday's file in the same step.
 
+**Step 2: Gather standup context**
 
 Ethan will write his own standup — your job is to surface what he needs to remember. Look
 at yesterday's file and collect signals in priority order:
@@ -143,7 +144,7 @@ agree, so reconcile all of them and surface every gap:
 | **The journal** | **The only complete record** | Everything Ethan works — including non-ticketed work (Helpdesk, vendor/support like Whiplash, investigations, docs) that exists *nowhere else*. |
 | **Jira** | Authoritative on **status** | Tickets assigned to him. Wins when a ticket's status disagrees with Multica — but is **not** a complete list of his work. |
 | **Multica** (`primarykids`) | Subset | The slice he's actively agent-working. May lag or diverge from Jira. |
-| **GitHub** (the repos below) | What landed | Merged/open PRs — catches ticketed and non-ticketed code work. |
+| **GitHub** (all PrimaryKids repos) | What landed | Merged/open PRs — catches ticketed and non-ticketed code work. |
 
 **Reconciliation runs one direction: systems → journal.** The external systems are *inputs*
 that (a) confirm or correct journal items that carry an `EPD`/`PW` key, and (b) surface keyed
@@ -180,21 +181,38 @@ multica issue list --limit 100 --output json
 #    TEST/harness rows, EPD-999x, and status "cancelled".
 
 # 2. YOUR GitHub work (--author @me = Ethan's manual PRs AND his agents', which
-#    push under his account; teammates excluded). Hardcoded repo list:
-gh search prs --author @me \
-  --repo PrimaryKids/pk-shopify-theme \
-  --repo PrimaryKids/pk-workers-monorepo \
-  --repo PrimaryKids/pk-skills \
-  --repo PrimaryKids/pk-web-inventory \
-  --repo PrimaryKids/rfd \
+#    push under his account; teammates excluded). Search the whole org, not a fixed repo
+#    list: his work also lands in pk-options-admin, terraform, pk-knowledge-base, etc.
+gh search prs --author @me --owner PrimaryKids \
   --updated ">=$(date -v-4d +%Y-%m-%d)" \
   --json repository,number,title,url,state,isDraft,createdAt,updatedAt,closedAt
 #    `state`: "merged" | "open" | "closed". (macOS date; on Linux use `date -d`.)
 #    To confirm a specific merge: gh pr view <n> --repo PrimaryKids/<repo> --json state.
 ```
 
+**Code reviews Ethan is doing for teammates.** GitHub's "review requested" list is almost
+always empty: the team asks for reviews in Slack, not GitHub. Check all three of these:
+
+1. **Slack #pool-party:** search `in:#pool-party after:<last entry date>`. Teammates post
+   PR links there, and a bot posts "Ethan Miller is starting their review!" and "Ethan Miller has given their approval!". A
+   start with no approval means a review in progress. An approval means done, and it goes in
+   the standup's Yesterday.
+2. **Kingkong's code-review topic in the Primary Kids group:** add "anything in the
+   code-review topic of the Primary Kids group" to the "waiting on Ethan" part of the agent
+   prompt (see `references/engineering-manager.md`). Kingkong also makes a Multica
+   "Review PR #N" row for each review packet it builds.
+3. **GitHub**, to confirm state:
+   `gh pr view <n> --repo PrimaryKids/<repo> --json state,mergedAt,reviews`.
+
+Each review becomes one entry under `* Code Review` (STARTED while in progress, DONE once
+approved, with a LOGBOOK line citing the #pool-party or GitHub evidence). A Multica review row
+still "in progress" after the PR merged is stale: mention it as housekeeping, not a finding.
+
 For Jira, use the MCP tool (see `references/jira-cross-reference.md`):
 `jira_search(jql="assignee = currentUser() AND sprint in openSprints()", fields="key,summary,status,updated")`.
+**Always pass a narrow `fields` list and never request `description`**: pulling descriptions for
+a single epic's children returned ~25k tokens of text nobody needed. For children use
+`fields="summary,status,assignee,updated"`.
 Note Jira uses custom statuses — map by **category**: `To Do`/`Backlog` → `TODO`,
 `In Progress`/`Blocked` → `STARTED`/`BLOCKED`, `In Review` → `REVIEW`, `Done`/`Nope` → `DONE`
 (closed; "Nope" = closed-no-action).
@@ -210,9 +228,6 @@ means Jira is internally consistent with itself.
 status.** Git is ground truth. A PR **merged** means `DONE`. A PR **open** means in
 progress. Before reporting any ticket as newly `DONE`, newly `REVIEW`, or reopened based
 on Jira, confirm it against git (`gh search prs`, `gh pr view`, commit history) — if there's
-**Always pass a narrow `fields` list and never request `description`**: pulling descriptions for
-a single epic's children returned ~25k tokens of text nobody needed. For children use
-`fields="summary,status,assignee,updated"`.
 no corresponding PR/commit activity, say so and ask rather than asserting the Jira status
 as fact. When Multica and Jira disagree and neither is confirmed by git, prefer Jira's
 category over Multica's, but still flag it as unconfirmed rather than authoritative.
@@ -288,6 +303,12 @@ before drafting the standup. Keep every list to ~5 items; fold the rest into the
 rather than a report. Think of it as: *here's what I found, here's where things
 stand — what do you want to add?* The standup comes after that exchange, not before.
 
+**Failed sources come first.** Before anything else, if any gather source failed or returned
+nothing (Kingkong, Jira, `gh`, `multica`, Wispr), open with one line per failure, e.g.
+"⚠️ Kingkong gave no answer (output was lost / timed out). His conversation-only decisions and
+'waiting on you' items are missing from everything below." Say what is missing and offer a
+re-run. A failure mentioned only in passing, or inferred later, is a skill violation.
+
 Output in this order:
 
 ---
@@ -303,12 +324,6 @@ If there was an EOD section or a standup "Today" list, those are the highest-sig
 — lead with them. If there's nothing useful, say so briefly.
 
 ---
-**Failed sources come first.** Before anything else, if any gather source failed or returned
-nothing (Kingkong, Jira, `gh`, `multica`, Wispr), open with one line per failure, e.g.
-"⚠️ Kingkong gave no answer (output was lost / timed out). His conversation-only decisions and
-'waiting on you' items are missing from everything below." Say what is missing and offer a
-re-run. A failure mentioned only in passing, or inferred later, is a skill violation.
-
 
 **📋 Task snapshot**
 
@@ -411,6 +426,104 @@ just draft it." Only apply journal changes he explicitly confirms.
 
 ---
 
+**Step 3.5: Roadmap check**
+
+Each journal has a `* Roadmap` section: a ~6-week timeline of Ethan's priorities, so he can
+see and adjust his time frame. **Every day keeps its own copy.** Past days' roadmaps are a
+history of how the plan shifted, so never edit or remove a roadmap in a past journal. The
+heading has no TODO keyword, so org-journal carryover leaves it where it is.
+
+1. **Start from the last roadmap.** Find the most recent journal that has a `* Roadmap`
+   section and copy it into today's file at the **top**, right after the `#+` header lines and
+   before `* Active` (Ethan moved it there). If none exists,
+   build the first one from Active items with dates, recent 1:1 commitments, and known
+   calendar events.
+2. **Roll the columns forward.** The first column is the current week (Monday's date). If a
+   new week started, drop past weeks and add weeks at the end so there are 6.
+3. **Propose updates from the briefing.** Use what the interview and reconciliation turned
+   up, like a finished item (remove its row), a new commitment with a date, a slipped due
+   date, or a new calendar disruption. Show the proposed table, then ask one question:
+   "Anything shift on the timeline?"
+4. **Write today's copy only after Ethan confirms.** Put a new `Changes:` line at the top
+   with what moved and why, e.g.
+   `Changes: [2026-11-12] Migration tool due 11/18 → 11/25 (hackathon overlap).`
+   Keep only today's line. Older lines stay in older journals. If nothing changed, write
+   `Changes: [date] No changes.`
+
+**Format.** A plain org table that reads as-is in org mode, with no image or rendering step.
+Ethan's top requirement is that it's easy to read with perfectly aligned columns. Copy this
+template exactly:
+
+```org
+* Roadmap
+Changes: [2026-11-12] Migration tool due 11/18 → 11/25 (hackathon overlap).
+| Priority        | Due     | 11/9  | 11/16 | 11/23 | 11/30 | 12/7  | 12/14 |
+|-----------------+---------+-------+-------+-------+-------+-------+-------|
+| Migration tool  | 11/25   | █████ | ░░░░░ | █████ |       |       |       |
+| SchemaApp       | ongoing | ░░░░░ | ░░░░░ | ░░░░░ | ░░░░░ | ░░░░░ | ░░░░░ |
+| Unification doc | 11/30   | ░░░░░ |       | ░░░░░ |       |       |       |
+| Accessibility   | Jan     |       |       |       | █████ | █████ | █████ |
+|-----------------+---------+-------+-------+-------+-------+-------+-------|
+| Calendar        |         |       | ▚▚▚▚▚ | ▄▄▄▄▄ |       |       |       |
+| Code freeze     | 12/7    | ═════ | ═════ | ═════ | ═════ |       |       |
+█ focus  ░ background  ▚ hackathon  ▄ short week (holiday)  ═ code freeze
+```
+
+Alignment rules. These were tested by screenshot in Ethan's Emacs (Iosevka font, org tables
+drawn in a fixed-width font):
+- **Patterns, not words, in week cells.** Words like `Thx` were confusing, so every week
+  cell is one pattern repeated exactly 5 times, or blank. No partial bars.
+
+  | Pattern | Means                                   | Rows        |
+  |---------|-----------------------------------------|-------------|
+  | `█████` | focus that week                         | priorities  |
+  | `░░░░░` | background / ongoing that week          | priorities  |
+  | `▚▚▚▚▚` | hackathon                               | Calendar    |
+  | `▄▄▄▄▄` | short week (holiday, or part-week away) | Calendar    |
+  | `·····` | vacation / away the whole week          | Calendar    |
+  | `═════` | code freeze                             | Code freeze |
+
+  Blank priority cells in a vacation week. For a new kind of event, pick an unused pattern
+  from `▌ ┄ ─` (tested single-width in Ethan's font) that looks clearly different from the
+  others; Ethan rejected `▓` for vacation as too similar to `░`. Never use `■ ▪ ◆ ● ✓`: they
+  draw double-wide and break the columns. Check Ethan's personal calendar for trips and
+  days off with `gws calendar events list` (calendarId `primary`).
+- **The legend lists only the patterns that appear in the table**, on one line directly
+  under it, in the format `█ focus  ░ background  ▚ hackathon ...`, under 78 characters.
+- **The whole table must be 78 characters wide or less.** Ethan's journal window is only
+  about 84 characters wide, so a wider table wraps and becomes unreadable (the first version
+  was 91 wide and every row wrapped). The template above is 77 wide. Don't make any column
+  wider than it is there.
+- **`Due` is the second column, never the last.** A text column at the right edge drifted
+  out of line in testing. The last column must always be a week column.
+- Week headers are `M/D`, the Monday of that week (e.g. `11/9`). Due dates use the same
+  format (`12/2`). Use `ongoing` or a month (`Jan`) when there's no hard date.
+- Item names are 15 characters max, plain descriptions (`Migration tool`, not
+  `Seasonal product data migration tool`), with no ticket IDs or links.
+- Keep about 6 priority rows, not every TODO. Below the rule go the `Calendar` row
+  (hackathon, holidays, days off) and, while it applies, a `Code freeze` row.
+
+**Check alignment after writing.** Edit with `eca__edit_file`, padding every cell to its
+column's width. Then confirm all table lines have the same width (this reads the file on
+disk, so it won't disturb Ethan's open buffer):
+
+```elisp
+(with-temp-buffer
+  (insert-file-contents "~/org/techwork/journals/YYYY_MM_DD.org")
+  (goto-char (point-min))
+  (re-search-forward "^\\* Roadmap")
+  (let (ws)
+    (while (and (zerop (forward-line 1)) (not (looking-at "^\\* ")))
+      (when (looking-at "^|") (push (string-width (buffer-substring (point) (line-end-position))) ws)))
+    (delete-dups ws)))
+```
+
+One number back, 78 or less, means it's aligned and won't wrap. More than one number means
+fix the padding. A number over 78 means shorten names or cells. Fix either problem before
+moving on.
+
+---
+
 **Step 4: Draft the standup (after Ethan responds)**
 
 Once he's replied — even briefly — draft the standup. Combine what the notes say with
@@ -421,8 +534,19 @@ The standup has three subsections: `** Yesterday`, `** Today`, and `** Blockers`
 
 Use `* 11:00 Standup` as the heading unless Ethan specifies a different time.
 
-After showing the draft, ask if he wants it written to the file. If today's file already
-has a `* Standup` heading, skip drafting — he's already started it.
+After showing the draft, ask if he wants it written to the file. The new journal comes with
+empty Standup headings; only skip drafting if they already have bullets in them (he's
+started it).
+
+**If Ethan wants the standup first** ("write the standup as quickly as possible, interview
+after"), still run the Step 2.5 gather before drafting: it takes about 2 minutes, mostly
+waiting on Kingkong. Skipping it on 11/12 put a wrong merge in Yesterday and missed a
+review he approved and the og-merged cleanup epic. If he can't wait even that long, say
+plainly in the draft which sources weren't checked.
+
+**Standup gotchas:** "Yesterday" means the last working day. Check merge times with
+`gh pr view --json mergedAt` before putting a merge there; a PR merged this morning goes
+under Today. Approved reviews from #pool-party belong in Yesterday too.
 
 **What to skip:** DONE items. Meeting notes or standup entries (not tasks). Blank `*  `
 spacer headings org-journal adds. Don't reproduce full task bodies unprompted.

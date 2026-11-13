@@ -72,9 +72,10 @@ output was lost, tell Ethan plainly that it was lost and why.
 > board state from kk-board, so do NOT list tickets or statuses. Since <last entry date> morning,
 > tell me ONLY: (1) decisions or agreements made with Ethan in conversation that are not visible
 > on the board or in GitHub, (2) what is waiting on Ethan right now (approvals, reviews,
-> choices), (3) anywhere what Ethan told you disagrees with the board, Jira or GitHub. Name items
-> by plain description with the ID in parens. Tag memory-only items (conversation). Under 150
-> words. End with one line on what you could not see.
+> choices), including anything in the code-review topic of the Primary Kids group, (3)
+> anywhere what Ethan told you disagrees with the board, Jira or GitHub. Name items by plain
+> description with the ID in parens. Tag memory-only items (conversation). Under 150 words.
+> End with one line on what you could not see.
 
 Section (1) — decisions only in conversation — is what no other source has. Its answers are
 claims, not facts: verify state against GitHub and Jira, and confirm who owns each action.

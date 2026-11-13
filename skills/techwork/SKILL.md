@@ -9,7 +9,8 @@ description: >
   "add to today's journal", "what tickets are in progress", "what did I do last week",
   or any variant of querying or updating their personal work log. ALWAYS trigger this skill
   for morning briefing requests: "brief me", "morning briefing", "what's my day look like",
-  "prep today's journal", "what carried over", "what should I work on today".
+  "prep today's journal", "what carried over", "what should I work on today". Also trigger
+  for roadmap/schedule requests: "update my roadmap", "what's my timeline", "adjust my schedule".
 ---
 
 # Techwork Notes Skill
@@ -175,7 +176,7 @@ matching file in full before running the workflow:
 
 | Recipe | Read | Triggers |
 |--------|------|----------|
-| **Morning Briefing** (incl. cross-system reconciliation) | `references/morning-briefing.md` | "brief me", "morning briefing", "morning review", "what's my day", "prep today's journal", "what carried over", "reconcile my work", "check overnight work", "what did the agents do" |
+| **Morning Briefing** (incl. cross-system reconciliation and the roadmap check) | `references/morning-briefing.md` | "brief me", "morning briefing", "morning review", "what's my day", "prep today's journal", "what carried over", "reconcile my work", "check overnight work", "what did the agents do". For just the roadmap ("update my roadmap", "what's my timeline", "adjust my schedule"), run only its Step 3.5 |
 | **End-of-Day Wrap-Up** | `references/end-of-day.md` | "wrap up", "end of day", "EOD", "close out today", "what did I do today", "log my day" |
 | **Staleness Triage** | `references/staleness-triage.md` | "what's stale", "stuck tasks", "what should I close", "triage my tasks", "what's been sitting around" |
 | **Jira Cross-Reference** (opt-in) | `references/jira-cross-reference.md` | "check jira", "sync with jira", "jira status", "compare jira", "what's out of sync", "ticket status" |
