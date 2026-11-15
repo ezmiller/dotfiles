@@ -86,6 +86,9 @@ cask "ghostty"
 # AWS Cli
 brew "awscli"
 
+# Snowflake CLI (`snow`), successor to SnowSQL
+brew "snowflake-cli"
+
 # Terraform for infrastructure as code
 brew "terraform"
 
