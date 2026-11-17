@@ -90,6 +90,9 @@ Rules:
 - **Child tasks** (`TODO`/`STARTED`/`DONE`) always come *after* the `Log` subtree, at the same
   level as `Log`. Never put a task heading inside Log.
 - `LOGBOOK` drawers stay on the heading they describe — don't move them into Log.
+- **Keep Log notes short.** One to three sentences: what Ethan worked on, where it
+  stands, what's next. Brief substance is fine. Full detail lives in RFDs, Kingkong
+  topics and tickets, so point there instead of copying it in.
 - Bare one-line `TODO`s with no history don't need a `Log`.
 - Don't mass-migrate old items. Convert an item to this shape when you next write a note on it.
 - To read an item's history, read its `Log` subtree (and, on older items, any dated bullets in

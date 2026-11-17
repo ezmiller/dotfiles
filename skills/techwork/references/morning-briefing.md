@@ -401,7 +401,7 @@ PR)?" Reviewed/merged → mark DONE; still pending → leave as TODO and note an
 
 For each answer:
 - State change (unblocked, finished, new info) → update that heading now: change the
-  TODO/STARTED/BLOCKED/DONE keyword, add a dated note in Ethan's voice at the top of the item's `*** Log` child heading
+  TODO/STARTED/BLOCKED/DONE keyword, add a short dated note in Ethan's voice (1–3 sentences; see "Keep Log notes short" in `SKILL.md`) at the top of the item's `*** Log` child heading
   (create it if missing; see "Notes on an item" in `SKILL.md`), add a `LOGBOOK` line. Only write changes he explicitly confirms (same guardrail as Step 2.5).
 - New blocker → capture verbatim for `** Blockers` in the standup.
 - Nothing new → move on immediately.
