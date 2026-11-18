@@ -1127,7 +1127,9 @@ Then we install each app seprately.
 *** Eval busy indicator
 CIDER's built-in spinner only shows in the REPL window's mode line. This
 shows "● eval Ns" at the left of every mode line while an eval is running
-(after 1s). Run =em/cider-busy-stop= if it ever gets stuck.
+(after 1s). A REPL that disconnects mid-eval never reports its evals done,
+so disconnecting resets the indicator. Run =em/cider-busy-stop= if it ever
+gets stuck anyway.
 #+begin_src emacs-lisp
   (require 'cl-lib)
   (defvar em/cider-busy-count 0)
@@ -1151,6 +1153,13 @@ shows "● eval Ns" at the left of every mode line while an eval is running
 
   (add-hook 'cider-before-eval-hook #'em/cider-busy-start)
   (add-hook 'cider-after-eval-done-hook #'em/cider-busy-stop)
+
+  (defun em/cider-busy-reset (&rest _)
+    "Clear the indicator entirely, whatever the count."
+    (setq em/cider-busy-count 1)
+    (em/cider-busy-stop))
+
+  (add-hook 'cider-disconnected-hook #'em/cider-busy-reset)
 
   (defun em/cider-busy-indicator ()
     (when em/cider-busy-start
