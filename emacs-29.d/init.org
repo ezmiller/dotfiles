@@ -1124,6 +1124,48 @@ Then we install each app seprately.
         (add-hook 'cider-repl-mode-hook #'company-mode)
         (add-hook 'cider-mode-hook #'company-mode)))
 #+end_src
+*** Eval busy indicator
+CIDER's built-in spinner only shows in the REPL window's mode line. This
+shows "● eval Ns" at the left of every mode line while an eval is running
+(after 1s). Run =em/cider-busy-stop= if it ever gets stuck.
+#+begin_src emacs-lisp
+  (require 'cl-lib)
+  (defvar em/cider-busy-count 0)
+  (defvar em/cider-busy-start nil)
+  (defvar em/cider-busy-timer nil)
+
+  (defun em/cider-busy-start ()
+    (when (zerop em/cider-busy-count)
+      (setq em/cider-busy-start (float-time)
+            em/cider-busy-timer (run-at-time 1 1 (lambda () (force-mode-line-update t)))))
+    (cl-incf em/cider-busy-count))
+
+  (defun em/cider-busy-stop ()
+    (interactive)
+    (setq em/cider-busy-count (max 0 (1- em/cider-busy-count)))
+    (when (or (zerop em/cider-busy-count) (called-interactively-p 'any))
+      (setq em/cider-busy-count 0)
+      (when em/cider-busy-timer (cancel-timer em/cider-busy-timer))
+      (setq em/cider-busy-timer nil em/cider-busy-start nil)
+      (force-mode-line-update t)))
+
+  (add-hook 'cider-before-eval-hook #'em/cider-busy-start)
+  (add-hook 'cider-after-eval-done-hook #'em/cider-busy-stop)
+
+  (defun em/cider-busy-indicator ()
+    (when em/cider-busy-start
+      (let ((s (floor (- (float-time) em/cider-busy-start))))
+        (when (>= s 1)
+          (concat (propertize (format "● eval %ds" s)
+                              'face '(:inherit warning :weight bold))
+                  "  ")))))
+
+  ;; Left side of every mode line (most buffers have a local
+  ;; `mode-line-format', but they all reference `mode-line-front-space').
+  (setq-default mode-line-front-space
+                '((:eval (if (display-graphic-p) " " "-"))
+                  (:eval (em/cider-busy-indicator))))
+#+end_src
 *** Flycheck Clj-Kondo Integration
 Enables squiggly lines under lint warnings / errors.
 #+begin_src emacs-lisp
