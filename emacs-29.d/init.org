@@ -1126,12 +1126,15 @@ Then we install each app seprately.
 #+end_src
 *** Eval busy indicator
 CIDER's built-in spinner only shows in the REPL window's mode line. This
-shows "● eval Ns" at the left of every mode line while an eval is running
-(after 1s). A REPL that disconnects mid-eval never reports its evals done,
+shows a sparkly "✦ eval ✧ Ns" at the left of every mode line while an
+eval is running (after 1s): twinkling stars, a rainbow shimmer across
+"eval", and seconds that heat up with time (blue <10s, yellow <30s,
+orange <60s, red after). A REPL that disconnects mid-eval never reports its evals done,
 so disconnecting resets the indicator. Run =em/cider-busy-stop= if it ever
 gets stuck anyway.
 #+begin_src emacs-lisp
   (require 'cl-lib)
+  (require 'color)
   (defvar em/cider-busy-count 0)
   (defvar em/cider-busy-start nil)
   (defvar em/cider-busy-timer nil)
@@ -1139,7 +1142,7 @@ gets stuck anyway.
   (defun em/cider-busy-start ()
     (when (zerop em/cider-busy-count)
       (setq em/cider-busy-start (float-time)
-            em/cider-busy-timer (run-at-time 1 1 (lambda () (force-mode-line-update t)))))
+            em/cider-busy-timer (run-at-time 1 0.1 (lambda () (force-mode-line-update t)))))
     (cl-incf em/cider-busy-count))
 
   (defun em/cider-busy-stop ()
@@ -1161,13 +1164,67 @@ gets stuck anyway.
 
   (add-hook 'cider-disconnected-hook #'em/cider-busy-reset)
 
+  (defconst em/cider-busy-sparkles
+    ["·" "⋆" "✧" "✦" "✶" "✦" "✧" "⋆"]
+    "Twinkle cycle for the stars, advanced every 0.1s.")
+
+  (defun em/cider-busy-rainbow (i tick)
+    "Hex color for character I at animation TICK (a moving rainbow)."
+    (let ((hue (mod (+ (* tick 0.04) (* i 0.12)) 1.0)))
+      (apply #'color-rgb-to-hex
+             (append (color-hsl-to-rgb hue 0.9 0.7) '(2)))))
+
+  (defvar em/cider-busy-star-widths nil
+    "Alist of (GLYPH . PIXEL-WIDTH) for the sparkles, computed once.
+  Some fonts draw the big stars double-wide, so every star gets padded
+  to the widest one; otherwise the mode line wiggles as they twinkle.")
+
+  (defun em/cider-busy-star-widths ()
+    (or em/cider-busy-star-widths
+        (setq em/cider-busy-star-widths
+              (mapcar (lambda (g)
+                        (cons g (string-pixel-width
+                                 (propertize g 'face '(:weight bold)))))
+                      em/cider-busy-sparkles))))
+
+  (defun em/cider-busy-star (offset tick)
+    (let* ((n (length em/cider-busy-sparkles))
+           (glyph (aref em/cider-busy-sparkles (mod (+ tick offset) n)))
+           (widths (em/cider-busy-star-widths))
+           (pad (- (apply #'max (mapcar #'cdr widths))
+                   (cdr (assoc glyph widths)))))
+      (concat (propertize glyph
+                          'face `(:foreground ,(em/cider-busy-rainbow (* offset 3) tick)
+                                  :weight bold))
+              (when (> pad 0)
+                (propertize " " 'display `(space :width (,pad)))))))
+
+  (defun em/cider-busy-color (s)
+    "Color that heats up the longer an eval has run S seconds."
+    (cond ((< s 10) "#5fd7ff")    ; cool blue
+          ((< s 30) "#ffd75f")    ; yellow
+          ((< s 60) "#ff8700")    ; orange
+          (t        "#ff5f5f")))  ; red
+
   (defun em/cider-busy-indicator ()
     (when em/cider-busy-start
-      (let ((s (floor (- (float-time) em/cider-busy-start))))
+      (let* ((elapsed (- (float-time) em/cider-busy-start))
+             (s (floor elapsed)))
         (when (>= s 1)
-          (concat (propertize (format "● eval %ds" s)
-                              'face '(:inherit warning :weight bold))
-                  "  ")))))
+          (let* ((tick (floor (* elapsed 10)))
+                 (word (apply #'concat
+                              (cl-loop for ch across "eval"
+                                       for i from 0
+                                       collect (propertize
+                                                (string ch)
+                                                'face `(:foreground ,(em/cider-busy-rainbow i tick)
+                                                        :weight bold))))))
+            (concat (em/cider-busy-star 0 tick) " "
+                    word " "
+                    (em/cider-busy-star 4 tick) " "
+                    (propertize (format "%ds" s)
+                                'face `(:foreground ,(em/cider-busy-color s) :weight bold))
+                    "  "))))))
 
   ;; Left side of every mode line (most buffers have a local
   ;; `mode-line-format', but they all reference `mode-line-front-space').
