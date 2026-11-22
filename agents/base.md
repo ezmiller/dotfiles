@@ -20,6 +20,9 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and follow the
 - NEVER push, commit, or open PR without explicit permission
 - NEVER work directly on `main` except when explicitly allowed
 - NEVER branch off non-`main` branches unless asked
+- Put worktrees in `~/Projects/<repo>-worktrees/<slug>`, never as
+  loose siblings like `~/Projects/<repo>-<slug>`. Remove them
+  (`git worktree remove`) once the PR merges.
 - ALWAYS verify the push target before pushing. A branch can track
   `origin/main` (e.g. after `git checkout -b foo origin/main`), and
   with `push.default = upstream` a bare `git push` then lands on
