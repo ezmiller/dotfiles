@@ -235,15 +235,31 @@ team and needs his hand.
 Draft structure:
 
 ```markdown
-## Summary
-<1–3 sentences on what the change does and why>
+> ✍️ **Human summary — replace this whole block before sharing.**
+> Things you may want to raise:
+> - <anything you couldn't reproduce, can't test before prod, or left unresolved>
 
-Jira: https://primary.atlassian.net/browse/EPD-XXXX
+## How to test
+1. <action that gets the reviewer into position>
 
-## Test plan
-- [ ] <concrete test step, keyed to project QA workflow>
-- [ ] <…>
+- [ ] <outcome to confirm, keyed to project QA workflow>
+
+<details>
+<summary>Agent summary — <model></summary>
+
+<2–3 sentences on what this adds and why.>
+
+Jira: [EPD-XXXX](https://primary.atlassian.net/browse/EPD-XXXX)
+
+<Then only what the code can't tell a reader, picked as it applies: where to start
+reading, what you checked and what came out, assumptions where the ticket was
+unclear, rejected approaches, what's knowingly left undone. Point to code rather
+than explaining it.>
+</details>
 ```
+
+The visible top is Ethan's to write; never fill it with your own summary. Keep the blank
+line after `</summary>` or GitHub won't render the markdown inside.
 
 The test plan's shape depends on the project's QA workflow. Check memory for project-QA
 notes. For example, for pk-shopify-theme: tests run on a CI-provisioned test theme per

@@ -32,6 +32,15 @@ Check for AGENTS.md or CLAUDE.md in the current working directory and follow the
 - When opening a PR, remain concise. ALWAYS check for pull request
   template for github. If not cover general context, proposed
   solution, and sensible manual testing.
+- PR body shape: the visible top is written by Ethan, not you. Leave
+  a placeholder (`> ✍️ **Human summary — replace this whole block
+  before sharing.**`, plus a list of anything you were unsure of),
+  then a visible `## How to test`, then everything else folded in
+  `<details><summary>Agent summary — <model></summary>` (blank line
+  after `</summary>`). Open the fold with 2–3 sentences on what and
+  why, then only what the code can't tell a reader: where to start
+  reading, what you checked, assumptions, rejected approaches, what's
+  left undone. Point to code rather than explaining it.
 
 ## Documentation
 
