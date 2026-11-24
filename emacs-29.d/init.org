@@ -1912,6 +1912,38 @@ We use this function below in the vterm-toggle configuration block when we set t
     (interactive)
     (require 'vterm) (require 'vterm-toggle)
     (if (fboundp 'vterm-toggle) (vterm-toggle) (vterm)))
+
+  (defun my/vterm-home ()
+    "Toggle a plain vterm rooted in ~, independent of any project."
+    (interactive)
+    (require 'vterm)
+    (let* ((name "*vterm*<home>")
+           (buf (get-buffer name))
+           (win (and buf (get-buffer-window buf))))
+      (cond
+       (win (delete-window win))                ; visible -> hide it
+       (buf (pop-to-buffer buf))                ; exists -> show it
+       (t (let ((default-directory (expand-file-name "~/")))
+            (vterm name))))))
+
+  (defvar my/vterm-fullscreen-config nil
+    "Window configuration saved while a vterm is zoomed to full frame.")
+
+  (defun my/vterm-toggle-fullscreen ()
+    "Toggle the current vterm between its bottom window and full frame.
+  Zooming saves the window layout; calling again restores it exactly."
+    (interactive)
+    (cond
+     (my/vterm-fullscreen-config
+      (let ((config my/vterm-fullscreen-config))
+        (setq my/vterm-fullscreen-config nil)
+        (set-window-configuration config)))
+     ((derived-mode-p 'vterm-mode)
+      (setq my/vterm-fullscreen-config (current-window-configuration))
+      ;; The vterm lives in a side window, which is normally protected.
+      (let ((ignore-window-parameters t))
+        (delete-other-windows)))
+     (t (message "Not in a vterm buffer"))))
 #+end_src
 
 ** vterm-toggle
@@ -1923,7 +1955,9 @@ related terminal.
       :bind
       (
        ("s-t" . my/vterm-jack-in)    ;; Terminal with tmux
-       ("s-T" . my/vterm-plain))      ;; Plain terminal without tmux
+       ("s-T" . my/vterm-plain)       ;; Plain terminal without tmux
+       ("M-s-t" . my/vterm-home)      ;; Terminal in ~, not project-rooted
+       ("s-b" . my/vterm-toggle-fullscreen)) ;; Zoom vterm to full frame (toggle)
       :custom
       (vterm-toggle-scope 'project)
       (vterm-toggle-project-root t)
